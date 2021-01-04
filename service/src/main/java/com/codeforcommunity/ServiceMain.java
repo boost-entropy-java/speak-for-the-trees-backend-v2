@@ -87,10 +87,11 @@ public class ServiceMain {
     IAuthProcessor authProc = new AuthProcessorImpl(this.db, emailer, jwtCreator);
     IProtectedUserProcessor protectedUserProc = new ProtectedUserProcessorImpl(this.db, emailer);
     IImportProcessor importProc = new ImportProcessorImpl(this.db);
-    IReservationProcessor reservationProc = new ReservationProcessorImpl(this.db);    
+    IReservationProcessor reservationProc = new ReservationProcessorImpl(this.db);
 
     // Create the API router and start the HTTP server
-    ApiRouter router = new ApiRouter(authProc, protectedUserProc, importProc, reservationProc, jwtAuthorizer);
+    ApiRouter router =
+        new ApiRouter(authProc, protectedUserProc, importProc, reservationProc, jwtAuthorizer);
 
     startApiServer(router, vertx);
   }

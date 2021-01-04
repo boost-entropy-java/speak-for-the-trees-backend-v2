@@ -21,7 +21,6 @@ public class ApiRouter implements IRouter {
   private final ImportRouter importRouter;
   private final ReservationRouter reservationRouter;
 
-
   public ApiRouter(
       IAuthProcessor authProcessor,
       IProtectedUserProcessor protectedUserProcessor,
