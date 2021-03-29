@@ -4,7 +4,7 @@ public enum ReservationAction {
   RESERVE("reserve"),
   COMPLETE("complete"),
   RELEASE("release"),
-  UNCOMPLETE("uncomplete"),
+  INCOMPLETE("incomplete"),
   QA("qa");
 
   private String name;

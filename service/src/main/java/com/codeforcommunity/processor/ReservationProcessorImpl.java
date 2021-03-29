@@ -14,6 +14,7 @@ import com.codeforcommunity.enums.ReservationAction;
 import com.codeforcommunity.enums.TeamRole;
 import com.codeforcommunity.exceptions.*;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.Optional;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.*;
@@ -93,8 +94,8 @@ public class ReservationProcessorImpl implements IReservationProcessor {
 
     if (maybeReservation.isPresent()
         && !(maybeReservation.get().getActionType().equals(ReservationAction.RELEASE)
-            || maybeReservation.get().getActionType().equals(ReservationAction.UNCOMPLETE))) {
-      throw new IncorrectBlockStatusException(blockId, "open");
+            || maybeReservation.get().getActionType().equals(ReservationAction.INCOMPLETE))) {
+      throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.INCOMPLETE));
     }
   }
 
@@ -109,12 +110,12 @@ public class ReservationProcessorImpl implements IReservationProcessor {
 
     // check if there are any entries
     if (!maybeReservation.isPresent()) {
-      throw new IncorrectBlockStatusException(blockId, "reserved");
+      throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.RESERVE));
     }
 
     // check if the last entry was a reservation
     if (!maybeReservation.get().getActionType().equals(ReservationAction.RESERVE)) {
-      throw new IncorrectBlockStatusException(blockId, "reserved");
+      throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.RESERVE));
     }
 
     // check if the user reserved the block, if they did, return
@@ -130,7 +131,7 @@ public class ReservationProcessorImpl implements IReservationProcessor {
     }
 
     // neither the user nor a team they are on reserved the block, so they did not reserve it
-    throw new IncorrectBlockStatusException(blockId, "reserved");
+    throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.INCOMPLETE));
   }
 
   /**
@@ -143,10 +144,10 @@ public class ReservationProcessorImpl implements IReservationProcessor {
 
     if (maybeReservation.isPresent()) {
       if (!(maybeReservation.get().getActionType().equals(ReservationAction.COMPLETE))) {
-        throw new IncorrectBlockStatusException(blockId, "complete");
+        throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.COMPLETE));
       }
     } else {
-      throw new IncorrectBlockStatusException(blockId, "complete");
+      throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.COMPLETE));
     }
   }
 
@@ -160,10 +161,10 @@ public class ReservationProcessorImpl implements IReservationProcessor {
 
     if (maybeReservation.isPresent()) {
       if (!(maybeReservation.get().getActionType().equals(ReservationAction.QA))) {
-        throw new IncorrectBlockStatusException(blockId, "QA");
+        throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.QA));
       }
     } else {
-      throw new IncorrectBlockStatusException(blockId, "QA");
+      throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.QA));
     }
   }
 
@@ -229,7 +230,7 @@ public class ReservationProcessorImpl implements IReservationProcessor {
     ReservationsRecord reservationsRecord = db.newRecord(RESERVATIONS);
     reservationsRecord.setBlockId(uncompleteReservationRequest.getBlockID());
     reservationsRecord.setUserId(userData.getUserId());
-    reservationsRecord.setActionType(ReservationAction.UNCOMPLETE);
+    reservationsRecord.setActionType(ReservationAction.INCOMPLETE);
     reservationsRecord.setPerformedAt(new Timestamp(System.currentTimeMillis()));
 
     blockCompleteCheck(uncompleteReservationRequest.getBlockID());
@@ -286,7 +287,7 @@ public class ReservationProcessorImpl implements IReservationProcessor {
     ReservationsRecord reservationsRecord = db.newRecord(RESERVATIONS);
     reservationsRecord.setBlockId(failQARequest.getBlockID());
     reservationsRecord.setUserId(userData.getUserId());
-    reservationsRecord.setActionType(ReservationAction.UNCOMPLETE);
+    reservationsRecord.setActionType(ReservationAction.INCOMPLETE);
     reservationsRecord.setPerformedAt(new Timestamp(System.currentTimeMillis()));
 
     reservationsRecord.store();
