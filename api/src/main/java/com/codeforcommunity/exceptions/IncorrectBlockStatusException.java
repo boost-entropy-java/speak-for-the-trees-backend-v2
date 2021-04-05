@@ -9,19 +9,19 @@ import java.util.List;
 public class IncorrectBlockStatusException extends HandledException {
 
   private final int blockId;
-  private final List<ReservationAction> expectedStatus;
+  private final List<ReservationAction> expectedStatuses;
 
-  public IncorrectBlockStatusException(int blockId, List<ReservationAction> expectedStatus) {
+  public IncorrectBlockStatusException(int blockId, List<ReservationAction> expectedStatuses) {
     this.blockId = blockId;
-    this.expectedStatus = expectedStatus;
+    this.expectedStatuses = expectedStatuses;
   }
 
   public int getBlockId() {
     return this.blockId;
   }
 
-  public List<ReservationAction> getExpectedStatus() {
-    return this.expectedStatus;
+  public List<ReservationAction> getExpectedStatuses() {
+    return this.expectedStatuses;
   }
 
   @Override

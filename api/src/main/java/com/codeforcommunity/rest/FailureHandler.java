@@ -77,7 +77,7 @@ public class FailureHandler {
 
   public void handleIncorrectBlockStatus(RoutingContext ctx, IncorrectBlockStatusException e) {
     String message =
-        String.format("Status of block id <%d> is not <%s>", e.getBlockId(), e.getExpectedStatus());
+        String.format("Status of block id <%d> is not <%s>", e.getBlockId(), e.getExpectedStatuses());
     end(ctx, message, 400);
   }
 

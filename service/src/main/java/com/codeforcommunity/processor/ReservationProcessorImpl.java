@@ -131,7 +131,7 @@ public class ReservationProcessorImpl implements IReservationProcessor {
     }
 
     // neither the user nor a team they are on reserved the block, so they did not reserve it
-    throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.INCOMPLETE));
+    throw new IncorrectBlockStatusException(blockId, Collections.singletonList(ReservationAction.RESERVE));
   }
 
   /**
