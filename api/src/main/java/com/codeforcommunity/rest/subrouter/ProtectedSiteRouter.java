@@ -45,6 +45,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerAddSites(router);
     registerDeleteStewardship(router);
     registerNameSiteEntry(router);
+    registerEmailInactiveUsers(router);
 
     return router;
   }
@@ -225,6 +226,19 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, NameSiteEntryRequest.class);
 
     processor.nameSiteEntry(userData, siteId, nameSiteEntryRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerEmailInactiveUsers(Router router) {
+    Route adoptSiteRoute = router.post("/email_inactive_user");
+    adoptSiteRoute.handler(this::handleEmailInactiveUsers);
+  }
+
+  private void handleEmailInactiveUsers(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    processor.emailInactiveUsers();
 
     end(ctx.response(), 200);
   }

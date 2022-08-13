@@ -11,7 +11,6 @@ import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import java.sql.Date;
 
 public interface IProtectedSiteProcessor {
-
   /**
    * Creates a record in the adopted sites table linking the user, the site, and the date adopted
    */
@@ -53,4 +52,7 @@ public interface IProtectedSiteProcessor {
    * the nameSiteEntryRequest
    */
   void nameSiteEntry(JWTData userData, int siteId, NameSiteEntryRequest nameSiteEntryRequest);
+
+  /** Emails users who haven't recorded stewardship activity in 21 days */
+  void emailInactiveUsers();
 }

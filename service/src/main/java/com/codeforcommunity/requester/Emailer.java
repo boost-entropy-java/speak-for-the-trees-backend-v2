@@ -4,8 +4,11 @@ import com.codeforcommunity.email.EmailOperations;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.jooq.generated.tables.records.AdoptedSitesRecord;
 
 public class Emailer {
   private final EmailOperations emailOperations;
@@ -23,6 +26,8 @@ public class Emailer {
       PropertiesLoader.loadProperty("email_subject_account_deleted");
   private final String subjectEmailNeighborhoods =
       PropertiesLoader.loadProperty("email_subject_neighborhood_notification");
+  private final String subjectInactiveUser =
+          PropertiesLoader.loadProperty("email_subject_inactive_user");
 
   public Emailer() {
     String senderName = PropertiesLoader.loadProperty("email_sender_name");
@@ -132,5 +137,17 @@ public class Emailer {
         s ->
             emailOperations.sendEmailToMultipleRecipients(
                 sendToEmails, subjectEmailNeighborhoods, s));
+  }
+
+  public void sendInactiveEmail(String sendToEmail, String sendToName, String inactiveSites) {
+    String filePath = "/emails/InactiveUserEmail.html";
+
+    Map<String, String> templateValues = new HashMap<>();
+    templateValues.put("inactiveSites", inactiveSites);
+    templateValues.put("name", sendToName);
+
+    Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
+    emailBody.ifPresent(
+        s -> emailOperations.sendEmailToOneRecipient(sendToName, sendToEmail, subjectInactiveUser, s));
   }
 }
