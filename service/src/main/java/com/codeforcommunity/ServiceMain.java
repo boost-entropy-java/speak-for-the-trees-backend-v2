@@ -107,7 +107,7 @@ public class ServiceMain {
     ILeaderboardProcessor leaderboardProc = new LeaderboardProcessorImpl(this.db);
     IMapProcessor mapProc = new MapProcessorImpl(this.db);
     ITeamsProcessor teamsProc = new TeamsProcessorImpl(this.db);
-    IProtectedSiteProcessor protectedSiteProc = new ProtectedSiteProcessorImpl(this.db, emailer);
+    IProtectedSiteProcessor protectedSiteProc = new ProtectedSiteProcessorImpl(this.db);
     ISiteProcessor siteProc = new SiteProcessorImpl(this.db);
     IProtectedReportProcessor protectedReportProc = new ProtectedReportProcessorImpl(this.db);
     IReportProcessor reportProc = new ReportProcessorImpl(this.db);
