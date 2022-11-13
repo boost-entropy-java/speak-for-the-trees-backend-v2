@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RecordStewardshipRequest extends ApiDto {
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy", timezone="America/New_York")
   private java.sql.Date date;
 
   private boolean watered;
