@@ -24,7 +24,7 @@ public class RecordStewardshipRequest extends ApiDto {
     this.weeded = weeded;
   }
 
-  private RecordStewardshipRequest() {}
+  protected RecordStewardshipRequest() {}
 
   public java.sql.Date getDate() {
     return date;

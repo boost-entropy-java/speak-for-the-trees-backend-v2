@@ -9,6 +9,8 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
+import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
+import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.rest.IRouter;
@@ -34,10 +36,12 @@ public class ProtectedSiteRouter implements IRouter {
     Router router = Router.router(vertx);
 
     registerAdoptSite(router);
+    registerParentAdoptSite(router);
     registerUnadoptSite(router);
     registerForceUnadoptSite(router);
     registerGetAdoptedSitesRoute(router);
     registerRecordStewardship(router);
+    registerParentRecordStewardship(router);
     registerAddSite(router);
     registerUpdateSite(router);
     registerDeleteSite(router);
@@ -59,6 +63,23 @@ public class ProtectedSiteRouter implements IRouter {
     int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
 
     processor.adoptSite(userData, siteId, Date.valueOf(LocalDate.now()));
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerParentAdoptSite(Router router) {
+    Route parentAdoptSiteRoute = router.post("/:site_id/parent_adopt");
+    parentAdoptSiteRoute.handler(this::handleParentAdoptSiteRoute);
+  }
+
+  private void handleParentAdoptSiteRoute(RoutingContext ctx) {
+    JWTData parentUserData = ctx.get("jwt_data");
+    int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
+
+    ParentAdoptSiteRequest parentAdoptSiteRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, ParentAdoptSiteRequest.class);
+
+    processor.parentAdoptSite(parentUserData, siteId, parentAdoptSiteRequest, Date.valueOf(LocalDate.now()));
 
     end(ctx.response(), 200);
   }
@@ -117,6 +138,23 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, RecordStewardshipRequest.class);
 
     processor.recordStewardship(userData, siteId, recordStewardshipRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerParentRecordStewardship(Router router) {
+    Route recordParentStewardshipRoute = router.post("/:site_id/parent_record_stewardship");
+    recordParentStewardshipRoute.handler(this::handleParentRecordStewardshipRoute);
+  }
+
+  private void handleParentRecordStewardshipRoute(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
+
+    ParentRecordStewardshipRequest parentRecordStewardshipRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, ParentRecordStewardshipRequest.class);
+
+    processor.parentRecordStewardship(userData, siteId, parentRecordStewardshipRequest);
 
     end(ctx.response(), 200);
   }

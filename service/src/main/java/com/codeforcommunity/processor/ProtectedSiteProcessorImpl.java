@@ -3,6 +3,7 @@ package com.codeforcommunity.processor;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;
 import static org.jooq.generated.Tables.NEIGHBORHOODS;
+import static org.jooq.generated.Tables.PARENT_ACCOUNTS;
 import static org.jooq.generated.Tables.SITES;
 import static org.jooq.generated.Tables.SITE_ENTRIES;
 import static org.jooq.generated.Tables.STEWARDSHIP;
@@ -16,6 +17,8 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
+import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
+import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.enums.PrivilegeLevel;
@@ -28,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
+import org.jooq.generated.tables.records.ParentAccountsRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
 import org.jooq.generated.tables.records.SitesRecord;
 import org.jooq.generated.tables.records.StewardshipRecord;
@@ -96,6 +100,52 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     return level.equals(PrivilegeLevel.ADMIN) || level.equals(PrivilegeLevel.SUPER_ADMIN);
   }
 
+  /**
+   * Throws an exception if the user account is not the parent of the other user account.
+   *
+   * @param parentUserId the user id of the parent account
+   * @param childUserId the user id of the child account
+   */
+  void checkParent(int parentUserId, int childUserId) {
+    if (!isParent(parentUserId, childUserId)) {
+      throw new LinkedResourceDoesNotExistException("Parent->Child",
+          parentUserId,
+          "Parent User",
+          childUserId,
+          "Child User");
+    }
+  }
+
+  /**
+   * Determines if a user account is the parent of another user account.
+   *
+   * @param parentUserId the user id of the parent account
+   * @param childUserId the user if of the child account
+   * @return true if the user is a parent of the other user, else false
+   */
+  boolean isParent(int parentUserId, int childUserId) {
+    ParentAccountsRecord parentAccountsRecord = db.selectFrom(PARENT_ACCOUNTS)
+        .where(PARENT_ACCOUNTS.PARENT_ID.eq(parentUserId))
+        .and(PARENT_ACCOUNTS.CHILD_ID.eq(childUserId))
+        .fetchOne();
+    return parentAccountsRecord != null;
+  }
+
+  /**
+   * Gets the JWTData of the user with the given userId.
+   *
+   * @param userId user id of the user to get JWTData for
+   * @return JWTData of the user
+   */
+  private JWTData getUserData(int userId) {
+    UsersRecord user = db.selectFrom(USERS)
+        .where(USERS.ID.eq(userId))
+        .fetchOne();
+    PrivilegeLevel userPrivilegeLevel = user.getPrivilegeLevel();
+
+    return new JWTData(userId, userPrivilegeLevel);
+  }
+
   @Override
   public void adoptSite(JWTData userData, int siteId, Date dateAdopted) {
     checkSiteExists(siteId);
@@ -150,6 +200,18 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
+  public void parentAdoptSite(
+      JWTData parentUserData, int siteId, ParentAdoptSiteRequest parentAdoptSiteRequest, Date dateAdopted) {
+    Integer parentId = parentUserData.getUserId();
+    Integer childId = parentAdoptSiteRequest.getChildUserId();
+    checkParent(parentId, childId);
+
+    JWTData childUserData = getUserData(childId);
+
+    adoptSite(childUserData, siteId, dateAdopted);
+  }
+
+  @Override
   public AdoptedSitesResponse getAdoptedSites(JWTData userData) {
     List<Integer> favoriteSites =
         db.selectFrom(ADOPTED_SITES)
@@ -180,6 +242,18 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
+  public void parentRecordStewardship(
+      JWTData parentUserData, int siteId, ParentRecordStewardshipRequest parentRecordStewardshipRequest) {
+    Integer parentId = parentUserData.getUserId();
+    Integer childId = parentRecordStewardshipRequest.getChildUserId();
+    checkParent(parentId, childId);
+
+    JWTData childUserData = getUserData(childId);
+
+    recordStewardship(childUserData, siteId, parentRecordStewardshipRequest);
+  }
+
+                                      @Override
   public void addSite(JWTData userData, AddSiteRequest addSiteRequest) {
     if (addSiteRequest.getBlockId() != null) {
       checkBlockExists(addSiteRequest.getBlockId());
