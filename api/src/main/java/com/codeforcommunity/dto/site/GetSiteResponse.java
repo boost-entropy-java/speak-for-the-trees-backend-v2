@@ -63,7 +63,7 @@ public class GetSiteResponse {
     return address;
   }
 
-  public Integer getNeighborhood() {
+  public Integer getNeighborhoodId() {
     return neighborhoodId;
   }
 
