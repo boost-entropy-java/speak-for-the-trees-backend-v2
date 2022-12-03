@@ -8,6 +8,7 @@ import com.codeforcommunity.dto.site.AddSiteRequest;
 import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
+import com.codeforcommunity.dto.site.EditStewardshipRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -48,6 +49,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerEditSite(router);
     registerAddSites(router);
     registerDeleteStewardship(router);
+    registerEditStewardship(router);
     registerNameSiteEntry(router);
 
     return router;
@@ -186,6 +188,21 @@ public class ProtectedSiteRouter implements IRouter {
     int activityId = RestFunctions.getRequestParameterAsInt(ctx.request(), "activity_id");
 
     processor.deleteStewardship(userData, activityId);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerEditStewardship(Router router) {
+    Route editStewardshipRoute = router.post("/edit_stewardship/:activity_id");
+    editStewardshipRoute.handler(this::handleEditStewardshipRoute);
+  }
+
+  private void handleEditStewardshipRoute(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int activityId = RestFunctions.getRequestParameterAsInt(ctx.request(), "activity_id");
+    EditStewardshipRequest editStewardshipRequest = RestFunctions.getJsonBodyAsClass(ctx, EditStewardshipRequest.class);
+
+    processor.editStewardship(userData, activityId, editStewardshipRequest);
 
     end(ctx.response(), 200);
   }

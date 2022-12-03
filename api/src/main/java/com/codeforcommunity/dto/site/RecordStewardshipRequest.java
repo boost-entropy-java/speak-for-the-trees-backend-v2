@@ -3,20 +3,21 @@ package com.codeforcommunity.dto.site;
 import com.codeforcommunity.dto.ApiDto;
 import com.codeforcommunity.exceptions.HandledException;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecordStewardshipRequest extends ApiDto {
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy", timezone="America/New_York")
-  private java.sql.Date date;
+  protected Date date;
 
-  private boolean watered;
-  private boolean mulched;
-  private boolean cleaned;
-  private boolean weeded;
+  protected boolean watered;
+  protected boolean mulched;
+  protected boolean cleaned;
+  protected boolean weeded;
 
   public RecordStewardshipRequest(
-      java.sql.Date date, boolean watered, boolean mulched, boolean cleaned, boolean weeded) {
+      Date date, boolean watered, boolean mulched, boolean cleaned, boolean weeded) {
     this.date = date;
     this.watered = watered;
     this.mulched = mulched;
@@ -66,9 +67,7 @@ public class RecordStewardshipRequest extends ApiDto {
     this.weeded = weeded;
   }
 
-  @Override
-  public List<String> validateFields(String fieldPrefix) throws HandledException {
-    String fieldName = fieldPrefix + "record_stewardship_request.";
+  protected List<String> validateStewardshipFields(String fieldName) {
     List<String> fields = new ArrayList<>();
 
     if (date == null) {
@@ -79,5 +78,10 @@ public class RecordStewardshipRequest extends ApiDto {
     }
 
     return fields;
+  }
+
+  @Override
+  public List<String> validateFields(String fieldPrefix) throws HandledException {
+    return validateStewardshipFields(fieldPrefix + "record_stewardship_request.");
   }
 }

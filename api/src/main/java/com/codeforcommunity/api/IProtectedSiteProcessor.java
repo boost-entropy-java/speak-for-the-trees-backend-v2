@@ -5,6 +5,7 @@ import com.codeforcommunity.dto.site.AddSiteRequest;
 import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
+import com.codeforcommunity.dto.site.EditStewardshipRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -40,6 +41,9 @@ public interface IProtectedSiteProcessor {
   void parentRecordStewardship(
       JWTData userData, int siteId, ParentRecordStewardshipRequest parentRecordStewardshipRequest);
 
+  /** Edit features of the given stewardship activity */
+  void editStewardship(
+      JWTData userData, int activityId, EditStewardshipRequest editStewardshipRequest);
 
   /** Creates a new site with entries in the sites and siteEntries tables */
   void addSite(JWTData userData, AddSiteRequest addSiteRequest);
