@@ -3,6 +3,9 @@ package com.codeforcommunity.dto;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.HandledException;
 import com.codeforcommunity.exceptions.MalformedParameterException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 
 public abstract class ApiDto {
@@ -117,5 +120,21 @@ public abstract class ApiDto {
       }
     }
     return true;
+  }
+
+  /**
+   * Checks if the given URL is invalid. A URL is invalid if it is does not follow valid syntax or
+   * does not comply with RC 2396.
+   *
+   * @param url the URL to check
+   * @return a boolean representing whether the given URL is invalid or not.
+   */
+  protected boolean urlInvalid(String url) {
+    try {
+      new URL(url).toURI();
+      return false;
+    } catch (MalformedURLException | URISyntaxException e) {
+      return true;
+    }
   }
 }

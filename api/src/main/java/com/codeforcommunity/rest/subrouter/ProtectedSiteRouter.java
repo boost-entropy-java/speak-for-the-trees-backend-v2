@@ -14,6 +14,7 @@ import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
+import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -51,6 +52,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteStewardship(router);
     registerEditStewardship(router);
     registerNameSiteEntry(router);
+    registerUploadSiteImage(router);
 
     return router;
   }
@@ -280,6 +282,23 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, NameSiteEntryRequest.class);
 
     processor.nameSiteEntry(userData, siteId, nameSiteEntryRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerUploadSiteImage(Router router) {
+    Route uploadImage = router.post("/:site_id/upload_image");
+    uploadImage.handler(this::handleUploadSiteImage);
+  }
+
+  private void handleUploadSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
+
+    UploadSiteImageRequest uploadSiteImageRequest =
+            RestFunctions.getJsonBodyAsClass(ctx, UploadSiteImageRequest.class);
+
+    processor.uploadSiteImage(userData, siteId, uploadSiteImageRequest);
 
     end(ctx.response(), 200);
   }

@@ -22,11 +22,13 @@ import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
+import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.AuthException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
@@ -88,6 +90,20 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   private void checkStewardshipExists(int activityId) {
     if (!db.fetchExists(db.selectFrom(STEWARDSHIP).where(STEWARDSHIP.ID.eq(activityId)))) {
       throw new ResourceDoesNotExistException(activityId, "Stewardship Activity");
+    }
+  }
+
+  /**
+   * Check if the user is an admin or the adopter of the site with the given siteId
+   *
+   * @param userData the user's data
+   * @param siteId   the ID of the site to check
+   * @throws AuthException if the user is not an admin or the site's adopter
+   */
+  private void checkAdminOrSiteAdopter(JWTData userData, int siteId) throws AuthException {
+    if (!(isAdmin(userData.getPrivilegeLevel())
+        || isAlreadyAdoptedByUser(userData.getUserId(), siteId))) {
+      throw new AuthException("User needs to be an admin or the site's adopter.");
     }
   }
 
@@ -495,5 +511,17 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
     siteEntry.setTreeName(nameSiteEntryRequest.getName());
     siteEntry.store();
+  }
+
+  @Override
+  public void uploadSiteImage(JWTData userData, int siteId, UploadSiteImageRequest uploadSiteImageRequest) {
+    checkSiteExists(siteId);
+    checkAdminOrSiteAdopter(userData, siteId);
+
+    SitesRecord site = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
+
+    site.setPicture(uploadSiteImageRequest.getImage());
+
+    site.store();
   }
 }

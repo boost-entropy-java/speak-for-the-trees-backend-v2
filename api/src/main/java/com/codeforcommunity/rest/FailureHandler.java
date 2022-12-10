@@ -178,6 +178,11 @@ public class FailureHandler {
     end(ctx, message, 401);
   }
 
+  public void handleInvalidURL(RoutingContext ctx) {
+    String message = "Given URL is invalid";
+    end(ctx, message, 401);
+  }
+
   public void handleExpiredToken(RoutingContext ctx) {
     String message = "Given token is expired";
     end(ctx, message, 401);
