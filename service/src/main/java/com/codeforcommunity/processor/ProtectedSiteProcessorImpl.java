@@ -493,23 +493,24 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   public void nameSiteEntry(
       JWTData userData, int siteId, NameSiteEntryRequest nameSiteEntryRequest) {
     checkSiteExists(siteId);
-    if (!isAlreadyAdoptedByUser(userData.getUserId(), siteId)) {
-      throw new AuthException("User is not the site's adopter.");
-    }
+    checkAdminOrSiteAdopter(userData, siteId);
 
-    SiteEntriesRecord siteEntry =
-        db.selectFrom(SITE_ENTRIES)
-            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
-            .orderBy(SITE_ENTRIES.UPDATED_AT)
-            .limit(1)
-            .fetchOne();
+    SiteEntriesRecord siteEntry = db.selectFrom(SITE_ENTRIES)
+        .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+        .orderBy(SITE_ENTRIES.UPDATED_AT.desc())
+        .fetchOne();
 
     if (siteEntry == null) {
       throw new LinkedResourceDoesNotExistException(
           "Site Entry", userData.getUserId(), "User", siteId, "Site");
     }
 
-    siteEntry.setTreeName(nameSiteEntryRequest.getName());
+    if (nameSiteEntryRequest.getName().isEmpty()) {
+      siteEntry.setTreeName(null);
+    } else {
+      siteEntry.setTreeName(nameSiteEntryRequest.getName());
+    }
+
     siteEntry.store();
   }
 

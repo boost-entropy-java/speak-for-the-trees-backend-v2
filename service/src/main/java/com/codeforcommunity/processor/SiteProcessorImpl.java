@@ -120,6 +120,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getStump(),
                   record.getTreeNotes(),
                   record.getSiteNotes(),
+                  record.getTreeName(),
                   adopter);
 
           siteEntries.add(siteEntry);

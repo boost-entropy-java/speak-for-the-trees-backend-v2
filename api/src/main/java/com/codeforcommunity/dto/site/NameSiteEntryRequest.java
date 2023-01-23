@@ -21,7 +21,7 @@ public class NameSiteEntryRequest extends ApiDto {
     String fieldName = fieldPrefix + "new_site_entry_name_request.";
     List<String> fields = new ArrayList<>();
 
-    if (name == null || name.isEmpty() || name.length() > 60) {
+    if (name == null || name.length() > 60) {
       fields.add(fieldName + "site_entry_name");
     }
     return fields;

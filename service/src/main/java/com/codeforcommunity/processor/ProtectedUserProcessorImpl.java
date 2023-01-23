@@ -143,7 +143,7 @@ public class ProtectedUserProcessorImpl extends AbstractProcessor
 
     String previousEmail = user.getEmail();
     if (Passwords.isExpectedPassword(changeEmailRequest.getPassword(), user.getPasswordHash())) {
-      if (db.fetchExists(USERS, USERS.EMAIL.eq(changeEmailRequest.getNewEmail()))) {
+      if (db.fetchExists(USERS, USERS.EMAIL.equalIgnoreCase(changeEmailRequest.getNewEmail()))) {
         throw new EmailAlreadyInUseException(changeEmailRequest.getNewEmail());
       }
       user.setEmail(changeEmailRequest.getNewEmail());
@@ -176,20 +176,17 @@ public class ProtectedUserProcessorImpl extends AbstractProcessor
   @Override
   public void changePrivilegeLevel(
       JWTData userData, ChangePrivilegeLevelRequest changePrivilegeLevelRequest) {
-    // check if user is admin
-    if (!(userData.getPrivilegeLevel() == PrivilegeLevel.ADMIN
-        || userData.getPrivilegeLevel() == PrivilegeLevel.SUPER_ADMIN)) {
-      throw new AuthException("User does not have the required privilege level");
-    }
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
     String targetEmail = changePrivilegeLevelRequest.getTargetUserEmail();
 
     // check if target user exists
-    if (!db.fetchExists(db.selectFrom(USERS).where(USERS.EMAIL.eq(targetEmail)))) {
+    if (!db.fetchExists(db.selectFrom(USERS).where(USERS.EMAIL.equalIgnoreCase(targetEmail)))) {
       throw new UserDoesNotExistException(targetEmail);
     }
 
-    UsersRecord targetUser = db.selectFrom(USERS).where(USERS.EMAIL.eq(targetEmail)).fetchOne();
+    UsersRecord targetUser =
+        db.selectFrom(USERS).where(USERS.EMAIL.equalIgnoreCase(targetEmail)).fetchOne();
 
     // normal admins can't create super admins
     if (userData.getPrivilegeLevel() == PrivilegeLevel.ADMIN
