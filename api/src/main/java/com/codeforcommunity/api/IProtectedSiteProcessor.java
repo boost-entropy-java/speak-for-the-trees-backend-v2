@@ -27,9 +27,12 @@ public interface IProtectedSiteProcessor {
   /** Removes the record in the adopted sites table linking the site to its current adopter */
   void forceUnadoptSite(JWTData userData, int siteId);
 
-  /** Adopts a tree for a child account through the parent account **/
-  void parentAdoptSite(JWTData parentUserData, int siteId, ParentAdoptSiteRequest parentAdoptSiteRequest,
-                       Date dateAdopted);
+  /** Adopts a tree for a child account through the parent account * */
+  void parentAdoptSite(
+      JWTData parentUserData,
+      int siteId,
+      ParentAdoptSiteRequest parentAdoptSiteRequest,
+      Date dateAdopted);
 
   /** Get users adopted sites */
   AdoptedSitesResponse getAdoptedSites(JWTData userData);

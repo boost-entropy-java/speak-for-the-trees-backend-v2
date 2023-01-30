@@ -1,7 +1,6 @@
 package com.codeforcommunity.dto.site;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.sql.Timestamp;
 
 public class SiteEntry {

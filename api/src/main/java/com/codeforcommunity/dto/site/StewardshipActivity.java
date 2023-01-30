@@ -7,7 +7,10 @@ public class StewardshipActivity {
   private final int id;
   private final int userId;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy", timezone="America/New_York")
+  @JsonFormat(
+      shape = JsonFormat.Shape.STRING,
+      pattern = "MM/dd/yyyy",
+      timezone = "America/New_York")
   private final Date date;
 
   private final Boolean watered;

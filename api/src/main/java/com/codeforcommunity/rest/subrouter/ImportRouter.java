@@ -8,6 +8,8 @@ import com.codeforcommunity.dto.imports.ImportBlocksRequest;
 import com.codeforcommunity.dto.imports.ImportNeighborhoodsRequest;
 import com.codeforcommunity.dto.imports.ImportReservationsRequest;
 import com.codeforcommunity.dto.imports.ImportSitesRequest;
+import com.codeforcommunity.dto.imports.ImportTreeBenefitsRequest;
+import com.codeforcommunity.dto.imports.ImportTreeSpeciesRequest;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -31,6 +33,8 @@ public class ImportRouter implements IRouter {
     registerImportNeighborhoods(router);
     registerImportReservations(router);
     registerImportSites(router);
+    registerImportTreeSpecies(router);
+    registerImportTreeBenefits(router);
 
     return router;
   }
@@ -53,6 +57,16 @@ public class ImportRouter implements IRouter {
   private void registerImportSites(Router router) {
     Route importSitesRoute = router.post("/sites");
     importSitesRoute.handler(this::handleImportSitesRoute);
+  }
+
+  private void registerImportTreeSpecies(Router router) {
+    Route importTreeSpeciesRoute = router.post("/tree_species");
+    importTreeSpeciesRoute.handler(this::handleImportTreeSpeciesRoute);
+  }
+
+  private void registerImportTreeBenefits(Router router) {
+    Route importTreeBenefitsRoute = router.post("/tree_benefits");
+    importTreeBenefitsRoute.handler(this::handleImportTreeBenefitsRoute);
   }
 
   private void handleImportBlocksRoute(RoutingContext ctx) {
@@ -89,7 +103,28 @@ public class ImportRouter implements IRouter {
     JWTData userData = ctx.get("jwt_data");
     ImportSitesRequest importSitesRequest =
         RestFunctions.getJsonBodyAsClass(ctx, ImportSitesRequest.class);
+
     processor.importSites(userData, importSitesRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void handleImportTreeSpeciesRoute(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    ImportTreeSpeciesRequest importTreeSpeciesRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, ImportTreeSpeciesRequest.class);
+
+    processor.importTreeSpecies(userData, importTreeSpeciesRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void handleImportTreeBenefitsRoute(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    ImportTreeBenefitsRequest importTreeBenefitsRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, ImportTreeBenefitsRequest.class);
+
+    processor.importTreeBenefits(userData, importTreeBenefitsRequest);
 
     end(ctx.response(), 200);
   }

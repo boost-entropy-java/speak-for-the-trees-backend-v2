@@ -53,7 +53,9 @@ public class AuthDatabaseOperations {
   public JWTData getUserJWTData(String email) {
     Optional<Users> maybeUser =
         Optional.ofNullable(
-            db.selectFrom(USERS).where(USERS.EMAIL.equalIgnoreCase(email)).fetchOneInto(Users.class));
+            db.selectFrom(USERS)
+                .where(USERS.EMAIL.equalIgnoreCase(email))
+                .fetchOneInto(Users.class));
 
     if (maybeUser.isPresent()) {
       Users user = maybeUser.get();
@@ -88,7 +90,9 @@ public class AuthDatabaseOperations {
   public boolean isValidLogin(String email, String pass) {
     Optional<Users> maybeUser =
         Optional.ofNullable(
-            db.selectFrom(USERS).where(USERS.EMAIL.equalIgnoreCase(email)).fetchOneInto(Users.class));
+            db.selectFrom(USERS)
+                .where(USERS.EMAIL.equalIgnoreCase(email))
+                .fetchOneInto(Users.class));
 
     return maybeUser
         .filter(user -> Passwords.isExpectedPassword(pass, user.getPasswordHash()))

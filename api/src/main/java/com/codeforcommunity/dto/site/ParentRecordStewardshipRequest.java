@@ -1,7 +1,6 @@
 package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.exceptions.HandledException;
-
 import java.sql.Date;
 import java.util.List;
 
@@ -43,5 +42,4 @@ public class ParentRecordStewardshipRequest extends RecordStewardshipRequest {
 
     return fields;
   }
-
 }

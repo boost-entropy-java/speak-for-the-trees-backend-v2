@@ -13,7 +13,11 @@ import com.codeforcommunity.dto.imports.ImportBlocksRequest;
 import com.codeforcommunity.dto.imports.ImportNeighborhoodsRequest;
 import com.codeforcommunity.dto.imports.ImportReservationsRequest;
 import com.codeforcommunity.dto.imports.ImportSitesRequest;
+import com.codeforcommunity.dto.imports.ImportTreeBenefitsRequest;
+import com.codeforcommunity.dto.imports.ImportTreeSpeciesRequest;
 import com.codeforcommunity.dto.imports.NeighborhoodImport;
+import com.codeforcommunity.dto.imports.TreeBenefitImport;
+import com.codeforcommunity.dto.imports.TreeSpeciesImport;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.AuthException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
@@ -32,6 +36,8 @@ import org.jooq.generated.tables.records.NeighborhoodsRecord;
 import org.jooq.generated.tables.records.ReservationsRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
 import org.jooq.generated.tables.records.SitesRecord;
+import org.jooq.generated.tables.records.TreeBenefitsRecord;
+import org.jooq.generated.tables.records.TreeSpeciesRecord;
 
 public class ImportProcessorImpl implements IImportProcessor {
   private final DSLContext db;
@@ -260,6 +266,54 @@ public class ImportProcessorImpl implements IImportProcessor {
       if (username != null && !username.isEmpty()) {
         importSiteEntryUsername(siteEntryId, pair.getValue());
       }
+    }
+  }
+
+  @Override
+  public void importTreeSpecies(
+      JWTData userData, ImportTreeSpeciesRequest importTreeSpeciesRequest) {
+    if (userData.getPrivilegeLevel() != PrivilegeLevel.SUPER_ADMIN) {
+      throw new AuthException("User does not have the required privilege level.");
+    }
+
+    for (TreeSpeciesImport treeSpeciesImport : importTreeSpeciesRequest.getTreeSpecies()) {
+      TreeSpeciesRecord treeSpecies = db.newRecord(Tables.TREE_SPECIES);
+      treeSpecies.setGenus(treeSpeciesImport.getGenus());
+      treeSpecies.setSpecies(treeSpeciesImport.getSpecies());
+      treeSpecies.setCommonName(treeSpeciesImport.getCommonName());
+      treeSpecies.setSpeciesCode(treeSpeciesImport.getSpeciesCode());
+
+      treeSpecies.store();
+    }
+  }
+
+  @Override
+  public void importTreeBenefits(
+      JWTData userData, ImportTreeBenefitsRequest importTreeBenefitsRequest) {
+    if (userData.getPrivilegeLevel() != PrivilegeLevel.SUPER_ADMIN) {
+      throw new AuthException("User does not have the required privilege level.");
+    }
+
+    for (TreeBenefitImport treeBenefitImport : importTreeBenefitsRequest.getTreeBenefits()) {
+      TreeBenefitsRecord treeBenefits = db.newRecord(Tables.TREE_BENEFITS);
+      treeBenefits.setSpeciesCode(treeBenefitImport.getSpeciesCode());
+      treeBenefits.setDiameter(treeBenefitImport.getDiameter());
+      treeBenefits.setAqNoxAvoided(treeBenefitImport.getAqNoxAvoided());
+      treeBenefits.setAqNoxDep(treeBenefitImport.getAqNoxDep());
+      treeBenefits.setAqOzoneDep(treeBenefitImport.getAqOzoneDep());
+      treeBenefits.setAqPm10Avoided(treeBenefitImport.getAqPm10Avoided());
+      treeBenefits.setAqPm10Dep(treeBenefitImport.getAqPm10Dep());
+      treeBenefits.setAqSoxAvoided(treeBenefitImport.getAqSoxAvoided());
+      treeBenefits.setAqSoxDep(treeBenefitImport.getAqPm10Dep());
+      treeBenefits.setAqVocAvoided(treeBenefitImport.getAqVocAvoided());
+      treeBenefits.setCo2Avoided(treeBenefitImport.getCo2Avoided());
+      treeBenefits.setCo2Sequestered(treeBenefitImport.getCo2Sequestered());
+      treeBenefits.setCo2Storage(treeBenefitImport.getCo2Storage());
+      treeBenefits.setElectricity(treeBenefitImport.getElectricity());
+      treeBenefits.setHydroInterception(treeBenefitImport.getHydroInterception());
+      treeBenefits.setNaturalGas(treeBenefitImport.getNaturalGas());
+
+      treeBenefits.store();
     }
   }
 }

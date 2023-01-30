@@ -83,7 +83,8 @@ public class ProtectedSiteRouter implements IRouter {
     ParentAdoptSiteRequest parentAdoptSiteRequest =
         RestFunctions.getJsonBodyAsClass(ctx, ParentAdoptSiteRequest.class);
 
-    processor.parentAdoptSite(parentUserData, siteId, parentAdoptSiteRequest, Date.valueOf(LocalDate.now()));
+    processor.parentAdoptSite(
+        parentUserData, siteId, parentAdoptSiteRequest, Date.valueOf(LocalDate.now()));
 
     end(ctx.response(), 200);
   }
@@ -202,7 +203,8 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleEditStewardshipRoute(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
     int activityId = RestFunctions.getRequestParameterAsInt(ctx.request(), "activity_id");
-    EditStewardshipRequest editStewardshipRequest = RestFunctions.getJsonBodyAsClass(ctx, EditStewardshipRequest.class);
+    EditStewardshipRequest editStewardshipRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, EditStewardshipRequest.class);
 
     processor.editStewardship(userData, activityId, editStewardshipRequest);
 
@@ -296,7 +298,7 @@ public class ProtectedSiteRouter implements IRouter {
     int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
 
     UploadSiteImageRequest uploadSiteImageRequest =
-            RestFunctions.getJsonBodyAsClass(ctx, UploadSiteImageRequest.class);
+        RestFunctions.getJsonBodyAsClass(ctx, UploadSiteImageRequest.class);
 
     processor.uploadSiteImage(userData, siteId, uploadSiteImageRequest);
 

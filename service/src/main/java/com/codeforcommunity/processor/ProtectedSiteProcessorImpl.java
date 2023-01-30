@@ -28,7 +28,6 @@ import com.codeforcommunity.exceptions.AuthException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
-
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
@@ -97,7 +96,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    * Check if the user is an admin or the adopter of the site with the given siteId
    *
    * @param userData the user's data
-   * @param siteId   the ID of the site to check
+   * @param siteId the ID of the site to check
    * @throws AuthException if the user is not an admin or the site's adopter
    */
   private void checkAdminOrSiteAdopter(JWTData userData, int siteId) throws AuthException {
@@ -140,11 +139,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    */
   void checkParent(int parentUserId, int childUserId) {
     if (!isParent(parentUserId, childUserId)) {
-      throw new LinkedResourceDoesNotExistException("Parent->Child",
-          parentUserId,
-          "Parent User",
-          childUserId,
-          "Child User");
+      throw new LinkedResourceDoesNotExistException(
+          "Parent->Child", parentUserId, "Parent User", childUserId, "Child User");
     }
   }
 
@@ -156,10 +152,11 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    * @return true if the user is a parent of the other user, else false
    */
   boolean isParent(int parentUserId, int childUserId) {
-    ParentAccountsRecord parentAccountsRecord = db.selectFrom(PARENT_ACCOUNTS)
-        .where(PARENT_ACCOUNTS.PARENT_ID.eq(parentUserId))
-        .and(PARENT_ACCOUNTS.CHILD_ID.eq(childUserId))
-        .fetchOne();
+    ParentAccountsRecord parentAccountsRecord =
+        db.selectFrom(PARENT_ACCOUNTS)
+            .where(PARENT_ACCOUNTS.PARENT_ID.eq(parentUserId))
+            .and(PARENT_ACCOUNTS.CHILD_ID.eq(childUserId))
+            .fetchOne();
     return parentAccountsRecord != null;
   }
 
@@ -170,9 +167,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    * @return JWTData of the user
    */
   private JWTData getUserData(int userId) {
-    UsersRecord user = db.selectFrom(USERS)
-        .where(USERS.ID.eq(userId))
-        .fetchOne();
+    UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(userId)).fetchOne();
     PrivilegeLevel userPrivilegeLevel = user.getPrivilegeLevel();
 
     return new JWTData(userId, userPrivilegeLevel);
@@ -233,7 +228,10 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
   @Override
   public void parentAdoptSite(
-      JWTData parentUserData, int siteId, ParentAdoptSiteRequest parentAdoptSiteRequest, Date dateAdopted) {
+      JWTData parentUserData,
+      int siteId,
+      ParentAdoptSiteRequest parentAdoptSiteRequest,
+      Date dateAdopted) {
     Integer parentId = parentUserData.getUserId();
     Integer childId = parentAdoptSiteRequest.getChildUserId();
     checkParent(parentId, childId);
@@ -275,7 +273,9 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
   @Override
   public void parentRecordStewardship(
-      JWTData parentUserData, int siteId, ParentRecordStewardshipRequest parentRecordStewardshipRequest) {
+      JWTData parentUserData,
+      int siteId,
+      ParentRecordStewardshipRequest parentRecordStewardshipRequest) {
     Integer parentId = parentUserData.getUserId();
     Integer childId = parentRecordStewardshipRequest.getChildUserId();
     checkParent(parentId, childId);
@@ -285,7 +285,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     recordStewardship(childUserData, siteId, parentRecordStewardshipRequest);
   }
 
-                                      @Override
+  @Override
   public void addSite(JWTData userData, AddSiteRequest addSiteRequest) {
     if (addSiteRequest.getBlockId() != null) {
       checkBlockExists(addSiteRequest.getBlockId());
@@ -458,7 +458,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public void editStewardship(JWTData userData, int activityId, EditStewardshipRequest editStewardshipRequest) {
+  public void editStewardship(
+      JWTData userData, int activityId, EditStewardshipRequest editStewardshipRequest) {
     checkStewardshipExists(activityId);
     StewardshipRecord activity =
         db.selectFrom(STEWARDSHIP).where(STEWARDSHIP.ID.eq(activityId)).fetchOne();
@@ -495,10 +496,11 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkSiteExists(siteId);
     checkAdminOrSiteAdopter(userData, siteId);
 
-    SiteEntriesRecord siteEntry = db.selectFrom(SITE_ENTRIES)
-        .where(SITE_ENTRIES.SITE_ID.eq(siteId))
-        .orderBy(SITE_ENTRIES.UPDATED_AT.desc())
-        .fetchOne();
+    SiteEntriesRecord siteEntry =
+        db.selectFrom(SITE_ENTRIES)
+            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+            .orderBy(SITE_ENTRIES.UPDATED_AT.desc())
+            .fetchOne();
 
     if (siteEntry == null) {
       throw new LinkedResourceDoesNotExistException(
@@ -515,14 +517,15 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public void uploadSiteImage(JWTData userData, int siteId, UploadSiteImageRequest uploadSiteImageRequest) {
+  public void uploadSiteImage(
+      JWTData userData, int siteId, UploadSiteImageRequest uploadSiteImageRequest) {
     checkSiteExists(siteId);
     checkAdminOrSiteAdopter(userData, siteId);
 
-    SitesRecord site = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
+    // TODO upload image to S3 and save URL to database
 
-    site.setPicture(uploadSiteImageRequest.getImage());
+    // SitesRecord site = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
 
-    site.store();
+    // site.store();
   }
 }
