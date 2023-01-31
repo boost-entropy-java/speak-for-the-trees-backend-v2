@@ -23,7 +23,7 @@
     <vertx-version>3.8.5</vertx-version>
     <jooq-version>3.12.4</jooq-version>
     <javamail-version>6.0.3</javamail-version>
-    <flyway-version>7.1.0</flyway-version>
+    <flyway-version>7.2.0</flyway-version>
   </properties>
 
   <build>
