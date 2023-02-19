@@ -54,4 +54,3 @@ The official API specification for this backend can be found at https://docs.c4c
 
 ## Database Schema :pencil:
 The database schema can be found here: https://lucid.app/lucidchart/2e440718-aca6-4efa-adb1-4fc6112bcf42/view. This is an up-to-date overview of what fields the database contains. 
-

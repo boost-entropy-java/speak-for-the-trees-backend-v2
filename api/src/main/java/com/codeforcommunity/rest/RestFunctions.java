@@ -36,6 +36,24 @@ public class RestFunctions {
     }
   }
 
+  /**
+   * Gets the String body from the given routing context.
+   *
+   * @param ctx the routing context
+   * @throws RequestBodyMappingException if the given request cannot be successfully mapped into a
+   *     String or does not have a body that can be parsed.
+   * @return the String request body
+   */
+  public static String getBodyAsString(RoutingContext ctx) {
+    try {
+      Optional<String> body = Optional.ofNullable(ctx.getBodyAsString());
+      return body.orElseThrow(RequestBodyMappingException::new);
+    } catch (IllegalArgumentException | DecodeException e) {
+      e.printStackTrace();
+      throw new RequestBodyMappingException();
+    }
+  }
+
   public static String getRequestHeader(HttpServerRequest req, String name) {
     String headerValue = req.getHeader(name);
     if (headerValue != null && !headerValue.isEmpty()) {
