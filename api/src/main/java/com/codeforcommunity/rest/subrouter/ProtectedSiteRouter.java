@@ -5,6 +5,7 @@ import static com.codeforcommunity.rest.ApiRouter.end;
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.site.AddSiteRequest;
+import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
@@ -233,7 +234,7 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleAddSitesRoute(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
 
-    String addSitesRequest = RestFunctions.getBodyAsString(ctx);
+    AddSitesRequest addSitesRequest = RestFunctions.getJsonBodyAsClass(ctx, AddSitesRequest.class);
 
     processor.addSites(userData, addSitesRequest);
 

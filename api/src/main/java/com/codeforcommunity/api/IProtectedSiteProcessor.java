@@ -2,6 +2,7 @@ package com.codeforcommunity.api;
 
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.site.AddSiteRequest;
+import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
@@ -58,7 +59,7 @@ public interface IProtectedSiteProcessor {
   void editSite(JWTData userData, int siteId, EditSiteRequest editSiteRequest);
 
   /** Creates new sites with entries for each item in the list */
-  void addSites(JWTData userData, String addSitesRequest);
+  void addSites(JWTData userData, AddSitesRequest addSitesRequest);
 
   /** Removes the site */
   void deleteSite(JWTData userData, int siteId);
