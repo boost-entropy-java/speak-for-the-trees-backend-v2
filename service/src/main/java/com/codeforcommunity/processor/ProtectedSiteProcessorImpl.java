@@ -6,6 +6,7 @@ import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import static org.jooq.generated.Tables.PARENT_ACCOUNTS;
 import static org.jooq.generated.Tables.SITES;
 import static org.jooq.generated.Tables.SITE_ENTRIES;
+import static org.jooq.generated.Tables.SITE_IMAGES;
 import static org.jooq.generated.Tables.STEWARDSHIP;
 import static org.jooq.generated.Tables.USERS;
 import static org.jooq.impl.DSL.max;
@@ -44,6 +45,7 @@ import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
 import org.jooq.generated.tables.records.ParentAccountsRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
+import org.jooq.generated.tables.records.SiteImagesRecord;
 import org.jooq.generated.tables.records.SitesRecord;
 import org.jooq.generated.tables.records.StewardshipRecord;
 import org.jooq.generated.tables.records.UsersRecord;
@@ -98,6 +100,17 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   private void checkStewardshipExists(int activityId) {
     if (!db.fetchExists(db.selectFrom(STEWARDSHIP).where(STEWARDSHIP.ID.eq(activityId)))) {
       throw new ResourceDoesNotExistException(activityId, "Stewardship Activity");
+    }
+  }
+
+  /**
+   * Check if an image exists
+   *
+   * @param imageId to check
+   */
+  private void checkImageExists(int imageId) {
+    if (!db.fetchExists(db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageId)))) {
+      throw new ResourceDoesNotExistException(imageId, "Site Image");
     }
   }
 
@@ -558,5 +571,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     // SitesRecord site = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
 
     // site.store();
+  }
+
+  @Override
+  public void deleteSiteImage(JWTData userData, int imageId) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkImageExists(imageId);
+
+    db.deleteFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageId)).execute();
   }
 }

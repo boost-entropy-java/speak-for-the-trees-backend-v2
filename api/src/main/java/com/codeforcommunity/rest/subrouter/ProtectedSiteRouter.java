@@ -53,6 +53,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerEditStewardship(router);
     registerNameSiteEntry(router);
     registerUploadSiteImage(router);
+    registerDeleteSiteImage(router);
 
     return router;
   }
@@ -301,6 +302,20 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, UploadSiteImageRequest.class);
 
     processor.uploadSiteImage(userData, siteId, uploadSiteImageRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerDeleteSiteImage(Router router) {
+    Route deleteImage = router.post("/delete_image/:image_id");
+    deleteImage.handler(this::handleDeleteSiteImage);
+  }
+
+  private void handleDeleteSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    processor.deleteSiteImage(userData, imageId);
 
     end(ctx.response(), 200);
   }
