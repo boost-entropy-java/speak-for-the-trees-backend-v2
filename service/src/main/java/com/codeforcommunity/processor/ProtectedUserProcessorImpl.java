@@ -16,6 +16,7 @@ import com.codeforcommunity.dto.user.ChangePasswordRequest;
 import com.codeforcommunity.dto.user.ChangePrivilegeLevelRequest;
 import com.codeforcommunity.dto.user.ChangeUsernameRequest;
 import com.codeforcommunity.dto.user.DeleteUserRequest;
+import com.codeforcommunity.dto.user.GetChildUserResponse;
 import com.codeforcommunity.dto.user.Team;
 import com.codeforcommunity.dto.user.UserDataResponse;
 import com.codeforcommunity.dto.user.UserTeamsResponse;
@@ -31,12 +32,14 @@ import com.codeforcommunity.exceptions.WrongPasswordException;
 import com.codeforcommunity.requester.Emailer;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.Record2;
 import org.jooq.Result;
 import org.jooq.generated.tables.pojos.Users;
+import org.jooq.generated.tables.records.ParentAccountsRecord;
 import org.jooq.generated.tables.records.UsersRecord;
 import org.jooq.impl.DSL;
 
@@ -238,5 +241,25 @@ public class ProtectedUserProcessorImpl extends AbstractProcessor
               newUserRequest.getEmail(),
               AuthDatabaseOperations.getFullName(user.into(Users.class)));
         });
+  }
+
+  @Override
+  public GetChildUserResponse getChildUser(JWTData userData) {
+    int userId = userData.getUserId();
+    List<ParentAccountsRecord> childUserData = db.selectFrom(PARENT_ACCOUNTS).where(PARENT_ACCOUNTS.PARENT_ID.eq(userId)).fetch();
+    List<UserDataResponse> userDataResponses = new ArrayList<>();
+    for(ParentAccountsRecord parentAccount : childUserData)
+    {
+      int childId = parentAccount.getChildId();
+      UsersRecord usersRecord = db.selectFrom(USERS).where(USERS.ID.eq(childId)).fetchOne();
+      String firstName = usersRecord.getFirstName();
+      String lastName = usersRecord.getLastName();
+      String email = usersRecord.getEmail();
+      String username = usersRecord.getUsername();
+      UserDataResponse userDataResponse = new UserDataResponse(firstName, lastName, email, username);
+      userDataResponses.add(userDataResponse);
+    }
+
+    return new GetChildUserResponse(userDataResponses);
   }
 }

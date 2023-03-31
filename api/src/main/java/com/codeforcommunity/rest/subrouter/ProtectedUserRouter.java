@@ -10,6 +10,7 @@ import com.codeforcommunity.dto.user.ChangePasswordRequest;
 import com.codeforcommunity.dto.user.ChangePrivilegeLevelRequest;
 import com.codeforcommunity.dto.user.ChangeUsernameRequest;
 import com.codeforcommunity.dto.user.DeleteUserRequest;
+import com.codeforcommunity.dto.user.GetChildUserResponse;
 import com.codeforcommunity.dto.user.UserDataResponse;
 import com.codeforcommunity.dto.user.UserTeamsResponse;
 import com.codeforcommunity.rest.IRouter;
@@ -40,6 +41,7 @@ public class ProtectedUserRouter implements IRouter {
     registerChangeUsername(router);
     registerChangePrivilegeLevel(router);
     registerCreateChildUser(router);
+    registerGetChildUser(router);
 
     return router;
   }
@@ -158,5 +160,18 @@ public class ProtectedUserRouter implements IRouter {
     processor.createChildUser(userData, newUserRequest);
 
     end(ctx.response(), 201);
+  }
+
+  private void registerGetChildUser(Router router) {
+    Route getChildUser = router.get("/child_data");
+    getChildUser.handler(this::handleGetChildUser);
+  }
+
+  private void handleGetChildUser(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    GetChildUserResponse response = processor.getChildUser(userData);
+
+    end(ctx.response(), 200, JsonObject.mapFrom(response).toString());
   }
 }
