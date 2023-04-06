@@ -19,8 +19,8 @@ jobs:
 
       - name: Run Python deploy script
         env:
-          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID_CAMBRIDGE }}
+          AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY_CAMBRIDGE }}
           DB_DOMAIN:  ${{ secrets.DB_DOMAIN_CAMBRIDGE }}
           DB_USERNAME:  ${{ secrets.DB_USERNAME_CAMBRIDGE }}
           DB_PASSWORD:  ${{ secrets.DB_PASSWORD_CAMBRIDGE }}
@@ -34,16 +34,36 @@ jobs:
       - name: Build the thing :)
         run: mvn -B clean verify
 
-      - name: Generate deployment package
-        run: zip -r build.zip Dockerfile service/target/service-1.0-SNAPSHOT-jar-with-dependencies.jar .ebextensions
-
-      - name: Deploy to EB
-        uses: einaregilsson/beanstalk-deploy@v14
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: cambridge-app
-          environment_name: cambridge-prod-v2
-          version_label: "cambridge-${{ github.sha }}"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_CAMBRIDGE }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_CAMBRIDGE }}
+          aws-region: us-east-2
+
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: cambridge-backend
+          IMAGE_TAG: "latest"
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"  
+
+      - name: Deploy to App Runner Image
+        id: deploy-apprunner
+        uses: awslabs/amazon-app-runner-deploy@main
+        with:
+          service: cambridge-backend
+          image: ${{ steps.build-image.outputs.image }}
+          access-role-arn: ${{ secrets.ROLE_ARN }}
           region: us-east-2
-          deployment_package: build.zip
+          port: ${{ secrets.PORT }}
+          wait-for-service-stability-seconds: 600
