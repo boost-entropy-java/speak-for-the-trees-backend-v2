@@ -32,7 +32,7 @@ public class ImportNeighborhoodsRequest extends ApiDto {
     }
 
     return neighborhoods.stream()
-        .flatMap(ni -> ni.validateFields(newFieldPrefix).stream())
+        .flatMap(neighborhoodImport -> neighborhoodImport.validateFields(newFieldPrefix).stream())
         .collect(Collectors.toList());
   }
 }

@@ -2,7 +2,6 @@ package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.dto.ApiDto;
 import com.codeforcommunity.exceptions.HandledException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 

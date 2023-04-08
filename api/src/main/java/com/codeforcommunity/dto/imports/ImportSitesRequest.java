@@ -28,11 +28,11 @@ public class ImportSitesRequest extends ApiDto {
     String newFieldPrefix = fieldPrefix + "importSitesRequest.";
 
     if (sites == null) {
-      return Collections.singletonList(newFieldPrefix + "reservations");
+      return Collections.singletonList(newFieldPrefix + "sites");
     }
 
     return sites.stream()
-        .flatMap(ni -> ni.validateFields(newFieldPrefix).stream())
+        .flatMap(siteImport -> siteImport.validateFields(newFieldPrefix).stream())
         .collect(Collectors.toList());
   }
 }

@@ -25,14 +25,14 @@ public class ImportBlocksRequest extends ApiDto {
 
   @Override
   public List<String> validateFields(String fieldPrefix) throws HandledException {
-    String newFieldPrefix = fieldPrefix + "importNeighborhoodRequest.";
+    String newFieldPrefix = fieldPrefix + "importBlocksRequest.";
 
     if (blocks == null) {
       return Collections.singletonList(newFieldPrefix + "blocks");
     }
 
     return blocks.stream()
-        .flatMap(ni -> ni.validateFields(newFieldPrefix).stream())
+        .flatMap(blockImport -> blockImport.validateFields(newFieldPrefix).stream())
         .collect(Collectors.toList());
   }
 }

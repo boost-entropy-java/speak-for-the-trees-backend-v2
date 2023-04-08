@@ -201,8 +201,7 @@ public class CSVSiteUpload {
         city,
         zip,
         address,
-        neighborhoodId
-    );
+        neighborhoodId);
   }
 
   public Integer getBlockId() {

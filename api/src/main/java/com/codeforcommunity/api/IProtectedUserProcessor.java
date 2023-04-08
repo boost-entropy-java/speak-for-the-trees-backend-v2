@@ -43,6 +43,6 @@ public interface IProtectedUserProcessor {
    */
   void createChildUser(JWTData userData, NewUserRequest newUserRequest);
 
-  /**Gets first name,last name, email, and username of the calling user's child accounts */
+  /** Gets first name,last name, email, and username of the calling user's child accounts */
   GetChildUserResponse getChildUser(JWTData userData);
 }

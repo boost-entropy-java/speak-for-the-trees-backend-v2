@@ -5,6 +5,7 @@ import com.codeforcommunity.exceptions.HandledException;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @JsonIgnoreProperties(
     ignoreUnknown = true) // Allows us to store data in JSON for future use but not import it
 public class SiteImport extends ApiDto {
+
   private Integer blockId;
   private BigDecimal lat;
   private BigDecimal lng;
@@ -72,6 +74,47 @@ public class SiteImport extends ApiDto {
   private String melneaCassTrees;
   private Integer mcbNumber;
   private String treeDedicatedTo;
+  private Date plantingDate;
+  private String treeName;
+
+  /* Cambridge fields */
+  private Integer trunks;
+  private String speciesShort;
+  private String location;
+  private String siteRetiredReason;
+  private String inspectr;
+  private Boolean abutsOpenArea;
+  private String treeWellCover;
+  private Integer treeGrateActionReq;
+  private String globalId;
+  private Boolean pb;
+  private Boolean siteReplanted;
+  private Integer overheadWires;
+  private String ownership;
+  private Boolean scheduledRemoval;
+  private Boolean structuralSoil;
+  private String wateringResponsibility;
+  private String cultivar;
+  private Integer solarRating;
+  private Boolean bareRoot;
+  private Boolean adaCompliant;
+  private Date cartegraphPlantDate;
+  private Boolean locationRetired;
+  private Date createdDate;
+  private String order;
+  private String plantingSeason;
+  private Boolean exposedRootFlare;
+  private String stTreePruningZone;
+  private Boolean memTree;
+  private Date cartegraphRetireDate;
+  private String removalReason;
+  private String offStTreePruningZone;
+  private String plantingContract;
+  private Double treeWellDepth;
+  private Date removalDate;
+  private String scientificName;
+  private Boolean biocharAdded;
+  private String lastEditedUser;
 
   public SiteImport(
       Integer blockId,
@@ -127,7 +170,48 @@ public class SiteImport extends ApiDto {
       String siteNotes,
       String melneaCassTrees,
       Integer mcbNumber,
-      String treeDedicatedTo) {
+      String treeDedicatedTo,
+      Date plantingDate,
+      String treeName,
+
+      /* Cambridge fields */
+      Integer trunks,
+      String speciesShort,
+      String location,
+      String siteRetiredReason,
+      String inspectr,
+      Boolean abutsOpenArea,
+      String treeWellCover,
+      Integer treeGrateActionReq,
+      String globalId,
+      Boolean pb,
+      Boolean siteReplanted,
+      Integer overheadWires,
+      String ownership,
+      Boolean scheduledRemoval,
+      Boolean structuralSoil,
+      String wateringResponsibility,
+      String cultivar,
+      Integer solarRating,
+      Boolean bareRoot,
+      Boolean adaCompliant,
+      Date cartegraphPlantDate,
+      Boolean locationRetired,
+      Date createdDate,
+      String order,
+      String plantingSeason,
+      Boolean exposedRootFlare,
+      String stTreePruningZone,
+      Boolean memTree,
+      Date cartegraphRetireDate,
+      String removalReason,
+      String offStTreePruningZone,
+      String plantingContract,
+      Double treeWellDepth,
+      Date removalDate,
+      String scientificName,
+      Boolean biocharAdded,
+      String lastEditedUser) {
     this.blockId = blockId;
     this.lat = lat;
     this.lng = lng;
@@ -182,6 +266,47 @@ public class SiteImport extends ApiDto {
     this.melneaCassTrees = melneaCassTrees;
     this.mcbNumber = mcbNumber;
     this.treeDedicatedTo = treeDedicatedTo;
+    this.plantingDate = plantingDate;
+    this.treeName = treeName;
+
+    /* Cambridge fields */
+    this.trunks = trunks;
+    this.speciesShort = speciesShort;
+    this.location = location;
+    this.siteRetiredReason = siteRetiredReason;
+    this.inspectr = inspectr;
+    this.abutsOpenArea = abutsOpenArea;
+    this.treeWellCover = treeWellCover;
+    this.treeGrateActionReq = treeGrateActionReq;
+    this.globalId = globalId;
+    this.pb = pb;
+    this.siteReplanted = siteReplanted;
+    this.overheadWires = overheadWires;
+    this.ownership = ownership;
+    this.scheduledRemoval = scheduledRemoval;
+    this.structuralSoil = structuralSoil;
+    this.wateringResponsibility = wateringResponsibility;
+    this.cultivar = cultivar;
+    this.solarRating = solarRating;
+    this.bareRoot = bareRoot;
+    this.adaCompliant = adaCompliant;
+    this.cartegraphPlantDate = cartegraphPlantDate;
+    this.locationRetired = locationRetired;
+    this.createdDate = createdDate;
+    this.order = order;
+    this.plantingSeason = plantingSeason;
+    this.exposedRootFlare = exposedRootFlare;
+    this.stTreePruningZone = stTreePruningZone;
+    this.memTree = memTree;
+    this.cartegraphRetireDate = cartegraphRetireDate;
+    this.removalReason = removalReason;
+    this.offStTreePruningZone = offStTreePruningZone;
+    this.plantingContract = plantingContract;
+    this.treeWellDepth = treeWellDepth;
+    this.removalDate = removalDate;
+    this.scientificName = scientificName;
+    this.biocharAdded = biocharAdded;
+    this.lastEditedUser = lastEditedUser;
   }
 
   private SiteImport() {}
@@ -336,6 +461,14 @@ public class SiteImport extends ApiDto {
 
   public void setConfidence(String confidence) {
     this.confidence = confidence;
+  }
+
+  public Boolean getMultistem() {
+    return multistem;
+  }
+
+  public void setMultistem(Boolean multistem) {
+    this.multistem = multistem;
   }
 
   public Double getDiameter() {
@@ -610,12 +743,317 @@ public class SiteImport extends ApiDto {
     this.treeDedicatedTo = treeDedicatedTo;
   }
 
-  public Boolean getMultistem() {
-    return multistem;
+  public Date getPlantingDate() {
+    return plantingDate;
   }
 
-  public void setMultistem(Boolean multistem) {
-    this.multistem = multistem;
+  public void setPlantingDate(Date plantingDate) {
+    this.plantingDate = plantingDate;
+  }
+
+  public String getTreeName() {
+    return treeName;
+  }
+
+  public void setTreeName(String treeName) {
+    this.treeName = treeName;
+  }
+
+  /* Cambridge fields */
+  public Integer getTrunks() {
+    return trunks;
+  }
+
+  public void setTrunks(Integer trunks) {
+    this.trunks = trunks;
+  }
+
+  public String getSpeciesShort() {
+    return speciesShort;
+  }
+
+  public void setSpeciesShort(String speciesShort) {
+    this.speciesShort = speciesShort;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public void setLocation(String location) {
+    this.location = location;
+  }
+
+  public String getSiteRetiredReason() {
+    return siteRetiredReason;
+  }
+
+  public void setSiteRetiredReason(String siteRetiredReason) {
+    this.siteRetiredReason = siteRetiredReason;
+  }
+
+  public String getInspectr() {
+    return inspectr;
+  }
+
+  public void setInspectr(String inspectr) {
+    this.inspectr = inspectr;
+  }
+
+  public Boolean getAbutsOpenArea() {
+    return abutsOpenArea;
+  }
+
+  public void setAbutsOpenArea(Boolean abutsOpenArea) {
+    this.abutsOpenArea = abutsOpenArea;
+  }
+
+  public String getTreeWellCover() {
+    return treeWellCover;
+  }
+
+  public void setTreeWellCover(String treeWellCover) {
+    this.treeWellCover = treeWellCover;
+  }
+
+  public Integer getTreeGrateActionReq() {
+    return treeGrateActionReq;
+  }
+
+  public void setTreeGrateActionReq(Integer treeGrateActionReq) {
+    this.treeGrateActionReq = treeGrateActionReq;
+  }
+
+  public String getGlobalId() {
+    return globalId;
+  }
+
+  public void setGlobalId(String globalId) {
+    this.globalId = globalId;
+  }
+
+  public Boolean getPb() {
+    return pb;
+  }
+
+  public void setPb(Boolean pb) {
+    this.pb = pb;
+  }
+
+  public Boolean getSiteReplanted() {
+    return siteReplanted;
+  }
+
+  public void setSiteReplanted(Boolean siteReplanted) {
+    this.siteReplanted = siteReplanted;
+  }
+
+  public Integer getOverheadWires() {
+    return overheadWires;
+  }
+
+  public void setOverheadWires(Integer overheadWires) {
+    this.overheadWires = overheadWires;
+  }
+
+  public String getOwnership() {
+    return ownership;
+  }
+
+  public void setOwnership(String ownership) {
+    this.ownership = ownership;
+  }
+
+  public Boolean getScheduledRemoval() {
+    return scheduledRemoval;
+  }
+
+  public void setScheduledRemoval(Boolean scheduledRemoval) {
+    this.scheduledRemoval = scheduledRemoval;
+  }
+
+  public Boolean getStructuralSoil() {
+    return structuralSoil;
+  }
+
+  public void setStructuralSoil(Boolean structuralSoil) {
+    this.structuralSoil = structuralSoil;
+  }
+
+  public String getWateringResponsibility() {
+    return wateringResponsibility;
+  }
+
+  public void setWateringResponsibility(String wateringResponsibility) {
+    this.wateringResponsibility = wateringResponsibility;
+  }
+
+  public String getCultivar() {
+    return cultivar;
+  }
+
+  public void setCultivar(String cultivar) {
+    this.cultivar = cultivar;
+  }
+
+  public Integer getSolarRating() {
+    return solarRating;
+  }
+
+  public void setSolarRating(Integer solarRating) {
+    this.solarRating = solarRating;
+  }
+
+  public Boolean getBareRoot() {
+    return bareRoot;
+  }
+
+  public void setBareRoot(Boolean bareRoot) {
+    this.bareRoot = bareRoot;
+  }
+
+  public Boolean getAdaCompliant() {
+    return adaCompliant;
+  }
+
+  public void setAdaCompliant(Boolean adaCompliant) {
+    this.adaCompliant = adaCompliant;
+  }
+
+  public Date getCartegraphPlantDate() {
+    return cartegraphPlantDate;
+  }
+
+  public void setCartegraphPlantDate(Date cartegraphPlantDate) {
+    this.cartegraphPlantDate = cartegraphPlantDate;
+  }
+
+  public Boolean getLocationRetired() {
+    return locationRetired;
+  }
+
+  public void setLocationRetired(Boolean locationRetired) {
+    this.locationRetired = locationRetired;
+  }
+
+  public Date getCreatedDate() {
+    return createdDate;
+  }
+
+  public void setCreatedDate(Date createdDate) {
+    this.createdDate = createdDate;
+  }
+
+  public String getOrder() {
+    return order;
+  }
+
+  public void setOrder(String order) {
+    this.order = order;
+  }
+
+  public String getPlantingSeason() {
+    return plantingSeason;
+  }
+
+  public void setPlantingSeason(String plantingSeason) {
+    this.plantingSeason = plantingSeason;
+  }
+
+  public Boolean getExposedRootFlare() {
+    return exposedRootFlare;
+  }
+
+  public void setExposedRootFlare(Boolean exposedRootFlare) {
+    this.exposedRootFlare = exposedRootFlare;
+  }
+
+  public String getStTreePruningZone() {
+    return stTreePruningZone;
+  }
+
+  public void setStTreePruningZone(String stTreePruningZone) {
+    this.stTreePruningZone = stTreePruningZone;
+  }
+
+  public Boolean getMemTree() {
+    return memTree;
+  }
+
+  public void setMemTree(Boolean memTree) {
+    this.memTree = memTree;
+  }
+
+  public Date getCartegraphRetireDate() {
+    return cartegraphRetireDate;
+  }
+
+  public void setCartegraphRetireDate(Date cartegraphRetireDate) {
+    this.cartegraphRetireDate = cartegraphRetireDate;
+  }
+
+  public String getRemovalReason() {
+    return removalReason;
+  }
+
+  public void setRemovalReason(String removalReason) {
+    this.removalReason = removalReason;
+  }
+
+  public String getOffStTreePruningZone() {
+    return offStTreePruningZone;
+  }
+
+  public void setOffStTreePruningZone(String offStTreePruningZone) {
+    this.offStTreePruningZone = offStTreePruningZone;
+  }
+
+  public String getPlantingContract() {
+    return plantingContract;
+  }
+
+  public void setPlantingContract(String plantingContract) {
+    this.plantingContract = plantingContract;
+  }
+
+  public Double getTreeWellDepth() {
+    return treeWellDepth;
+  }
+
+  public void setTreeWellDepth(Double treeWellDepth) {
+    this.treeWellDepth = treeWellDepth;
+  }
+
+  public Date getRemovalDate() {
+    return removalDate;
+  }
+
+  public void setRemovalDate(Date removalDate) {
+    this.removalDate = removalDate;
+  }
+
+  public String getScientificName() {
+    return scientificName;
+  }
+
+  public void setScientificName(String scientificName) {
+    this.scientificName = scientificName;
+  }
+
+  public Boolean getBiocharAdded() {
+    return biocharAdded;
+  }
+
+  public void setBiocharAdded(Boolean biocharAdded) {
+    this.biocharAdded = biocharAdded;
+  }
+
+  public String getLastEditedUser() {
+    return lastEditedUser;
+  }
+
+  public void setLastEditedUser(String lastEditedUser) {
+    this.lastEditedUser = lastEditedUser;
   }
 
   @Override

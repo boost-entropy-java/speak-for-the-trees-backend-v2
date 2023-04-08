@@ -1,6 +1,7 @@
 package com.codeforcommunity.dto.site;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Date;
 import java.sql.Timestamp;
 
 public class SiteEntry {
@@ -51,6 +52,45 @@ public class SiteEntry {
   private final String treeName;
   private final String adopter;
 
+  /* Cambridge fields */
+  private final Integer trunks;
+  private final String speciesShort;
+  private final String location;
+  private final String siteRetiredReason;
+  private final String inspectr;
+  private final Boolean abutsOpenArea;
+  private final String treeWellCover;
+  private final Integer treeGrateActionReq;
+  private final String globalId;
+  private final Boolean pb;
+  private final Boolean siteReplanted;
+  private final Integer overheadWires;
+  private final String ownership;
+  private final Boolean scheduledRemoval;
+  private final Boolean structuralSoil;
+  private final String wateringResponsibility;
+  private final String cultivar;
+  private final Integer solarRating;
+  private final Boolean bareRoot;
+  private final Boolean adaCompliant;
+  private final Date cartegraphPlantDate;
+  private final Boolean locationRetired;
+  private final Date createdDate;
+  private final String order;
+  private final String plantingSeason;
+  private final Boolean exposedRootFlare;
+  private final String stTreePruningZone;
+  private final Boolean memTree;
+  private final Date cartegraphRetireDate;
+  private final String removalReason;
+  private final String offStTreePruningZone;
+  private final String plantingContract;
+  private final Double treeWellDepth;
+  private final Date removalDate;
+  private final String scientificName;
+  private final Boolean biocharAdded;
+  private final String lastEditedUser;
+
   public SiteEntry(
       Integer id,
       String username,
@@ -94,7 +134,46 @@ public class SiteEntry {
       String treeNotes,
       String siteNotes,
       String treeName,
-      String adopter) {
+      String adopter,
+
+      /* Cambridge fields */
+      Integer trunks,
+      String speciesShort,
+      String location,
+      String siteRetiredReason,
+      String inspectr,
+      Boolean abutsOpenArea,
+      String treeWellCover,
+      Integer treeGrateActionReq,
+      String globalId,
+      Boolean pb,
+      Boolean siteReplanted,
+      Integer overheadWires,
+      String ownership,
+      Boolean scheduledRemoval,
+      Boolean structuralSoil,
+      String wateringResponsibility,
+      String cultivar,
+      Integer solarRating,
+      Boolean bareRoot,
+      Boolean adaCompliant,
+      Date cartegraphPlantDate,
+      Boolean locationRetired,
+      Date createdDate,
+      String order,
+      String plantingSeason,
+      Boolean exposedRootFlare,
+      String stTreePruningZone,
+      Boolean memTree,
+      Date cartegraphRetireDate,
+      String removalReason,
+      String offStTreePruningZone,
+      String plantingContract,
+      Double treeWellDepth,
+      Date removalDate,
+      String scientificName,
+      Boolean biocharAdded,
+      String lastEditedUser) {
     this.id = id;
     this.username = username;
     this.updatedAt = updatedAt;
@@ -138,6 +217,45 @@ public class SiteEntry {
     this.siteNotes = siteNotes;
     this.treeName = treeName;
     this.adopter = adopter;
+
+    /* Cambridge fields */
+    this.trunks = trunks;
+    this.speciesShort = speciesShort;
+    this.location = location;
+    this.siteRetiredReason = siteRetiredReason;
+    this.inspectr = inspectr;
+    this.abutsOpenArea = abutsOpenArea;
+    this.treeWellCover = treeWellCover;
+    this.treeGrateActionReq = treeGrateActionReq;
+    this.globalId = globalId;
+    this.pb = pb;
+    this.siteReplanted = siteReplanted;
+    this.overheadWires = overheadWires;
+    this.ownership = ownership;
+    this.scheduledRemoval = scheduledRemoval;
+    this.structuralSoil = structuralSoil;
+    this.wateringResponsibility = wateringResponsibility;
+    this.cultivar = cultivar;
+    this.solarRating = solarRating;
+    this.bareRoot = bareRoot;
+    this.adaCompliant = adaCompliant;
+    this.cartegraphPlantDate = cartegraphPlantDate;
+    this.locationRetired = locationRetired;
+    this.createdDate = createdDate;
+    this.order = order;
+    this.plantingSeason = plantingSeason;
+    this.exposedRootFlare = exposedRootFlare;
+    this.stTreePruningZone = stTreePruningZone;
+    this.memTree = memTree;
+    this.cartegraphRetireDate = cartegraphRetireDate;
+    this.removalReason = removalReason;
+    this.offStTreePruningZone = offStTreePruningZone;
+    this.plantingContract = plantingContract;
+    this.treeWellDepth = treeWellDepth;
+    this.removalDate = removalDate;
+    this.scientificName = scientificName;
+    this.biocharAdded = biocharAdded;
+    this.lastEditedUser = lastEditedUser;
   }
 
   public Integer getId() {
@@ -310,5 +428,154 @@ public class SiteEntry {
 
   public String getAdopter() {
     return adopter;
+  }
+
+  /* Cambridge fields */
+  public Integer getTrunks() {
+    return trunks;
+  }
+
+  public String getSpeciesShort() {
+    return speciesShort;
+  }
+
+  public String getLocation() {
+    return location;
+  }
+
+  public String getSiteRetiredReason() {
+    return siteRetiredReason;
+  }
+
+  public String getInspectr() {
+    return inspectr;
+  }
+
+  public Boolean getAbutsOpenArea() {
+    return abutsOpenArea;
+  }
+
+  public String getTreeWellCover() {
+    return treeWellCover;
+  }
+
+  public Integer getTreeGrateActionReq() {
+    return treeGrateActionReq;
+  }
+
+  public String getGlobalId() {
+    return globalId;
+  }
+
+  public Boolean getPb() {
+    return pb;
+  }
+
+  public Boolean getSiteReplanted() {
+    return siteReplanted;
+  }
+
+  public Integer getOverheadWires() {
+    return overheadWires;
+  }
+
+  public String getOwnership() {
+    return ownership;
+  }
+
+  public Boolean getScheduledRemoval() {
+    return scheduledRemoval;
+  }
+
+  public Boolean getStructuralSoil() {
+    return structuralSoil;
+  }
+
+  public String getWateringResponsibility() {
+    return wateringResponsibility;
+  }
+
+  public String getCultivar() {
+    return cultivar;
+  }
+
+  public Integer getSolarRating() {
+    return solarRating;
+  }
+
+  public Boolean getBareRoot() {
+    return bareRoot;
+  }
+
+  public Boolean getAdaCompliant() {
+    return adaCompliant;
+  }
+
+  public Date getCartegraphPlantDate() {
+    return cartegraphPlantDate;
+  }
+
+  public Boolean getLocationRetired() {
+    return locationRetired;
+  }
+
+  public Date getCreatedDate() {
+    return createdDate;
+  }
+
+  public String getOrder() {
+    return order;
+  }
+
+  public String getPlantingSeason() {
+    return plantingSeason;
+  }
+
+  public Boolean getExposedRootFlare() {
+    return exposedRootFlare;
+  }
+
+  public String getStTreePruningZone() {
+    return stTreePruningZone;
+  }
+
+  public Boolean getMemTree() {
+    return memTree;
+  }
+
+  public Date getCartegraphRetireDate() {
+    return cartegraphRetireDate;
+  }
+
+  public String getRemovalReason() {
+    return removalReason;
+  }
+
+  public String getOffStTreePruningZone() {
+    return offStTreePruningZone;
+  }
+
+  public String getPlantingContract() {
+    return plantingContract;
+  }
+
+  public Double getTreeWellDepth() {
+    return treeWellDepth;
+  }
+
+  public Date getRemovalDate() {
+    return removalDate;
+  }
+
+  public String getScientificName() {
+    return scientificName;
+  }
+
+  public Boolean getBiocharAdded() {
+    return biocharAdded;
+  }
+
+  public String getLastEditedUser() {
+    return lastEditedUser;
   }
 }

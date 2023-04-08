@@ -246,17 +246,18 @@ public class ProtectedUserProcessorImpl extends AbstractProcessor
   @Override
   public GetChildUserResponse getChildUser(JWTData userData) {
     int userId = userData.getUserId();
-    List<ParentAccountsRecord> childUserData = db.selectFrom(PARENT_ACCOUNTS).where(PARENT_ACCOUNTS.PARENT_ID.eq(userId)).fetch();
+    List<ParentAccountsRecord> childUserData =
+        db.selectFrom(PARENT_ACCOUNTS).where(PARENT_ACCOUNTS.PARENT_ID.eq(userId)).fetch();
     List<UserDataResponse> userDataResponses = new ArrayList<>();
-    for(ParentAccountsRecord parentAccount : childUserData)
-    {
+    for (ParentAccountsRecord parentAccount : childUserData) {
       int childId = parentAccount.getChildId();
       UsersRecord usersRecord = db.selectFrom(USERS).where(USERS.ID.eq(childId)).fetchOne();
       String firstName = usersRecord.getFirstName();
       String lastName = usersRecord.getLastName();
       String email = usersRecord.getEmail();
       String username = usersRecord.getUsername();
-      UserDataResponse userDataResponse = new UserDataResponse(firstName, lastName, email, username);
+      UserDataResponse userDataResponse =
+          new UserDataResponse(firstName, lastName, email, username);
       userDataResponses.add(userDataResponse);
     }
 

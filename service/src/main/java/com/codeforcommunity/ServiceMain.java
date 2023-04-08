@@ -73,7 +73,7 @@ public class ServiceMain {
     String databaseUsername = PropertiesLoader.loadProperty("database_username");
     String databasePassword = PropertiesLoader.loadProperty("database_password");
 
-    // This throws an exception of the database driver is not on the classpath
+    // This throws an exception if the database driver is not on the classpath
     Class.forName(databaseDriver);
 
     // Create a DSLContext from the above configuration

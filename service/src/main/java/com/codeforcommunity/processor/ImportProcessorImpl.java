@@ -249,6 +249,47 @@ public class ImportProcessorImpl implements IImportProcessor {
               siteEntry.setMelneaCassTrees(siteImport.getMelneaCassTrees());
               siteEntry.setMcbNumber(siteImport.getMcbNumber());
               siteEntry.setTreeDedicatedTo(siteImport.getTreeDedicatedTo());
+              siteEntry.setPlantingDate(siteImport.getPlantingDate());
+              siteEntry.setTreeName(siteImport.getTreeName());
+
+              /* Cambridge fields */
+              siteEntry.setTrunks(siteImport.getTrunks());
+              siteEntry.setSpeciesShort(siteImport.getSpeciesShort());
+              siteEntry.setLocation(siteImport.getLocation());
+              siteEntry.setSiteRetiredReason(siteImport.getSiteRetiredReason());
+              siteEntry.setInspectr(siteImport.getInspectr());
+              siteEntry.setAbutsOpenArea(siteImport.getAbutsOpenArea());
+              siteEntry.setTreeWellCover(siteImport.getTreeWellCover());
+              siteEntry.setTreeGrateActionReq(siteImport.getTreeGrateActionReq());
+              siteEntry.setGlobalId(siteImport.getGlobalId());
+              siteEntry.setPb(siteImport.getPb());
+              siteEntry.setSiteReplanted(siteImport.getSiteReplanted());
+              siteEntry.setOverheadWires(siteImport.getOverheadWires());
+              siteEntry.setOwnership(siteImport.getOwnership());
+              siteEntry.setScheduledRemoval(siteImport.getScheduledRemoval());
+              siteEntry.setStructuralSoil(siteImport.getStructuralSoil());
+              siteEntry.setWateringResponsibility(siteImport.getWateringResponsibility());
+              siteEntry.setCultivar(siteImport.getCultivar());
+              siteEntry.setSolarRating(siteImport.getSolarRating());
+              siteEntry.setBareRoot(siteImport.getBareRoot());
+              siteEntry.setAdaCompliant(siteImport.getAdaCompliant());
+              siteEntry.setCartegraphPlantDate(siteImport.getCartegraphPlantDate());
+              siteEntry.setLocationRetired(siteImport.getLocationRetired());
+              siteEntry.setCreatedDate(siteImport.getCreatedDate());
+              siteEntry.setOrder(siteImport.getOrder());
+              siteEntry.setPlantingSeason(siteImport.getPlantingSeason());
+              siteEntry.setExposedRootFlare(siteImport.getExposedRootFlare());
+              siteEntry.setStTreePruningZone(siteImport.getStTreePruningZone());
+              siteEntry.setMemTree(siteImport.getMemTree());
+              siteEntry.setCartegraphRetireDate(siteImport.getCartegraphRetireDate());
+              siteEntry.setRemovalReason(siteImport.getRemovalReason());
+              siteEntry.setOffStTreePruningZone(siteImport.getOffStTreePruningZone());
+              siteEntry.setPlantingContract(siteImport.getPlantingContract());
+              siteEntry.setTreeWellDepth(siteImport.getTreeWellDepth());
+              siteEntry.setRemovalDate(siteImport.getRemovalDate());
+              siteEntry.setScientificName(siteImport.getScientificName());
+              siteEntry.setBiocharAdded(siteImport.getBiocharAdded());
+              siteEntry.setLastEditedUser(siteImport.getLastEditedUser());
 
               sitesRecords.add(site);
               siteEntryRecordsAndUsernames.add(
