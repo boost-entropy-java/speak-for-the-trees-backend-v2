@@ -1074,9 +1074,10 @@ public class SiteImport extends ApiDto {
     if (city == null) {
       fields.add(fieldName + "city");
     }
-    if (address == null) {
-      fields.add(fieldName + "address");
-    }
+    // TEMP: remove address check to upload Cambridge data
+    // if (address == null) {
+    //   fields.add(fieldName + "address");
+    // }
     if (updatedAt == null) {
       fields.add(fieldName + "updatedAt");
     }
