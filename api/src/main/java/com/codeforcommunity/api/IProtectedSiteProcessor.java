@@ -6,6 +6,8 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSitesRequest;
+import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -13,6 +15,7 @@ import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import java.sql.Date;
+import java.util.List;
 
 public interface IProtectedSiteProcessor {
 
@@ -83,4 +86,20 @@ public interface IProtectedSiteProcessor {
 
   /** Removes the site image with the given image ID */
   void deleteSiteImage(JWTData userData, int imageId);
+
+  /**
+   * Retrieves site, adoption, and stewardship information about all sites that match the
+   * 6 optional criteria in the given request.
+   *
+   * The optional criteria are:
+   * <ul>
+   *   <li>The species of the site's latest site entry is in `treeSpecies`</li>
+   *   <li>The site has been adopted by a user on or after `adoptedStart`</li>
+   *   <li>The site has been adopted by a user on or before `adoptedEnd`</li>
+   *   <li>The site's latest stewardship activity was recorded on or after `lastActivityStart`</li>
+   *   <li>The site's latest stewardship activity was recorded on or before `lastActivityEnd`</li>
+   *   <li>The site is located in a neighborhood in `neighborhoodIds`</li>
+   * </ul>
+   */
+  List<FilterSitesResponse> filterSites(JWTData userData, FilterSitesRequest filterSitesRequest);
 }
