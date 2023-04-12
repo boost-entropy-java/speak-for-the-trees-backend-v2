@@ -32,7 +32,7 @@ public class ProtectedNeighborhoodsRouter implements IRouter {
   }
 
   private void registerSendEmail(Router router) {
-    Route adoptSiteRoute = router.get("/send_email");
+    Route adoptSiteRoute = router.post("/send_email");
     adoptSiteRoute.handler(this::handleSendEmail);
   }
 

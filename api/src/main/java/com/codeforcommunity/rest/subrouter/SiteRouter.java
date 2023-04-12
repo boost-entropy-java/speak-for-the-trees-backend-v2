@@ -9,6 +9,10 @@ import com.codeforcommunity.dto.site.StewardshipActivity;
 import com.codeforcommunity.logger.SLogger;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
+
+import java.util.Collections;
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
@@ -31,6 +35,7 @@ public class SiteRouter implements IRouter {
 
     registerGetSite(router);
     registerGetStewardshipActivities(router);
+    registerGetAllCommonNames(router);
 
     return router;
   }
@@ -66,5 +71,15 @@ public class SiteRouter implements IRouter {
     logger.info(JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
 
     end(ctx.response(), 200, JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
+  }
+
+  private void registerGetAllCommonNames(Router router) {
+    Route getAllCommonNames = router.get("/info/common_names");
+    getAllCommonNames.handler(this::handleGetAllCommonNames);
+  }
+
+  private void handleGetAllCommonNames(RoutingContext ctx) {
+    List<String> commonNames = processor.getAllCommonNames();
+    end(ctx.response(), 200, JsonObject.mapFrom(Collections.singletonMap("names", commonNames)).toString());
   }
 }

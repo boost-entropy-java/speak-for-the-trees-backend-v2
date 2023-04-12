@@ -1,9 +1,6 @@
 package com.codeforcommunity.processor;
 
-import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.NEIGHBORHOODS;
-import static org.jooq.generated.Tables.SITES;
-import static org.jooq.generated.tables.Users.USERS;
 
 import com.codeforcommunity.api.IProtectedNeighborhoodsProcessor;
 import com.codeforcommunity.auth.JWTData;
@@ -29,27 +26,15 @@ public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
 
   @Override
   public void sendEmail(JWTData userData, SendEmailRequest sendEmailRequest) {
-    List<Integer> neighborhoodIDs = sendEmailRequest.getNeighborhoodIDs();
-    if (neighborhoodIDs.size() == 0) {
-      neighborhoodIDs = db.select(NEIGHBORHOODS.ID).from(NEIGHBORHOODS).fetchInto(Integer.class);
+    List<String> emails = sendEmailRequest.getEmails();
+    if (emails.size() == 0) {
+      return;
     }
 
+    String emailSubject = sendEmailRequest.getEmailSubject();
     String emailBody = sendEmailRequest.getEmailBody();
 
-    // retrieve all emails of users in the specified neighborhoods
-    List<String> userEmailRecords =
-        db.select(USERS.EMAIL)
-            .from(USERS)
-            .leftJoin(ADOPTED_SITES)
-            .on(USERS.ID.eq(ADOPTED_SITES.USER_ID))
-            .leftJoin(SITES)
-            .on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
-            .leftJoin(NEIGHBORHOODS)
-            .on(SITES.NEIGHBORHOOD_ID.eq(NEIGHBORHOODS.ID))
-            .where(NEIGHBORHOODS.ID.in(neighborhoodIDs))
-            .fetchInto(String.class);
-
-    emailer.sendNeighborhoodsEmail(new HashSet<>(userEmailRecords), emailBody);
+    emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody);
   }
 
   public void editCanopyCoverage(

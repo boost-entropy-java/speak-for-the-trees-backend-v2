@@ -121,16 +121,15 @@ public class Emailer {
     // TODO implement this
   }
 
-  public void sendNeighborhoodsEmail(HashSet<String> sendToEmails, String body) {
-    String filePath = "/emails/NeighborhoodEmail.html";
+  public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body) {
+    String filePath = "/emails/Email.html";
 
     Map<String, String> templateValues = new HashMap<>();
     templateValues.put("body", body);
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
-    emailBody.ifPresent(
-        s ->
-            emailOperations.sendEmailToMultipleRecipients(
-                sendToEmails, subjectEmailNeighborhoods, s));
+    emailBody.ifPresent(email ->
+        emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email)
+    );
   }
 }
