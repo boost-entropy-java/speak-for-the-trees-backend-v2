@@ -125,7 +125,7 @@ public class Emailer {
     String filePath = "/emails/Email.html";
 
     Map<String, String> templateValues = new HashMap<>();
-    templateValues.put("body", body);
+    templateValues.put("body", body.replaceAll("\n", "<br />"));
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
     emailBody.ifPresent(email ->

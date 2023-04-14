@@ -1,6 +1,8 @@
 package com.codeforcommunity.dto.site;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +56,11 @@ public class CSVSiteUpload {
   private Boolean stump;
   private String treeNotes;
   private String siteNotes;
+  @JsonFormat(
+      shape = JsonFormat.Shape.STRING,
+      pattern = "MM/dd/yyyy",
+      timezone = "America/New_York")
+  private Date plantingDate;
 
   public CSVSiteUpload(
       Boolean treePresent,
@@ -195,6 +202,7 @@ public class CSVSiteUpload {
         stump,
         treeNotes,
         siteNotes,
+        plantingDate,
         blockId,
         lat,
         lng,

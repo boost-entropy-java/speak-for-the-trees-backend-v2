@@ -2,6 +2,8 @@ package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.dto.ApiDto;
 import com.codeforcommunity.exceptions.HandledException;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +48,12 @@ public class UpdateSiteRequest extends ApiDto {
   private String treeNotes;
   private String siteNotes;
 
+  @JsonFormat(
+      shape = JsonFormat.Shape.STRING,
+      pattern = "MM/dd/yyyy",
+      timezone = "America/New_York")
+  private Date plantingDate;
+
   public UpdateSiteRequest(
       Boolean treePresent,
       String status,
@@ -84,7 +92,8 @@ public class UpdateSiteRequest extends ApiDto {
       Boolean grate,
       Boolean stump,
       String treeNotes,
-      String siteNotes) {
+      String siteNotes,
+      Date plantingDate) {
     this.treePresent = treePresent;
     this.status = status;
     this.genus = genus;
@@ -123,6 +132,7 @@ public class UpdateSiteRequest extends ApiDto {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.plantingDate = plantingDate;
   }
 
   public UpdateSiteRequest() {}
@@ -429,6 +439,14 @@ public class UpdateSiteRequest extends ApiDto {
 
   public void setSiteNotes(String siteNotes) {
     this.siteNotes = siteNotes;
+  }
+
+  public Date getPlantingDate() {
+    return this.plantingDate;
+  }
+
+  public void setPlantingDate(Date plantingDate) {
+    this.plantingDate = plantingDate;
   }
 
   private boolean falseIfNull(Boolean bool) {

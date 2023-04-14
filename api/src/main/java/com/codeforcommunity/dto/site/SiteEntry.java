@@ -52,6 +52,12 @@ public class SiteEntry {
   private final String treeName;
   private final String adopter;
 
+  @JsonFormat(
+      shape = JsonFormat.Shape.STRING,
+      pattern = "MM/dd/yyyy",
+      timezone = "America/New_York")
+  private final Date plantingDate;
+
   /* Cambridge fields */
   private final Integer trunks;
   private final String speciesShort;
@@ -135,6 +141,7 @@ public class SiteEntry {
       String siteNotes,
       String treeName,
       String adopter,
+      Date plantingDate,
 
       /* Cambridge fields */
       Integer trunks,
@@ -217,6 +224,7 @@ public class SiteEntry {
     this.siteNotes = siteNotes;
     this.treeName = treeName;
     this.adopter = adopter;
+    this.plantingDate = plantingDate;
 
     /* Cambridge fields */
     this.trunks = trunks;
@@ -428,6 +436,10 @@ public class SiteEntry {
 
   public String getAdopter() {
     return adopter;
+  }
+
+  public Date getPlantingDate() {
+    return plantingDate;
   }
 
   /* Cambridge fields */

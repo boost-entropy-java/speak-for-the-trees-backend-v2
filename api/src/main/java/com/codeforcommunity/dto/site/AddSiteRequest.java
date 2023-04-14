@@ -2,6 +2,7 @@ package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.exceptions.HandledException;
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.util.List;
 
 public class AddSiteRequest extends UpdateSiteRequest {
@@ -52,6 +53,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      Date plantingDate,
       Integer blockId,
       BigDecimal lat,
       BigDecimal lng,
@@ -97,7 +99,8 @@ public class AddSiteRequest extends UpdateSiteRequest {
         grate,
         stump,
         treeNotes,
-        siteNotes);
+        siteNotes,
+        plantingDate);
     this.blockId = blockId;
     this.lat = lat;
     this.lng = lng;
