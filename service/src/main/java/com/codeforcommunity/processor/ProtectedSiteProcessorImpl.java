@@ -602,8 +602,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     String ACTIVITY_COUNT_COLUMN = "act_count";
 
     Condition filterCondition = noCondition();
-    if (filterSitesRequest.getTreeSpecies() != null)
-      filterCondition = filterCondition.and(SITE_ENTRIES.SPECIES.in(filterSitesRequest.getTreeSpecies()));
+    if (filterSitesRequest.getTreeCommonNames() != null)
+      filterCondition = filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
     if (filterSitesRequest.getAdoptedStart() != null)
       filterCondition = filterCondition.and(ADOPTED_SITES.DATE_ADOPTED.ge(filterSitesRequest.getAdoptedStart()));
     if (filterSitesRequest.getAdoptedEnd() != null)
@@ -628,7 +628,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
         .select(SITES.ID, SITES.ADDRESS, SITES.NEIGHBORHOOD_ID, ADOPTED_SITES.USER_ID, ADOPTED_SITES.DATE_ADOPTED,
             max(STEWARDSHIP.PERFORMED_ON).as(STEWARDSHIP.PERFORMED_ON),
             max(SITE_ENTRIES.UPDATED_AT).as(SITE_ENTRIES.UPDATED_AT),
-            SITE_ENTRIES.SPECIES, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, coalesce(activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class), 0).as(ACTIVITY_COUNT_COLUMN))
+            SITE_ENTRIES.COMMON_NAME, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, coalesce(activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class), 0).as(ACTIVITY_COUNT_COLUMN))
         .from(ADOPTED_SITES)
         .join(SITES).on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
         .join(USERS).on(ADOPTED_SITES.USER_ID.eq(USERS.ID))
@@ -638,7 +638,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
             ADOPTED_SITES.SITE_ID.eq(activityCounts.field(STEWARDSHIP.SITE_ID))
                 .and(ADOPTED_SITES.USER_ID.eq(activityCounts.field(STEWARDSHIP.USER_ID))))
         .where(filterCondition)
-        .groupBy(SITES.ID, SITES.ADDRESS, SITES.NEIGHBORHOOD_ID, ADOPTED_SITES.USER_ID, ADOPTED_SITES.DATE_ADOPTED, SITE_ENTRIES.SPECIES, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, activityCounts.field(ACTIVITY_COUNT_COLUMN))
+        .groupBy(SITES.ID, SITES.ADDRESS, SITES.NEIGHBORHOOD_ID, ADOPTED_SITES.USER_ID, ADOPTED_SITES.DATE_ADOPTED, SITE_ENTRIES.COMMON_NAME, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, activityCounts.field(ACTIVITY_COUNT_COLUMN))
         .having(stewardshipCondition)
         .fetch();
 

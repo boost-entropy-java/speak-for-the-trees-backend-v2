@@ -9,7 +9,7 @@ import java.util.List;
 
 public class FilterSitesRequest extends ApiDto {
 
-  private List<String> treeSpecies;
+  private List<String> treeCommonNames;
 
   @JsonFormat(timezone = "America/New_York", pattern = "yyyy-MM-dd")
   private Date adoptedStart;
@@ -25,12 +25,29 @@ public class FilterSitesRequest extends ApiDto {
 
   private List<Integer> neighborhoodIds;
 
-  public List<String> getTreeSpecies() {
-    return treeSpecies;
+  public FilterSitesRequest(
+      List<String> treeCommonNames,
+      Date adoptedStart,
+      Date adoptedEnd,
+      Date lastActivityStart,
+      Date lastActivityEnd,
+      List<Integer> neighborhoodIds) {
+    this.treeCommonNames = treeCommonNames;
+    this.adoptedStart = adoptedStart;
+    this.adoptedEnd = adoptedEnd;
+    this.lastActivityStart = lastActivityStart;
+    this.lastActivityEnd = lastActivityEnd;
+    this.neighborhoodIds = neighborhoodIds;
   }
 
-  public void setTreeSpecies(List<String> treeSpecies) {
-    this.treeSpecies = treeSpecies;
+  public FilterSitesRequest() {}
+
+  public List<String> getTreeCommonNames() {
+    return treeCommonNames;
+  }
+
+  public void setTreeCommonNames(List<String> treeCommonNames) {
+    this.treeCommonNames = treeCommonNames;
   }
 
   public Date getAdoptedStart() {
