@@ -14,6 +14,7 @@ import com.codeforcommunity.dto.team.GoalResponse;
 import com.codeforcommunity.dto.team.InviteUsersRequest;
 import com.codeforcommunity.dto.team.TeamDataResponse;
 import com.codeforcommunity.dto.team.TeamGoalDataResponse;
+import com.codeforcommunity.dto.team.TeamMembersResponse;
 import com.codeforcommunity.dto.team.TransferOwnershipRequest;
 import com.codeforcommunity.dto.team.UsersResponse;
 import com.codeforcommunity.enums.TeamRole;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
+import org.jooq.Record3;
 import org.jooq.Result;
 import org.jooq.generated.tables.records.GoalsRecord;
 import org.jooq.generated.tables.records.TeamsRecord;
@@ -117,6 +119,26 @@ public class TeamsProcessorImpl implements ITeamsProcessor {
       throw new ResourceDoesNotExistException(teamId, "Team");
     }
 
+    List<
+            Record3<
+                Integer, // User Id
+                String, // Username
+                TeamRole // team role
+            >>
+        members =
+            db.select(USERS_TEAMS.USER_ID, USERS.USERNAME, USERS_TEAMS.TEAM_ROLE)
+                .from(USERS_TEAMS)
+                .join(USERS)
+                .on(USERS_TEAMS.USER_ID.eq(USERS.ID))
+                .where(USERS_TEAMS.TEAM_ID.eq(teamId))
+                .fetch();
+    List<TeamMembersResponse> membersResponses =
+        members.stream()
+            .map(
+                member ->
+                    new TeamMembersResponse(member.value1(), member.value2(), member.value3()))
+            .collect(Collectors.toList());
+
     List<GoalsRecord> goalsRecords = db.selectFrom(GOALS).where(GOALS.TEAM_ID.eq(teamId)).fetch();
     List<GoalResponse> goalsResponses =
         goalsRecords.stream()
@@ -135,6 +157,7 @@ public class TeamsProcessorImpl implements ITeamsProcessor {
         team.getTeamName(),
         team.getBio(),
         team.getFinished(),
+        membersResponses,
         goalsResponses,
         team.getCreatedAt(),
         team.getDeletedAt());

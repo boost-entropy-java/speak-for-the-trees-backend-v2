@@ -25,19 +25,27 @@ public class FilterSitesRequest extends ApiDto {
 
   private List<Integer> neighborhoodIds;
 
+  private Integer activityCountMin;
+
+  private Integer activityCountMax;
+
   public FilterSitesRequest(
       List<String> treeCommonNames,
       Date adoptedStart,
       Date adoptedEnd,
       Date lastActivityStart,
       Date lastActivityEnd,
-      List<Integer> neighborhoodIds) {
+      List<Integer> neighborhoodIds,
+      Integer activityCountMin,
+      Integer activityCountMax) {
     this.treeCommonNames = treeCommonNames;
     this.adoptedStart = adoptedStart;
     this.adoptedEnd = adoptedEnd;
     this.lastActivityStart = lastActivityStart;
     this.lastActivityEnd = lastActivityEnd;
     this.neighborhoodIds = neighborhoodIds;
+    this.activityCountMin = activityCountMin;
+    this.activityCountMax = activityCountMax;
   }
 
   public FilterSitesRequest() {}
@@ -88,6 +96,22 @@ public class FilterSitesRequest extends ApiDto {
 
   public void setNeighborhoodIds(List<Integer> neighborhoodIds) {
     this.neighborhoodIds = neighborhoodIds;
+  }
+
+  public Integer getActivityCountMin() {
+    return activityCountMin;
+  }
+
+  public void setActivityCountMin(Integer activityCountMin) {
+    this.activityCountMin = activityCountMin;
+  }
+
+  public Integer getActivityCountMax() {
+    return activityCountMax;
+  }
+
+  public void setActivityCountMax(Integer activityCountMax) {
+    this.activityCountMax = activityCountMax;
   }
 
   @Override

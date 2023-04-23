@@ -39,7 +39,8 @@ public class ApiMain {
             .allowedHeader("Access-Control-Allow-Headers")
             .allowedHeader("Access-Control-Request-Method")
             .allowedHeader("X-Access-Token")
-            .allowedHeader("X-Refresh-Token");
+            .allowedHeader("X-Refresh-Token")
+            .allowedHeader("sentry-trace");
 
     Router router = Router.router(vertx);
     router.route().handler(corsHandler);

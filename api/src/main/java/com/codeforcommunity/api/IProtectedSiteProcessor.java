@@ -102,4 +102,7 @@ public interface IProtectedSiteProcessor {
    * </ul>
    */
   List<FilterSitesResponse> filterSites(JWTData userData, FilterSitesRequest filterSitesRequest);
+
+  /** Edits the site entry with the given entryId */
+  void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
 }

@@ -63,6 +63,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerUploadSiteImage(router);
     registerDeleteSiteImage(router);
     registerFilterSites(router);
+    registerEditSiteEntry(router);
 
     return router;
   }
@@ -349,6 +350,10 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getOptionalQueryParam(ctx, "lastActivityEnd", Date::valueOf);
     Optional<List<Integer>> neighborhoodIds =
         RestFunctions.getOptionalQueryParam(ctx, "neighborhoodIds", (string) -> Arrays.stream(string.split(",")).map(Integer::parseInt).collect(Collectors.toList()));
+    Optional<Integer> activityCountMin =
+        RestFunctions.getOptionalQueryParam(ctx, "activityCountMin", Integer::parseInt);
+    Optional<Integer> activityCountMax =
+        RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
 
     FilterSitesRequest filterSitesRequest = new FilterSitesRequest(
         treeCommonNames.orElse(null),
@@ -356,11 +361,35 @@ public class ProtectedSiteRouter implements IRouter {
         adoptedEnd.orElse(null),
         lastActivityStart.orElse(null),
         lastActivityEnd.orElse(null),
-        neighborhoodIds.orElse(null)
+        neighborhoodIds.orElse(null),
+        activityCountMin.orElse(null),
+        activityCountMax.orElse(null)
     );
 
-    List<FilterSitesResponse> filterSitesResponse = processor.filterSites(userData, filterSitesRequest);
+    List<FilterSitesResponse> filterSitesResponse =
+        processor.filterSites(userData, filterSitesRequest);
 
-    end(ctx.response(), 200, JsonObject.mapFrom(Collections.singletonMap("filteredSites", filterSitesResponse)).toString());
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("filteredSites", filterSitesResponse))
+            .toString());
+  }
+
+  private void registerEditSiteEntry(Router router) {
+    Route editSiteEntry = router.post("/edit_entry/:entry_id");
+    editSiteEntry.handler(this::handleEditSiteEntry);
+  }
+
+  private void handleEditSiteEntry(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int entryId = RestFunctions.getRequestParameterAsInt(ctx.request(), "entry_id");
+
+    UpdateSiteRequest editSiteEntryRequest =
+        RestFunctions.getJsonBodyAsClass(ctx, UpdateSiteRequest.class);
+
+    processor.editSiteEntry(userData, entryId, editSiteEntryRequest);
+
+    end(ctx.response(), 200);
   }
 }
