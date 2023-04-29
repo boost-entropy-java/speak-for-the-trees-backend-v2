@@ -13,6 +13,7 @@ import static org.jooq.impl.DSL.coalesce;
 import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.noCondition;
+import static org.jooq.impl.DSL.when;
 
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
@@ -578,11 +579,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
     // Table containing the number of stewardship activities performed by a user on a site
     Table<org.jooq.Record3<Integer, Integer, Integer>> activityCounts = db
-        .select(count().as(ACTIVITY_COUNT_COLUMN), STEWARDSHIP.SITE_ID, STEWARDSHIP.USER_ID)
-        .from(STEWARDSHIP)
-        .groupBy(STEWARDSHIP.SITE_ID, STEWARDSHIP.USER_ID).asTable("activityCounts");
+        .select(when(STEWARDSHIP.USER_ID.isNotNull(), count()).otherwise(0).as(ACTIVITY_COUNT_COLUMN), ADOPTED_SITES.SITE_ID, ADOPTED_SITES.USER_ID)
+        .from(ADOPTED_SITES).leftJoin(STEWARDSHIP)
+        .on(ADOPTED_SITES.SITE_ID.eq(STEWARDSHIP.SITE_ID)).and(ADOPTED_SITES.USER_ID.eq(STEWARDSHIP.USER_ID))
+        .groupBy(ADOPTED_SITES.SITE_ID, ADOPTED_SITES.USER_ID, STEWARDSHIP.USER_ID)
+        .asTable("activityCounts");
 
-    Condition filterCondition = noCondition();
+    Condition filterCondition = activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).ge(filterSitesRequest.getActivityCountMin());
     if (filterSitesRequest.getTreeCommonNames() != null)
       filterCondition = filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
     if (filterSitesRequest.getAdoptedStart() != null)
@@ -594,9 +597,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (filterSitesRequest.getNeighborhoodIds() != null)
       filterCondition =
           filterCondition.and(SITES.NEIGHBORHOOD_ID.in(filterSitesRequest.getNeighborhoodIds()));
-    if (filterSitesRequest.getActivityCountMin() != null)
-      filterCondition = filterCondition.and(
-          activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).ge(filterSitesRequest.getActivityCountMin()));
     if (filterSitesRequest.getActivityCountMax() != null)
       filterCondition = filterCondition.and(
         activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).le(filterSitesRequest.getActivityCountMax())
