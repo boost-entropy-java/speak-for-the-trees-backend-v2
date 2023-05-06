@@ -101,6 +101,7 @@ public class CSVSiteUpload {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      Date plantingDate,
       Integer blockId,
       BigDecimal lat,
       BigDecimal lng,
@@ -154,6 +155,7 @@ public class CSVSiteUpload {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.plantingDate = plantingDate;
   }
 
   public CSVSiteUpload() {
@@ -390,6 +392,10 @@ public class CSVSiteUpload {
 
   public String getSiteNotes() {
     return siteNotes;
+  }
+
+  public Date getPlantingDate() {
+    return getPlantingDate();
   }
 
   private boolean falseIfNull(Boolean bool) {
