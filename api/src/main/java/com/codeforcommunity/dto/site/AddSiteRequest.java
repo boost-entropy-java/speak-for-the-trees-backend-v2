@@ -1,5 +1,6 @@
 package com.codeforcommunity.dto.site;
 
+import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.HandledException;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -13,6 +14,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
   private String zip;
   private String address;
   private Integer neighborhoodId;
+  private SiteOwner owner;
 
   public AddSiteRequest(
       Boolean treePresent,
@@ -60,7 +62,8 @@ public class AddSiteRequest extends UpdateSiteRequest {
       String city,
       String zip,
       String address,
-      Integer neighborhoodId) {
+      Integer neighborhoodId,
+      SiteOwner owner) {
     super(
         treePresent,
         status,
@@ -108,6 +111,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
     this.zip = zip;
     this.address = address;
     this.neighborhoodId = neighborhoodId;
+    this.owner = owner;
   }
 
   public AddSiteRequest() {
@@ -170,6 +174,14 @@ public class AddSiteRequest extends UpdateSiteRequest {
     this.neighborhoodId = neighborhoodId;
   }
 
+  public SiteOwner getOwner() {
+    return owner;
+  }
+
+  public void setOwner(SiteOwner owner) {
+    this.owner = owner;
+  }
+
   @Override
   public List<String> validateFields(String fieldPrefix) throws HandledException {
     String fieldName = fieldPrefix + "add_site_request.";
@@ -192,6 +204,9 @@ public class AddSiteRequest extends UpdateSiteRequest {
     }
     if (neighborhoodId == null) {
       fields.add(fieldName + "neighborhood_id");
+    }
+    if (owner == null) {
+      fields.add(fieldName + "owner");
     }
 
     return fields;

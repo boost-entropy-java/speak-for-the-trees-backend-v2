@@ -2,7 +2,6 @@ package com.codeforcommunity.api;
 
 import com.codeforcommunity.dto.site.GetSiteResponse;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
-
 import java.util.List;
 
 public interface ISiteProcessor {

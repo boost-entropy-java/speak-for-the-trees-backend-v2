@@ -26,7 +26,6 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -341,7 +340,10 @@ public class ProtectedSiteRouter implements IRouter {
     int activityCountMin = RestFunctions.getRequestParameterAsInt(ctx.request(), "activityCountMin");
 
     Optional<List<String>> treeCommonNames =
-        RestFunctions.getOptionalQueryParam(ctx, "treeCommonNames", (string) -> Arrays.stream(string.split(",")).collect(Collectors.toList()));
+        RestFunctions.getOptionalQueryParam(
+            ctx,
+            "treeCommonNames",
+            (string) -> Arrays.stream(string.split(",")).collect(Collectors.toList()));
     Optional<Date> adoptedStart =
         RestFunctions.getOptionalQueryParam(ctx, "adoptedStart", Date::valueOf);
     Optional<Date> adoptedEnd =

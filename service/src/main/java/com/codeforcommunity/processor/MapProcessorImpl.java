@@ -35,7 +35,7 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record2;
 import org.jooq.Record6;
-import org.jooq.Record8;
+import org.jooq.Record9;
 import org.jooq.Result;
 import org.jooq.Select;
 import org.jooq.Table;
@@ -133,15 +133,16 @@ public class MapProcessorImpl implements IMapProcessor {
   }
 
   private SiteFeature siteFeatureFromRecord(
-      Record8<
+      Record9<
               Integer, // #1 Site ID
               Boolean, // #2 Tree Present
               String, // #3 Common Name
               Date, // #4 Planting Date
               Integer, // #5 Adopter User ID
               String, // #6 Address
-              BigDecimal, // #7 Lat
-              BigDecimal> // #8 Lng
+              String, // #7 Owner
+              BigDecimal, // #8 Lat
+              BigDecimal> // #9 Lng
           sitesRecord) {
     SiteFeatureProperties properties =
         new SiteFeatureProperties(
@@ -150,8 +151,9 @@ public class MapProcessorImpl implements IMapProcessor {
             sitesRecord.value3(),
             sitesRecord.value4(),
             sitesRecord.value5(),
-            sitesRecord.value6());
-    GeometryPoint geometry = new GeometryPoint(sitesRecord.value7(), sitesRecord.value8());
+            sitesRecord.value6(),
+            sitesRecord.value7());
+    GeometryPoint geometry = new GeometryPoint(sitesRecord.value8(), sitesRecord.value9());
     return new SiteFeature(properties, geometry);
   }
 
@@ -244,13 +246,14 @@ public class MapProcessorImpl implements IMapProcessor {
             .otherwise(newEntries.field(SITE_ENTRIES.COMMON_NAME)); // common name is not empty
 
     Result<
-            Record8<
+            Record9<
                 Integer, // Site ID
                 Boolean, // Tree Present
                 String, // Name
                 Date, // Planting Date
                 Integer, // Adopter User ID
                 String, // Address
+                String, // Owner
                 BigDecimal, // Lat
                 BigDecimal>> // Lng
         userRecords =
@@ -262,6 +265,7 @@ public class MapProcessorImpl implements IMapProcessor {
                     newEntries.field(SITE_ENTRIES.PLANTING_DATE),
                     ADOPTED_SITES.USER_ID,
                     SITES.ADDRESS,
+                    SITES.OWNER,
                     SITES.LAT,
                     SITES.LNG)
                 .from(SITES)

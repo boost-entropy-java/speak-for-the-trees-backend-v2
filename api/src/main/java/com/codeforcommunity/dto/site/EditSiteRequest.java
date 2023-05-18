@@ -1,6 +1,7 @@
 package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.dto.ApiDto;
+import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.HandledException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class EditSiteRequest extends ApiDto {
   private BigDecimal lat;
   private BigDecimal lng;
   private Integer neighborhoodId;
+  private SiteOwner owner;
 
   public EditSiteRequest(
       Integer blockId,
@@ -22,7 +24,8 @@ public class EditSiteRequest extends ApiDto {
       String zip,
       BigDecimal lat,
       BigDecimal lng,
-      Integer neighborhoodId) {
+      Integer neighborhoodId,
+      SiteOwner owner) {
     this.blockId = blockId;
     this.address = address;
     this.city = city;
@@ -30,6 +33,7 @@ public class EditSiteRequest extends ApiDto {
     this.lat = lat;
     this.lng = lng;
     this.neighborhoodId = neighborhoodId;
+    this.owner = owner;
   }
 
   public EditSiteRequest() {}
@@ -90,6 +94,14 @@ public class EditSiteRequest extends ApiDto {
     this.neighborhoodId = neighborhoodId;
   }
 
+  public SiteOwner getOwner() {
+    return owner;
+  }
+
+  public void setOwner(SiteOwner owner) {
+    this.owner = owner;
+  }
+
   @Override
   public List<String> validateFields(String fieldPrefix) throws HandledException {
     String fieldName = fieldPrefix + "edit_site_request.";
@@ -112,6 +124,9 @@ public class EditSiteRequest extends ApiDto {
     }
     if (neighborhoodId == null) {
       fields.add(fieldName + "neighborhoodId");
+    }
+    if (owner == null) {
+      fields.add(fieldName + "owner");
     }
 
     return fields;

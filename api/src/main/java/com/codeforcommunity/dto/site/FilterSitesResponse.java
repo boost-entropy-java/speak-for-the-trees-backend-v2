@@ -13,7 +13,16 @@ public class FilterSitesResponse {
   private int neighborhoodId;
   private Integer lastActivityWeeks;
 
-  public FilterSitesResponse(int siteId, String address, int adopterId, String adopterName, String adopterEmail, String dateAdopted, int adopterActivityCount, int neighborhoodId, Integer lastActivityWeeks) {
+  public FilterSitesResponse(
+      int siteId,
+      String address,
+      int adopterId,
+      String adopterName,
+      String adopterEmail,
+      String dateAdopted,
+      int adopterActivityCount,
+      int neighborhoodId,
+      Integer lastActivityWeeks) {
     this.siteId = siteId;
     this.address = address;
     this.adopterId = adopterId;

@@ -128,8 +128,7 @@ public class Emailer {
     templateValues.put("body", body.replaceAll("\n", "<br />"));
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
-    emailBody.ifPresent(email ->
-        emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email)
-    );
+    emailBody.ifPresent(
+        email -> emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email));
   }
 }

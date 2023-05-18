@@ -9,15 +9,13 @@ import com.codeforcommunity.dto.site.StewardshipActivity;
 import com.codeforcommunity.logger.SLogger;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
-
-import java.util.Collections;
-import java.util.List;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Collections;
+import java.util.List;
 
 public class SiteRouter implements IRouter {
 
@@ -80,6 +78,9 @@ public class SiteRouter implements IRouter {
 
   private void handleGetAllCommonNames(RoutingContext ctx) {
     List<String> commonNames = processor.getAllCommonNames();
-    end(ctx.response(), 200, JsonObject.mapFrom(Collections.singletonMap("names", commonNames)).toString());
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("names", commonNames)).toString());
   }
 }

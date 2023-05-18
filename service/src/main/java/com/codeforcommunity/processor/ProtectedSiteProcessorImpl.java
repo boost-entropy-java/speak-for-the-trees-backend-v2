@@ -390,6 +390,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     sitesRecord.setZip(addSiteRequest.getZip());
     sitesRecord.setAddress(addSiteRequest.getAddress());
     sitesRecord.setNeighborhoodId(addSiteRequest.getNeighborhoodId());
+    sitesRecord.setOwner(addSiteRequest.getOwner().toString());
 
     sitesRecord.store();
 
@@ -440,6 +441,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     site.setLat(editSiteRequest.getLat());
     site.setLng(editSiteRequest.getLng());
     site.setNeighborhoodId(editSiteRequest.getNeighborhoodId());
+    site.setOwner(editSiteRequest.getOwner().toString());
 
     site.store();
   }
@@ -587,7 +589,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
     Condition filterCondition = activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).ge(filterSitesRequest.getActivityCountMin());
     if (filterSitesRequest.getTreeCommonNames() != null)
-      filterCondition = filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
+      filterCondition =
+          filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
     if (filterSitesRequest.getAdoptedStart() != null)
       filterCondition =
           filterCondition.and(ADOPTED_SITES.DATE_ADOPTED.ge(filterSitesRequest.getAdoptedStart()));

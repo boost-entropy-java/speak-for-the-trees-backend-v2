@@ -9,6 +9,7 @@ public class SiteFeatureProperties {
   Date plantingDate;
   Integer adopterId;
   String address;
+  String owner;
 
   public SiteFeatureProperties(
       Integer id,
@@ -16,13 +17,15 @@ public class SiteFeatureProperties {
       String commonName,
       Date plantingDate,
       Integer adopterId,
-      String address) {
+      String address,
+      String owner) {
     this.id = id;
     this.treePresent = treePresent;
     this.commonName = commonName;
     this.plantingDate = plantingDate;
     this.adopterId = adopterId;
     this.address = address;
+    this.owner = owner;
   }
 
   public Integer getId() {
@@ -47,5 +50,9 @@ public class SiteFeatureProperties {
 
   public Integer getAdopterId() {
     return adopterId;
+  }
+
+  public String getOwner() {
+    return owner;
   }
 }

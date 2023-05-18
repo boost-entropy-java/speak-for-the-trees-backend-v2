@@ -88,17 +88,18 @@ public interface IProtectedSiteProcessor {
   void deleteSiteImage(JWTData userData, int imageId);
 
   /**
-   * Retrieves site, adoption, and stewardship information about all sites that match the
-   * 6 optional criteria in the given request.
+   * Retrieves site, adoption, and stewardship information about all sites that match the 6 optional
+   * criteria in the given request.
    *
-   * The optional criteria are:
+   * <p>The optional criteria are:
+   *
    * <ul>
-   *   <li>The species of the site's latest site entry is in `treeSpecies`</li>
-   *   <li>The site has been adopted by a user on or after `adoptedStart`</li>
-   *   <li>The site has been adopted by a user on or before `adoptedEnd`</li>
-   *   <li>The site's latest stewardship activity was recorded on or after `lastActivityStart`</li>
-   *   <li>The site's latest stewardship activity was recorded on or before `lastActivityEnd`</li>
-   *   <li>The site is located in a neighborhood in `neighborhoodIds`</li>
+   *   <li>The species of the site's latest site entry is in `treeSpecies`
+   *   <li>The site has been adopted by a user on or after `adoptedStart`
+   *   <li>The site has been adopted by a user on or before `adoptedEnd`
+   *   <li>The site's latest stewardship activity was recorded on or after `lastActivityStart`
+   *   <li>The site's latest stewardship activity was recorded on or before `lastActivityEnd`
+   *   <li>The site is located in a neighborhood in `neighborhoodIds`
    * </ul>
    */
   List<FilterSitesResponse> filterSites(JWTData userData, FilterSitesRequest filterSitesRequest);

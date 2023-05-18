@@ -1,5 +1,6 @@
 package com.codeforcommunity.dto.site;
 
+import com.codeforcommunity.enums.SiteOwner;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class GetSiteResponse {
   private final String zip;
   private final String address;
   private final Integer neighborhoodId;
+  private final SiteOwner owner;
   private final List<SiteEntry> entries;
 
   public GetSiteResponse(
@@ -23,6 +25,7 @@ public class GetSiteResponse {
       String zip,
       String address,
       Integer neighborhoodId,
+      SiteOwner owner,
       List<SiteEntry> entries) {
     this.siteId = siteId;
     this.blockId = blockId;
@@ -32,6 +35,7 @@ public class GetSiteResponse {
     this.zip = zip;
     this.address = address;
     this.neighborhoodId = neighborhoodId;
+    this.owner = owner;
     this.entries = entries;
   }
 
@@ -65,6 +69,10 @@ public class GetSiteResponse {
 
   public Integer getNeighborhoodId() {
     return neighborhoodId;
+  }
+
+  public SiteOwner getOwner() {
+    return owner;
   }
 
   public List<SiteEntry> getEntries() {

@@ -1,5 +1,6 @@
 package com.codeforcommunity.dto.site;
 
+import com.codeforcommunity.enums.SiteOwner;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -16,6 +17,7 @@ public class CSVSiteUpload {
   private String zip;
   private String address;
   private String neighborhood;
+  private String owner;
 
   /* site entries columns */
   private Boolean treePresent;
@@ -56,6 +58,7 @@ public class CSVSiteUpload {
   private Boolean stump;
   private String treeNotes;
   private String siteNotes;
+
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "MM/dd/yyyy",
@@ -108,7 +111,8 @@ public class CSVSiteUpload {
       String city,
       String zip,
       String address,
-      String neighborhood) {
+      String neighborhood,
+      String owner) {
     this.blockId = blockId;
     this.lat = lat;
     this.lng = lng;
@@ -116,6 +120,7 @@ public class CSVSiteUpload {
     this.zip = zip;
     this.address = address;
     this.neighborhood = neighborhood;
+    this.owner = owner;
 
     this.treePresent = treePresent;
     this.status = status;
@@ -164,6 +169,7 @@ public class CSVSiteUpload {
 
   public AddSiteRequest toAddSiteRequest() {
     Integer neighborhoodId = CSVSiteUpload.mapNeighborhoodNameToId(neighborhood);
+    SiteOwner siteOwner = owner != null ? SiteOwner.from(owner) : null;
 
     return new AddSiteRequest(
         treePresent,
@@ -211,7 +217,8 @@ public class CSVSiteUpload {
         city,
         zip,
         address,
-        neighborhoodId);
+        neighborhoodId,
+        siteOwner);
   }
 
   public Integer getBlockId() {
@@ -240,6 +247,10 @@ public class CSVSiteUpload {
 
   public String getNeighborhood() {
     return neighborhood;
+  }
+
+  public String getOwner() {
+    return owner;
   }
 
   public Boolean isTreePresent() {
@@ -395,7 +406,7 @@ public class CSVSiteUpload {
   }
 
   public Date getPlantingDate() {
-    return getPlantingDate();
+    return plantingDate;
   }
 
   private boolean falseIfNull(Boolean bool) {
