@@ -1,4 +1,4 @@
-name: deploy
+name: deploy-sftt
 on:
   push:
     branches: [ master ]

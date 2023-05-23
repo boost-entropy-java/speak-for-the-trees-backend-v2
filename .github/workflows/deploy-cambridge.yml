@@ -1,4 +1,4 @@
-name: deploy
+name: deploy-cambridge
 on:
   push:
     branches: [ master ]
