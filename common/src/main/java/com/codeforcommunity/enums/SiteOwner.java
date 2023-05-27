@@ -19,7 +19,7 @@ public enum SiteOwner {
 
   public static SiteOwner from(String owner) {
     for (SiteOwner siteOwner : SiteOwner.values()) {
-      if (siteOwner.owner.equals(owner)) {
+      if (siteOwner.owner.equalsIgnoreCase(owner)) {
         return siteOwner;
       }
     }
