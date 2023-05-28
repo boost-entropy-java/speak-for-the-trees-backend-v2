@@ -8,13 +8,21 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.codeforcommunity.aws.EncodedImage;
+import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import org.jsoup.Jsoup;
+import org.jsoup.parser.ParseError;
+import org.jsoup.parser.ParseErrorList;
+import org.jsoup.parser.Parser;
 
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
@@ -22,9 +30,10 @@ public class S3Requester {
     private static final AmazonS3 s3Client =
         AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
 
-    private static final String BUCKET_PUBLIC_URL = PropertiesLoader.loadProperty("s3_bucket_url");
-    private static final String BUCKET_PUBLIC = PropertiesLoader.loadProperty("s3_bucket_name");
-    private static final String DIR_PUBLIC = PropertiesLoader.loadProperty("s3_upload_dir");
+    private static final String BUCKET_PUBLIC_URL =
+        PropertiesLoader.loadProperty("aws_s3_bucket_url");
+    private static final String BUCKET_PUBLIC = PropertiesLoader.loadProperty("aws_s3_bucket_name");
+    private static final String DIR_PUBLIC = PropertiesLoader.loadProperty("aws_s3_upload_dir");
 
     public AmazonS3 getS3Client() {
       return s3Client;
@@ -178,21 +187,90 @@ public class S3Requester {
    */
   public static String validateUploadImageToS3LucyEvents(String eventTitle, String base64Encoding)
       throws BadRequestImageException, S3FailedUploadException {
-    String fileName = getImageFileNameWithoutExtension(eventTitle);
+    String fileName = getFileNameWithoutExtension(eventTitle, "_thumbnail");
     return validateBase64ImageAndUploadToS3(fileName, externs.getDirPublic(), base64Encoding);
   }
 
   /**
-   * Removes special characters, replaces spaces, and appends "_thumbnail".
+   * Removes special characters, replaces spaces, and appends a suffix.
    *
    * @param eventTitle the title of the event.
+   * @param suffix the suffix to be appended
    * @return the String for the image file name (without the file extension).
    */
-  public static String getImageFileNameWithoutExtension(String eventTitle) {
+  public static String getFileNameWithoutExtension(String eventTitle, String suffix) {
     String title =
         eventTitle.replaceAll(
             "[!@#$%^&*()=+./\\\\|<>`~\\[\\]{}?]", ""); // Remove special characters
-    return title.replace(" ", "_").toLowerCase()
-        + "_thumbnail"; // The desired name of the file in S3
+    return title.replace(" ", "_").toLowerCase() + suffix; // The desired name of the file in S3
+  }
+
+  /**
+   * Validate the given string encoding of HTML and upload it to the user upload S3 bucket.
+   * HTML will be overwritten in S3 if another file of the same name is uploaded.
+   *
+   * @param name the desired name of the new file in S3 (without a file extension).
+   * @param directoryName the desired directory of the file in S3 (without leading or trailing '/').
+   * @param adminID the desired ID of the user uploading the HTML to S3.
+   * @param htmlContent the string encoding of the HTML to upload.
+   * @return HTML file URL if the upload was successful.
+   * @throws BadRequestHTMLException if the string to HTML decoding failed.
+   * @throws S3FailedUploadException if the upload to S3 failed.
+   */
+  public static String uploadHTML(
+      String name, String directoryName, Integer adminID, String htmlContent) {
+    // Save HTML to temp file
+    String fullFileName = getFileNameWithoutExtension(name, "_template") + ".html";
+    File tempFile;
+
+    // try to create a clean parse
+    Parser parser = Parser.htmlParser().setTrackErrors(10);
+    Jsoup.parse(htmlContent, parser);
+    ParseErrorList errors = parser.getErrors();
+    String errorLog = "";
+    if (errors.size() > 0) {
+      for (ParseError e : errors) {
+        errorLog += e.getErrorMessage() + "\n";
+      }
+      throw new BadRequestHTMLException(errorLog);
+    }
+
+    try {
+      // Temporarily writes the string to HTML file on disk
+      tempFile = File.createTempFile(fullFileName, null, null);
+      FileOutputStream fos = new FileOutputStream(tempFile);
+      byte[] bytesArray = htmlContent.getBytes();
+      fos.write(bytesArray);
+      fos.flush();
+      fos.close();
+    } catch (IllegalArgumentException | IOException e) {
+      // The string failed to decode to HTML
+      throw new BadRequestHTMLException("HTML could not be written to disk.");
+    }
+
+    // Create the request to upload the HTML
+    PutObjectRequest awsRequest =
+        new PutObjectRequest(
+            externs.getBucketPublic(), directoryName + "/" + fullFileName, tempFile);
+
+    // Set the HTML file metadata to have the userID of the uploader
+    ObjectMetadata awsObjectMetadata = new ObjectMetadata();
+    Map<String, String> userMetadata = new HashMap<>();
+    userMetadata.put("userID", Integer.toString(adminID));
+    awsObjectMetadata.setUserMetadata(userMetadata);
+    awsRequest.setMetadata(awsObjectMetadata);
+
+    try {
+      // Perform the upload to S3
+      externs.getS3Client().putObject(awsRequest);
+    } catch (SdkClientException e) {
+      // The AWS S3 upload failed
+      throw new S3FailedUploadException(e.getMessage());
+    }
+
+    // Delete the temporary file that was written to disk
+    tempFile.delete();
+
+    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }
 }

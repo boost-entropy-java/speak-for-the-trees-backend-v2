@@ -15,9 +15,9 @@ ENV_VALUES = {
         # AWS Properties
         "aws_access_key": "AWS_ACCESS_KEY_ID",
         "aws_secret_key": "AWS_SECRET_ACCESS_KEY",
-        # "aws_s3_bucket_url": "AWS_S3_BUCKET_URL",
-        # "aws_s3_bucket_name": "AWS_S3_BUCKET_NAME",
-        # "aws_s3_upload_dir": "AWS_S3_BUCKET_DIR",
+        "aws_s3_bucket_url": "AWS_S3_BUCKET_URL",
+        "aws_s3_bucket_name": "AWS_S3_BUCKET_NAME",
+        "aws_s3_upload_dir": "AWS_S3_BUCKET_DIR",
 
         # Database Properties
         "database_url": "DB_DOMAIN",

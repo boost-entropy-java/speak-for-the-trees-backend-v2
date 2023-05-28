@@ -580,14 +580,24 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     String ACTIVITY_COUNT_COLUMN = "act_count";
 
     // Table containing the number of stewardship activities performed by a user on a site
-    Table<org.jooq.Record3<Integer, Integer, Integer>> activityCounts = db
-        .select(when(STEWARDSHIP.USER_ID.isNotNull(), count()).otherwise(0).as(ACTIVITY_COUNT_COLUMN), ADOPTED_SITES.SITE_ID, ADOPTED_SITES.USER_ID)
-        .from(ADOPTED_SITES).leftJoin(STEWARDSHIP)
-        .on(ADOPTED_SITES.SITE_ID.eq(STEWARDSHIP.SITE_ID)).and(ADOPTED_SITES.USER_ID.eq(STEWARDSHIP.USER_ID))
-        .groupBy(ADOPTED_SITES.SITE_ID, ADOPTED_SITES.USER_ID, STEWARDSHIP.USER_ID)
-        .asTable("activityCounts");
+    Table<org.jooq.Record3<Integer, Integer, Integer>> activityCounts =
+        db.select(
+                when(STEWARDSHIP.USER_ID.isNotNull(), count())
+                    .otherwise(0)
+                    .as(ACTIVITY_COUNT_COLUMN),
+                ADOPTED_SITES.SITE_ID,
+                ADOPTED_SITES.USER_ID)
+            .from(ADOPTED_SITES)
+            .leftJoin(STEWARDSHIP)
+            .on(ADOPTED_SITES.SITE_ID.eq(STEWARDSHIP.SITE_ID))
+            .and(ADOPTED_SITES.USER_ID.eq(STEWARDSHIP.USER_ID))
+            .groupBy(ADOPTED_SITES.SITE_ID, ADOPTED_SITES.USER_ID, STEWARDSHIP.USER_ID)
+            .asTable("activityCounts");
 
-    Condition filterCondition = activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).ge(filterSitesRequest.getActivityCountMin());
+    Condition filterCondition =
+        activityCounts
+            .field(ACTIVITY_COUNT_COLUMN, Integer.class)
+            .ge(filterSitesRequest.getActivityCountMin());
     if (filterSitesRequest.getTreeCommonNames() != null)
       filterCondition =
           filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
@@ -601,9 +611,11 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       filterCondition =
           filterCondition.and(SITES.NEIGHBORHOOD_ID.in(filterSitesRequest.getNeighborhoodIds()));
     if (filterSitesRequest.getActivityCountMax() != null)
-      filterCondition = filterCondition.and(
-        activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class).le(filterSitesRequest.getActivityCountMax())
-      );
+      filterCondition =
+          filterCondition.and(
+              activityCounts
+                  .field(ACTIVITY_COUNT_COLUMN, Integer.class)
+                  .le(filterSitesRequest.getActivityCountMax()));
 
     Condition stewardshipCondition = noCondition();
     if (filterSitesRequest.getLastActivityStart() != null)
@@ -615,24 +627,64 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           stewardshipCondition.and(
               max(STEWARDSHIP.PERFORMED_ON).le(filterSitesRequest.getLastActivityEnd()));
 
-    Result<org.jooq.Record12<Integer, String, Integer, Integer, Date, Date, Timestamp, String, String, String, String, Integer>>
-        records = db
-        .select(SITES.ID, SITES.ADDRESS, SITES.NEIGHBORHOOD_ID, ADOPTED_SITES.USER_ID, ADOPTED_SITES.DATE_ADOPTED,
-            max(STEWARDSHIP.PERFORMED_ON).as(STEWARDSHIP.PERFORMED_ON),
-            max(SITE_ENTRIES.UPDATED_AT).as(SITE_ENTRIES.UPDATED_AT),
-            SITE_ENTRIES.COMMON_NAME, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, coalesce(activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class), 0).as(ACTIVITY_COUNT_COLUMN))
-        .from(ADOPTED_SITES)
-        .join(SITES).on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
-        .join(USERS).on(ADOPTED_SITES.USER_ID.eq(USERS.ID))
-        .leftJoin(STEWARDSHIP).on(ADOPTED_SITES.SITE_ID.eq(STEWARDSHIP.SITE_ID))
-        .join(SITE_ENTRIES).on(ADOPTED_SITES.SITE_ID.eq(SITE_ENTRIES.SITE_ID))
-        .leftJoin(activityCounts).on(
-            ADOPTED_SITES.SITE_ID.eq(activityCounts.field(STEWARDSHIP.SITE_ID))
-                .and(ADOPTED_SITES.USER_ID.eq(activityCounts.field(STEWARDSHIP.USER_ID))))
-        .where(filterCondition)
-        .groupBy(SITES.ID, SITES.ADDRESS, SITES.NEIGHBORHOOD_ID, ADOPTED_SITES.USER_ID, ADOPTED_SITES.DATE_ADOPTED, SITE_ENTRIES.COMMON_NAME, USERS.FIRST_NAME, USERS.LAST_NAME, USERS.EMAIL, activityCounts.field(ACTIVITY_COUNT_COLUMN))
-        .having(stewardshipCondition)
-        .fetch();
+    Result<
+            org.jooq.Record12<
+                Integer,
+                String,
+                Integer,
+                Integer,
+                Date,
+                Date,
+                Timestamp,
+                String,
+                String,
+                String,
+                String,
+                Integer>>
+        records =
+            db.select(
+                    SITES.ID,
+                    SITES.ADDRESS,
+                    SITES.NEIGHBORHOOD_ID,
+                    ADOPTED_SITES.USER_ID,
+                    ADOPTED_SITES.DATE_ADOPTED,
+                    max(STEWARDSHIP.PERFORMED_ON).as(STEWARDSHIP.PERFORMED_ON),
+                    max(SITE_ENTRIES.UPDATED_AT).as(SITE_ENTRIES.UPDATED_AT),
+                    SITE_ENTRIES.COMMON_NAME,
+                    USERS.FIRST_NAME,
+                    USERS.LAST_NAME,
+                    USERS.EMAIL,
+                    coalesce(activityCounts.field(ACTIVITY_COUNT_COLUMN, Integer.class), 0)
+                        .as(ACTIVITY_COUNT_COLUMN))
+                .from(ADOPTED_SITES)
+                .join(SITES)
+                .on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
+                .join(USERS)
+                .on(ADOPTED_SITES.USER_ID.eq(USERS.ID))
+                .leftJoin(STEWARDSHIP)
+                .on(ADOPTED_SITES.SITE_ID.eq(STEWARDSHIP.SITE_ID))
+                .join(SITE_ENTRIES)
+                .on(ADOPTED_SITES.SITE_ID.eq(SITE_ENTRIES.SITE_ID))
+                .leftJoin(activityCounts)
+                .on(
+                    ADOPTED_SITES
+                        .SITE_ID
+                        .eq(activityCounts.field(STEWARDSHIP.SITE_ID))
+                        .and(ADOPTED_SITES.USER_ID.eq(activityCounts.field(STEWARDSHIP.USER_ID))))
+                .where(filterCondition)
+                .groupBy(
+                    SITES.ID,
+                    SITES.ADDRESS,
+                    SITES.NEIGHBORHOOD_ID,
+                    ADOPTED_SITES.USER_ID,
+                    ADOPTED_SITES.DATE_ADOPTED,
+                    SITE_ENTRIES.COMMON_NAME,
+                    USERS.FIRST_NAME,
+                    USERS.LAST_NAME,
+                    USERS.EMAIL,
+                    activityCounts.field(ACTIVITY_COUNT_COLUMN))
+                .having(stewardshipCondition)
+                .fetch();
 
     return records.stream()
         .map(
