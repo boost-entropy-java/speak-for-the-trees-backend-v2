@@ -5,14 +5,15 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
+import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -206,8 +207,8 @@ public class S3Requester {
   }
 
   /**
-   * Validate the given string encoding of HTML and upload it to the user upload S3 bucket.
-   * HTML will be overwritten in S3 if another file of the same name is uploaded.
+   * Validate the given string encoding of HTML and upload it to the user upload S3 bucket. HTML
+   * will be overwritten in S3 if another file of the same name is uploaded.
    *
    * @param name the desired name of the new file in S3 (without a file extension).
    * @param directoryName the desired directory of the file in S3 (without leading or trailing '/').
@@ -270,6 +271,31 @@ public class S3Requester {
 
     // Delete the temporary file that was written to disk
     tempFile.delete();
+
+    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
+  }
+
+  /**
+   * Delete the existing HTML file with the given name from the user uploads S3 bucket.
+   *
+   * @param name the name of the HTML file in S3 to be deleted.
+   * @param directoryName the directory of the file in S3 (without leading or trailing '/').
+   * @return previously existing HTML file URL if the deletion was successful.
+   * @throws InvalidURLException if the file does not exist.
+   * @throws SdkClientException if the deletion from S3 failed.
+   */
+  public static String deleteHTML(String name, String directoryName) {
+    String HTMLPath = directoryName + "/" + name;
+    Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
+
+    if (!htmlExists) {
+      throw new InvalidURLException();
+    }
+
+    // Create the request to delete the HTML
+    DeleteObjectRequest awsRequest = new DeleteObjectRequest(externs.getBucketPublic(), HTMLPath);
+
+    externs.getS3Client().deleteObject(awsRequest);
 
     return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }

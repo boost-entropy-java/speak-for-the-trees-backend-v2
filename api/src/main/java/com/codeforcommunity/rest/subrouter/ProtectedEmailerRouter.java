@@ -43,4 +43,18 @@ public class ProtectedEmailerRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
+
+  private void registerDeleteTemplate(Router router) {
+    Route deleteTemplate = router.post("/delete_template/:template_name");
+    deleteTemplate.handler(this::handleDeleteTemplate);
+  }
+
+  private void handleDeleteTemplate(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    String templateName = RestFunctions.getRequestParameterAsString(ctx.request(), "template_name");
+
+    processor.deleteTemplate(userData, templateName);
+
+    end(ctx.response(), 200);
+  }
 }
