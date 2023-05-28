@@ -1,5 +1,6 @@
 package com.codeforcommunity.requester;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -286,9 +287,11 @@ public class S3Requester {
    */
   public static String deleteHTML(String name, String directoryName) {
     String HTMLPath = directoryName + "/" + name;
-    Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
 
-    if (!htmlExists) {
+    // if the object does not exist, it throws a 403 for metadata?
+    try {
+      Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
+    } catch(AmazonServiceException e) {
       throw new InvalidURLException();
     }
 

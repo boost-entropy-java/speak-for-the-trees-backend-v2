@@ -25,6 +25,7 @@ public class ProtectedEmailerRouter implements IRouter {
     Router router = Router.router(vertx);
 
     registerAddTemplate(router);
+    registerDeleteTemplate(router);
 
     return router;
   }
