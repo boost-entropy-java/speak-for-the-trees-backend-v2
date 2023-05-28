@@ -286,7 +286,8 @@ public class S3Requester {
    * @param directoryName the directory of the file in S3 (without leading or trailing '/').
    * @return LoadTemplateResponse with the html file name, content, and author.
    * @throws InvalidURLException if the file does not exist.
-   * @throws SdkClientException if the deletion from S3 failed.
+   * @throws BadRequestHTMLException if the HTML file cannot be decoded to a string.
+   * @throws SdkClientException if the loading from S3 failed.
    */
   public static LoadTemplateResponse loadHTML(String name, String directoryName) {
     String HTMLPath = directoryName + "/" + name;
@@ -302,7 +303,18 @@ public class S3Requester {
     GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), HTMLPath);
 
     S3Object HTMLFile = externs.getS3Client().getObject(awsRequest);
-    String HTMLContent = HTMLFile.getObjectContent().toString();
+    StringBuilder content = new StringBuilder();
+    try {
+      int c = 0;
+      while ((c = HTMLFile.getObjectContent().read()) != -1) {
+        content.append((char) c);
+      }
+    } catch(IOException e) {
+      throw new BadRequestHTMLException("HTML file could not be decoded to string");
+    }
+
+    String HTMLContent = content.toString();
+
     String HTMLAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
 
     return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), HTMLAuthor);
