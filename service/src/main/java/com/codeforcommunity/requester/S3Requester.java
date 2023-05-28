@@ -1,16 +1,21 @@
 package com.codeforcommunity.requester;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.codeforcommunity.aws.EncodedImage;
+import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
+import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 
 import java.io.File;
@@ -272,5 +277,34 @@ public class S3Requester {
     tempFile.delete();
 
     return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
+  }
+
+  /**
+   * Load the existing HTML file with the given name from the user uploads S3 bucket.
+   *
+   * @param name the name of the HTML file in S3 to be deleted.
+   * @param directoryName the directory of the file in S3 (without leading or trailing '/').
+   * @return LoadTemplateResponse with the html file name, content, and author.
+   * @throws InvalidURLException if the file does not exist.
+   * @throws SdkClientException if the deletion from S3 failed.
+   */
+  public static LoadTemplateResponse loadHTML(String name, String directoryName) {
+    String HTMLPath = directoryName + "/" + name;
+
+    // if the object does not exist, it throws a 403 for metadata?
+    try {
+      Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
+    } catch(AmazonServiceException e) {
+      throw new InvalidURLException();
+    }
+
+    // Create the request to delete the HTML
+    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), HTMLPath);
+
+    S3Object HTMLFile = externs.getS3Client().getObject(awsRequest);
+    String HTMLContent = HTMLFile.getObjectContent().toString();
+    String HTMLAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
+
+    return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), HTMLAuthor);
   }
 }

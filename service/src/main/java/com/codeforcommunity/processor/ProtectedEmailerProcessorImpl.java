@@ -3,6 +3,7 @@ package com.codeforcommunity.processor;
 import com.codeforcommunity.api.IProtectedEmailerProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.emailer.AddTemplateRequest;
+import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.requester.S3Requester;
 
 public class ProtectedEmailerProcessorImpl extends AbstractProcessor
@@ -16,5 +17,12 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
         "email_templates",
         userData.getUserId(),
         addTemplateRequest.getTemplate());
+  }
+
+  @Override
+  public LoadTemplateResponse loadTemplate(JWTData userData, String templateName) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    LoadTemplateResponse loadTemplateResponse = S3Requester.loadHTML(templateName, "email_templates");
+    return loadTemplateResponse;
   }
 }
