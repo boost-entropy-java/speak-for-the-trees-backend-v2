@@ -9,12 +9,14 @@ import com.codeforcommunity.requester.S3Requester;
 public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     implements IProtectedEmailerProcessor {
 
+  static public String TEMPLATE_DIR = "email_templates";
+
   @Override
   public void addTemplate(JWTData userData, AddTemplateRequest addTemplateRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     S3Requester.uploadHTML(
         addTemplateRequest.getName(),
-        "email_templates",
+        TEMPLATE_DIR,
         userData.getUserId(),
         addTemplateRequest.getTemplate());
   }
@@ -22,7 +24,7 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   @Override
   public LoadTemplateResponse loadTemplate(JWTData userData, String templateName) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    LoadTemplateResponse loadTemplateResponse = S3Requester.loadHTML(templateName, "email_templates");
+    LoadTemplateResponse loadTemplateResponse = S3Requester.loadHTML(templateName, TEMPLATE_DIR);
     return loadTemplateResponse;
   }
 }
