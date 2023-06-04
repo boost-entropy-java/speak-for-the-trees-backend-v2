@@ -292,7 +292,7 @@ public class S3Requester {
   /**
    * Load the existing HTML file with the given name from the user uploads S3 bucket.
    *
-   * @param name the name of the HTML file in S3 to be deleted (without "_template.html extension)
+   * @param name the name of the HTML file in S3 to be loaded (without "_template.html extension).
    * @param directoryName the directory of the file in S3 (without leading or trailing '/').
    * @return LoadTemplateResponse with the html file name, content, and author.
    * @throws InvalidURLException if the file does not exist.
