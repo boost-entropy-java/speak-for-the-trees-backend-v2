@@ -116,10 +116,10 @@ public class EditSiteRequest extends ApiDto {
     if (zip == null) {
       fields.add(fieldName + "zip");
     }
-    if (lat == null) {
+    if (lat == null || !isValidCoordinate(lat)) {
       fields.add(fieldName + "lat");
     }
-    if (lng == null) {
+    if (lng == null || !isValidCoordinate(lng)) {
       fields.add(fieldName + "lng");
     }
     if (neighborhoodId == null) {
@@ -130,5 +130,9 @@ public class EditSiteRequest extends ApiDto {
     }
 
     return fields;
+  }
+
+  private boolean isValidCoordinate(BigDecimal coordinate) {
+    return coordinate.abs().compareTo(BigDecimal.valueOf(1000)) < 0;
   }
 }
