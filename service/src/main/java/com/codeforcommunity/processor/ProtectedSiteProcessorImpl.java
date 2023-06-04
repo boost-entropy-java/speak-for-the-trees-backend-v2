@@ -477,7 +477,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       }
       addSiteRequests.forEach(siteRequest -> siteRequest.validate());
       return addSiteRequests;
-    } catch (HandledException | IOException e) {
+    } catch (HandledException | IOException | IllegalArgumentException e) {
       throw new InvalidCSVException();
     }
   }
