@@ -9,19 +9,13 @@ import java.util.List;
 
 public class TreeBenefitsCalculator {
   static final String region = "NoEastXXX";
-  static final String dataFolder = "OTMData";
+  static final String dataFolder = "/OTMData";
   static final double[] intervals = new double[] {
           3.81, 11.43, 22.86,	38.10,	53.34,	68.58,	83.82,	99.06,	114.30};
   final String speciesCode;
   final double diameterCM;
-  /**
-   * For each returned value, the corresponding columns to add/aggregate are:
-   * energy: natural_gas , electricity
-   * stormwater: hydro_interception
-   * airQuality: all columns prefixed with aq
-   * co2Removed: co2_sequestered, co2_avoided
-   * co2Stored: co2_storage
-   */
+
+  // diameter in inches
   public TreeBenefitsCalculator(String commonName, double diameter) {
     this.speciesCode = getSpeciesCode(commonName);
     this.diameterCM = diameter*2.54;
@@ -42,12 +36,12 @@ public class TreeBenefitsCalculator {
         df.add(Arrays.asList(values));
       }
     } catch (IOException e) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Unable to read " + path);
     }
     return df;
   }
 
-  // queries species_master_list.csv to get the corresponding code
+  // helper to query species_master_list.csv and get the corresponding code
   private String getSpeciesCode(String commonName) {
     List<List<String>> codeDF = readCSV(dataFolder + "/species_master_list.csv");
     int comNameIdx = 2;
@@ -60,7 +54,7 @@ public class TreeBenefitsCalculator {
       }
     }
     // query does not exist
-    throw new IllegalArgumentException();
+    throw new IllegalArgumentException("Unable to find entry with name " + commonName);
   }
 
   // helper to query the value at the given row and column names of a matrix
@@ -73,17 +67,11 @@ public class TreeBenefitsCalculator {
       }
     }
     // query does not exist
-    throw new IllegalArgumentException();
+    throw new IllegalArgumentException(
+            "Unable to locate entry at row " + rowName + " and column " + colName);
   }
 
-  // interpolates the corresponding y value of an input x given two points (x0,y0) and (x1, y1)
-  private double interpolate(double x, double x0, double x1, double y0, double y1) {
-    double m = (y1-y0) / (x1-x0);
-    double b = y0 - (x0*m);
-    double y = m*x + b;
-    return y;
-  }
-
+  // helper to calculate the interpolated value of the given property
   private double calcProperty(String property) {
     String path = getCSVPath(property);
     List<List<String>> codeDF = readCSV(path);
@@ -101,30 +89,39 @@ public class TreeBenefitsCalculator {
     double y0 = Double.parseDouble(queryRowCol(codeDF, speciesCode, String.valueOf(x0)));
     double y1 = Double.parseDouble(queryRowCol(codeDF, speciesCode, String.valueOf(x1)));
 
-    double value = interpolate(diameterCM, x0, x1, y0, y1);
+    //interpolate value
+    double m = (y1-y0) / (x1-x0);
+    double b = y0 - (x0*m);
+    double value = m*diameterCM + b;
+
     return value;
   }
 
-  // calculates the total energy conserved (from natural gas and electricity) in kWh
+  /**
+   * Calculates the total energy conserved (from natural gas and electricity) in kWh
+   */
   public double calcEnergy() {
     return calcProperty("natural_gas") + calcProperty("electricity");
   }
 
-  // calculates the total water filtered in gal
+  /**
+   * Calculates the total water filtered in gal
+   */
   public double calcStormwater() {
     return calcProperty("hydro_interception");
   }
 
   /**
-   * calculates the air quality improved based on:
-   * nitrous oxide (NOx) avoided (kg)
-   * nitrous oxide (NOx) deposition (kg)
-   * ozone deposition (kg)
-   * PM10 avoided (kg)
-   * PM10 deposition (kg)
-   * sulfur oxide (SOx) avoided (kg)
-   * sulfur oxide (SOx) deposition (kg)
-   * volatile organic compounds (VOCs) avoided (kg)
+   * Calculates the air quality improved based on the avoidance
+   * and deposition of various compounds in kg:
+   * nitrous oxide (NOx) avoided
+   * nitrous oxide (NOx) deposition
+   * ozone deposition
+   * PM10 avoided
+   * PM10 deposition
+   * sulfur oxide (SOx) avoided
+   * sulfur oxide (SOx) deposition
+   * volatile organic compounds (VOCs) avoided
    */
   public double calcAirQuality() {
     return calcProperty("aq_nox_avoided") +
@@ -136,12 +133,17 @@ public class TreeBenefitsCalculator {
                         calcProperty("aq_sox_dep") +
                           calcProperty("aq_voc_avoided");
   }
-  // calculates the total carbon dioxide removed (from avoiding and sequestering) in lbs
+
+  /**
+   * Calculates the total carbon dioxide removed (from avoiding and sequestering) in lbs
+   */
   public double calcCo2Removed() {
     return calcProperty("co2_avoided") + calcProperty("co2_sequestered");
   }
 
-  // calculates the total carbon dioxide stored in lbs
+  /**
+   * Calculates the total carbon dioxide stored in lbs
+   */
   public double calcCo2Stored() {
     return calcProperty("co2_storage");
   }

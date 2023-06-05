@@ -12,6 +12,8 @@ import com.codeforcommunity.dto.site.GetSiteResponse;
 import com.codeforcommunity.dto.site.SiteEntry;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
 import com.codeforcommunity.dto.site.StewardshipActivity;
+import com.codeforcommunity.dto.site.TreeBenefitsCalculator;
+import com.codeforcommunity.dto.site.TreeBenefitsResponse;
 import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.logger.SLogger;
@@ -229,5 +231,41 @@ public class SiteProcessorImpl implements ISiteProcessor {
         .and(SITE_ENTRIES.COMMON_NAME.notEqual(""))
         .orderBy(SITE_ENTRIES.COMMON_NAME.asc())
         .fetchInto(String.class);
+  }
+
+  @Override
+  public TreeBenefitsResponse calculateBenefits(int siteId) {
+    checkSiteExists(siteId);
+
+    SiteEntriesRecord record = db.selectFrom(SITE_ENTRIES)
+            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+            .fetchOne();
+
+    if (record==null) {
+      throw new ResourceDoesNotExistException(siteId, "site entry");
+    }
+
+    String commonName = record.getCommonName();
+    double diameter = record.getDiameter();
+
+    if (commonName==null) {
+      throw new ResourceDoesNotExistException(siteId, "site entry common name");
+    } else if (diameter==0) {
+      throw new ResourceDoesNotExistException(siteId, "site entry diameter");
+    }
+
+    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(commonName, diameter);
+    return new TreeBenefitsResponse(
+            calculator.calcEnergy(),
+            0,
+            calculator.calcStormwater(),
+            0,
+            calculator.calcAirQuality(),
+            0,
+            calculator.calcCo2Removed(),
+            0,
+            calculator.calcCo2Stored(),
+            0
+    );
   }
 }

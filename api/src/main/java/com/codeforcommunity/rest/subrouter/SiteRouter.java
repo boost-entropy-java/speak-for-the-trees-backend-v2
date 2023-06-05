@@ -6,6 +6,7 @@ import com.codeforcommunity.api.ISiteProcessor;
 import com.codeforcommunity.dto.site.GetSiteResponse;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
 import com.codeforcommunity.dto.site.StewardshipActivity;
+import com.codeforcommunity.dto.site.TreeBenefitsResponse;
 import com.codeforcommunity.logger.SLogger;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
@@ -34,6 +35,7 @@ public class SiteRouter implements IRouter {
     registerGetSite(router);
     registerGetStewardshipActivities(router);
     registerGetAllCommonNames(router);
+    registerCalculateBenefits(router);
 
     return router;
   }
@@ -82,5 +84,16 @@ public class SiteRouter implements IRouter {
         ctx.response(),
         200,
         JsonObject.mapFrom(Collections.singletonMap("names", commonNames)).toString());
+  }
+
+  private void registerCalculateBenefits(Router router) {
+    Route calculateBenefits = router.get("/:site_id/calculate_benefits");
+    calculateBenefits.handler(this::handleCalculateBenefits);
+  }
+
+  private void handleCalculateBenefits(RoutingContext ctx) {
+    int siteId = RestFunctions.getRequestParameterAsInt(ctx.request(), "site_id");
+    TreeBenefitsResponse treeBenefitsResponse = processor.calculateBenefits(siteId);
+    end(ctx.response(), 200, JsonObject.mapFrom(treeBenefitsResponse).toString());
   }
 }
