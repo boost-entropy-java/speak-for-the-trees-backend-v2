@@ -1,17 +1,30 @@
-package com.codeforcommunity.dto.site;
+package com.codeforcommunity.benefits;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TreeBenefitsCalculator {
   static final String region = "NoEastXXX";
   static final String dataFolder = "/OTMData";
   static final double[] intervals = new double[] {
           3.81, 11.43, 22.86,	38.10,	53.34,	68.58,	83.82,	99.06,	114.30};
+  static final Map<String, Double> currencyConversion = new HashMap<String, Double>() {{
+            put("electricity_kwh_to_currency", 0.1401);
+            put("natural_gas_kbtu_to_currency", 0.01408);
+            put("h20_gal_to_currency", 0.0008);
+            put("co2_lb_to_currency", 0.00334);
+            put("o3_lb_to_currency", 4.59);
+            put("nox_lb_to_currency", 4.59);
+            put("pm10_lb_to_currency", 8.31);
+            put("sox_lb_to_currency", 3.48);
+            put("voc_lb_to_currency", 2.31);
+  }};
   final String speciesCode;
   final double diameterCM;
 
@@ -102,6 +115,13 @@ public class TreeBenefitsCalculator {
    */
   public double calcEnergy() {
     return calcProperty("natural_gas") + calcProperty("electricity");
+  }
+
+  /**
+   * Calculates the total energy conserved (from natural gas and electricity) in kWh
+   */
+  public double calcEnergyMoney() {
+    return calcProperty("natural_gas")* currencyConversion.get("natural_") + calcProperty("electricity");
   }
 
   /**

@@ -12,7 +12,7 @@ import com.codeforcommunity.dto.site.GetSiteResponse;
 import com.codeforcommunity.dto.site.SiteEntry;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
 import com.codeforcommunity.dto.site.StewardshipActivity;
-import com.codeforcommunity.dto.site.TreeBenefitsCalculator;
+import com.codeforcommunity.benefits.TreeBenefitsCalculator;
 import com.codeforcommunity.dto.site.TreeBenefitsResponse;
 import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
@@ -256,16 +256,11 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
     TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(commonName, diameter);
     return new TreeBenefitsResponse(
-            calculator.calcEnergy(),
-            0,
-            calculator.calcStormwater(),
-            0,
-            calculator.calcAirQuality(),
-            0,
-            calculator.calcCo2Removed(),
-            0,
-            calculator.calcCo2Stored(),
-            0
+            calculator.calcEnergy(), calculator.calcEnergyMoney(),
+            calculator.calcStormwater(), calculator.calcStormwaterMoney(),
+            calculator.calcAirQuality(), calculator.calcAirQualityMoney(),
+            calculator.calcCo2Removed(), calculator.calcCo2RemovedMoney(),
+            calculator.calcCo2Stored(), calculator.calcCo2StoredMoney(),
     );
   }
 }
