@@ -60,6 +60,7 @@ public class ProtectedEmailerRouter implements IRouter {
     LoadTemplateResponse loadTemplateResponse = processor.loadTemplate(userData, templateName);
 
     end(ctx.response(), 200, JsonObject.mapFrom(loadTemplateResponse).toString());
+  }
 
   private void registerDeleteTemplate(Router router) {
     Route deleteTemplate = router.post("/delete_template/:template_name");
