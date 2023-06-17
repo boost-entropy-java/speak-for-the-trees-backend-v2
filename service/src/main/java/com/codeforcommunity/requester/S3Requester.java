@@ -317,7 +317,7 @@ public class S3Requester {
       while ((c = HTMLFile.getObjectContent().read()) != -1) {
         content.append((char) c);
       }
-    } catch(IOException e) {
+    } catch (IOException e) {
       throw new BadRequestHTMLException("HTML file could not be decoded to string");
     }
 
@@ -326,17 +326,17 @@ public class S3Requester {
     String htmlAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
 
     return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), htmlAuthor);
+  }
 
   /**
    * Delete the existing HTML file with the given name from the user uploads S3 bucket.
    *
    * @param name the name of the HTML file in S3 to be deleted.
    * @param directoryName the directory of the file in S3 (without leading or trailing '/').
-   * @return previously existing HTML file URL if the deletion was successful.
    * @throws InvalidURLException if the file does not exist.
    * @throws SdkClientException if the deletion from S3 failed.
    */
-  public static String deleteHTML(String name, String directoryName) {
+  public static void deleteHTML(String name, String directoryName) {
     String HTMLPath = directoryName + "/" + name;
 
     // if the object does not exist, it throws a 403 for metadata?
@@ -350,7 +350,5 @@ public class S3Requester {
     DeleteObjectRequest awsRequest = new DeleteObjectRequest(externs.getBucketPublic(), HTMLPath);
 
     externs.getS3Client().deleteObject(awsRequest);
-
-    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }
 }

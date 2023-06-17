@@ -57,6 +57,7 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     );
 
     return loadTemplateResponse;
+  }
 
   @Override
   public void deleteTemplate(JWTData userData, String templateName) {
