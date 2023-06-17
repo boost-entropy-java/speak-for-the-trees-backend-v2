@@ -23,6 +23,9 @@ public enum SiteOwner {
         return siteOwner;
       }
     }
+    if (owner.equals("")) {
+      return SiteOwner.ROW;
+    }
     throw new IllegalArgumentException(
         String.format("Given owner `%s` doesn't correspond to any `SiteOwner`", owner));
   }

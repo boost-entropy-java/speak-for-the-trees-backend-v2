@@ -187,10 +187,10 @@ public class AddSiteRequest extends UpdateSiteRequest {
     String fieldName = fieldPrefix + "add_site_request.";
     List<String> fields = super.validateFields("");
 
-    if (lat == null) {
+    if (lat == null || !isValidCoordinate(lat)) {
       fields.add(fieldName + "lat");
     }
-    if (lng == null) {
+    if (lng == null || !isValidCoordinate(lng)) {
       fields.add(fieldName + "lng");
     }
     if (city == null) {
@@ -210,5 +210,9 @@ public class AddSiteRequest extends UpdateSiteRequest {
     }
 
     return fields;
+  }
+
+  private boolean isValidCoordinate(BigDecimal coordinate) {
+    return coordinate.abs().compareTo(BigDecimal.valueOf(1000)) < 0;
   }
 }

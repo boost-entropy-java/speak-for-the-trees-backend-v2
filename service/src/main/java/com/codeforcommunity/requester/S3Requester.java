@@ -2,18 +2,24 @@ package com.codeforcommunity.requester;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.codeforcommunity.aws.EncodedImage;
+import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
+import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,7 +36,10 @@ public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
   public static class Externs {
     private static final AmazonS3 s3Client =
-        AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
+        AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).withCredentials(
+                new AWSStaticCredentialsProvider(new BasicAWSCredentials(PropertiesLoader
+                        .loadProperty("aws_access_key"), PropertiesLoader.
+                        loadProperty("aws_secret_key")))).build();
 
     private static final String BUCKET_PUBLIC_URL =
         PropertiesLoader.loadProperty("aws_s3_bucket_url");
@@ -275,6 +284,48 @@ public class S3Requester {
 
     return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }
+  
+  // helper to check whether the given path exists
+  public static boolean pathExists(String path) {
+    return externs.getS3Client().doesObjectExist(externs.getBucketPublic(), path);
+  }
+
+  /**
+   * Load the existing HTML file with the given name from the user uploads S3 bucket.
+   *
+   * @param name the name of the HTML file in S3 to be loaded (without "_template.html extension).
+   * @param directoryName the directory of the file in S3 (without leading or trailing '/').
+   * @return LoadTemplateResponse with the html file name, content, and author.
+   * @throws InvalidURLException if the file does not exist.
+   * @throws BadRequestHTMLException if the HTML file cannot be decoded to a string.
+   * @throws SdkClientException if the loading from S3 failed.
+   */
+  public static LoadTemplateResponse loadHTML(String name, String directoryName) {
+    String htmlPath = directoryName + "/" + name + "_template.html";
+
+    if (!pathExists(htmlPath)) {
+      throw new InvalidURLException();
+    }
+
+    // Create the request to get the HTML
+    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), htmlPath);
+
+    S3Object HTMLFile = externs.getS3Client().getObject(awsRequest);
+    StringBuilder content = new StringBuilder();
+    try {
+      int c = 0;
+      while ((c = HTMLFile.getObjectContent().read()) != -1) {
+        content.append((char) c);
+      }
+    } catch(IOException e) {
+      throw new BadRequestHTMLException("HTML file could not be decoded to string");
+    }
+
+    String HTMLContent = content.toString();
+
+    String htmlAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
+
+    return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), htmlAuthor);
 
   /**
    * Delete the existing HTML file with the given name from the user uploads S3 bucket.
