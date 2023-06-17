@@ -115,7 +115,7 @@ public class ServiceMain {
     IReportProcessor reportProc = new ReportProcessorImpl(this.db);
     IProtectedNeighborhoodsProcessor protectedNeighborhoodsProc =
         new ProtectedNeighborhoodsProcessorImpl(this.db, emailer);
-    IProtectedEmailerProcessor emailerProc = new ProtectedEmailerProcessorImpl();
+    IProtectedEmailerProcessor emailerProc = new ProtectedEmailerProcessorImpl(this.db);
 
     // Create the API router and start the HTTP server
     ApiRouter router =

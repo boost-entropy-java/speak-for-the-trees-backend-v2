@@ -285,8 +285,7 @@ public class S3Requester {
 
   // helper to check whether the given path exists
   public static boolean pathExists(String path) {
-    Boolean exists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), path);
-    return exists;
+    return externs.getS3Client().doesObjectExist(externs.getBucketPublic(), path);
   }
 
   /**
@@ -300,14 +299,14 @@ public class S3Requester {
    * @throws SdkClientException if the loading from S3 failed.
    */
   public static LoadTemplateResponse loadHTML(String name, String directoryName) {
-    String HTMLPath = directoryName + "/" + name + "_template.html";
+    String htmlPath = directoryName + "/" + name + "_template.html";
 
-    if (!pathExists(HTMLPath)) {
+    if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
     }
 
     // Create the request to delete the HTML
-    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), HTMLPath);
+    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), htmlPath);
 
     S3Object HTMLFile = externs.getS3Client().getObject(awsRequest);
     StringBuilder content = new StringBuilder();
@@ -322,8 +321,8 @@ public class S3Requester {
 
     String HTMLContent = content.toString();
 
-    String HTMLAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
+    String htmlAuthor = HTMLFile.getObjectMetadata().getUserMetaDataOf("userID");
 
-    return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), HTMLAuthor);
+    return new LoadTemplateResponse(HTMLContent, HTMLFile.getKey(), htmlAuthor);
   }
 }
