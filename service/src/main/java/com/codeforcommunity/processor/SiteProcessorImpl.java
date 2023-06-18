@@ -254,7 +254,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
       throw new ResourceDoesNotExistException(siteId, "site entry diameter");
     }
 
-    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(commonName, diameter);
+    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(this.db, commonName, diameter);
     return new TreeBenefitsResponse(
             calculator.calcEnergy(), calculator.calcEnergyMoney(),
             calculator.calcStormwater(), calculator.calcStormwaterMoney(),

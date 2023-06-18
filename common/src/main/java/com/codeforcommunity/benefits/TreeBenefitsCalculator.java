@@ -1,17 +1,15 @@
 package com.codeforcommunity.benefits;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jooq.DSLContext;
+import org.jooq.generated.tables.records.TreeBenefitsRecord;
+import org.jooq.generated.tables.records.TreeSpeciesRecord;
+
 public class TreeBenefitsCalculator {
   static final String region = "NoEastXXX";
-  static final String dataFolder = "/OTMData";
   static final double[] intervals = new double[] {
           3.81, 11.43, 22.86,	38.10,	53.34,	68.58,	83.82,	99.06,	114.30};
   static final Map<String, Double> currencyConversion = new HashMap<String, Double>() {{
@@ -27,67 +25,28 @@ public class TreeBenefitsCalculator {
   }};
   final String speciesCode;
   final double diameterCM;
+  private final DSLContext db;
 
   // diameter in inches
-  public TreeBenefitsCalculator(String commonName, double diameter) {
+  public TreeBenefitsCalculator(DSLContext db, String commonName, double diameter) {
+    this.db = db;
     this.speciesCode = getSpeciesCode(commonName);
     this.diameterCM = diameter*2.54;
   }
 
-  // helper to get the path of the csv with the given property data
-  private String getCSVPath(String property) {
-    return dataFolder + "/" + "output__" + region + "__" + property + ".csv";
-  }
-
-  // helper to read in a csv as a matrix of strings
-  private List<List<String>> readCSV(String path) {
-    List<List<String>> df = new ArrayList();
-    try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-      String line;
-      while ((line = br.readLine()) != null) {
-        String[] values = line.split(",");
-        df.add(Arrays.asList(values));
-      }
-    } catch (IOException e) {
-      throw new IllegalArgumentException("Unable to read " + path);
-    }
-    return df;
-  }
-
   // helper to query species_master_list.csv and get the corresponding code
   private String getSpeciesCode(String commonName) {
-    List<List<String>> codeDF = readCSV(dataFolder + "/species_master_list.csv");
-    int comNameIdx = 2;
-    int codeIdx = 4;
-
-    for (int i=1; i<=codeDF.size(); i++) {
-      List<String> row = codeDF.get(i);
-      if (row.get(comNameIdx).equals(commonName)) {
-        return row.get(codeIdx);
-      }
+    TreeSpeciesRecord record = db.selectFrom(TREE_SPECIES)
+            .where(TREE_SPECIES.COMMON_NAME.eq(commonName)).fetchOne();
+    if (record == null) {
+      throw new IllegalArgumentException("Unable to find entry with name " + commonName);
     }
-    // query does not exist
-    throw new IllegalArgumentException("Unable to find entry with name " + commonName);
-  }
-
-  // helper to query the value at the given row and column names of a matrix
-  private String queryRowCol(List<List<String>> df, String rowName, String colName) {
-    int colIdx = df.get(0).indexOf(colName);
-    for (int i=1; i<=df.size(); i++) {
-      List<String> row = df.get(i);
-      if (row.get(0).equals(rowName)) {
-        return row.get(colIdx);
-      }
-    }
-    // query does not exist
-    throw new IllegalArgumentException(
-            "Unable to locate entry at row " + rowName + " and column " + colName);
+    String speciesCode = record.getSpeciesCode();
+    return speciesCode;
   }
 
   // helper to calculate the interpolated value of the given property
   private double calcProperty(String property) {
-    String path = getCSVPath(property);
-    List<List<String>> codeDF = readCSV(path);
     double x0 = 0;
     double x1 = 0;
     for (int i=0; i<intervals.length; i++) {
@@ -97,9 +56,20 @@ public class TreeBenefitsCalculator {
       }
     }
     if (x0==0 || x1==0) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("diameter must be non-zero");
     }
-    double y0 = Double.parseDouble(queryRowCol(codeDF, speciesCode, String.valueOf(x0)));
+    TreeBenefitsRecord y0Record = db.select().from(TREE_BENEFITS)
+            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
+            .and(TREE_BENEFITS.DIAMETER.eq(x0)).fetchOne();
+    TreeBenefitsRecord y1Record = db.selectFrom(TREE_BENEFITS)
+            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
+            .and(TREE_BENEFITS.DIAMETER.eq(x1)).fetchOne();
+
+    if (y0Record==null || y1Record==null) {
+      throw new ResourceDoesNotExistException(speciesCode, "tree benefits entry");
+    }
+
+    double y0 = r0Record.get
     double y1 = Double.parseDouble(queryRowCol(codeDF, speciesCode, String.valueOf(x1)));
 
     //interpolate value
