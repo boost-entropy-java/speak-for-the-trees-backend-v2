@@ -337,14 +337,9 @@ public class S3Requester {
    * @throws SdkClientException if the deletion from S3 failed.
    */
   public static void deleteHTML(String name, String directoryName) {
-    String HTMLPath = directoryName + "/" + name;
+    String HTMLPath = directoryName + "/" + name + "_template.html";
 
-    // if the object does not exist, it throws a 403 for metadata?
-    try {
-      Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
-    } catch(AmazonServiceException e) {
-      throw new InvalidURLException();
-    }
+    Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
 
     // Create the request to delete the HTML
     DeleteObjectRequest awsRequest = new DeleteObjectRequest(externs.getBucketPublic(), HTMLPath);
