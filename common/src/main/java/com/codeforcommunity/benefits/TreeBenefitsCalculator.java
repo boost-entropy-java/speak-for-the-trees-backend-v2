@@ -5,33 +5,49 @@ import java.util.List;
 import java.util.Map;
 
 import org.jooq.DSLContext;
-import org.jooq.generated.tables.records.TreeBenefitsRecord;
+import org.jooq.SelectFieldOrAsterisk;
 import org.jooq.generated.tables.records.TreeSpeciesRecord;
+import static org.jooq.generated.Tables.TREE_BENEFITS;
 
 public class TreeBenefitsCalculator {
-  static final String region = "NoEastXXX";
-  static final double[] intervals = new double[] {
-          3.81, 11.43, 22.86,	38.10,	53.34,	68.58,	83.82,	99.06,	114.30};
-  static final Map<String, Double> currencyConversion = new HashMap<String, Double>() {{
-            put("electricity_kwh_to_currency", 0.1401);
-            put("natural_gas_kbtu_to_currency", 0.01408);
-            put("h20_gal_to_currency", 0.0008);
-            put("co2_lb_to_currency", 0.00334);
-            put("o3_lb_to_currency", 4.59);
-            put("nox_lb_to_currency", 4.59);
-            put("pm10_lb_to_currency", 8.31);
-            put("sox_lb_to_currency", 3.48);
-            put("voc_lb_to_currency", 2.31);
-  }};
+  private final DSLContext db;
   final String speciesCode;
   final double diameterCM;
-  private final DSLContext db;
+  static final double[] intervals = new double[]{
+          3.81, 11.43, 22.86, 38.10, 53.34, 68.58, 83.82, 99.06, 114.30};
+  final double x0;
+  final double x1;
+  static final Map<String, Double> currencyConversion = new HashMap<String, Double>() {{
+    put("electricity_kwh_to_currency", 0.1401);
+    put("natural_gas_kbtu_to_currency", 0.01408);
+    put("h20_gal_to_currency", 0.0008);
+    put("co2_lb_to_currency", 0.00334);
+    put("o3_lb_to_currency", 4.59);
+    put("nox_lb_to_currency", 4.59);
+    put("pm10_lb_to_currency", 8.31);
+    put("sox_lb_to_currency", 3.48);
+    put("voc_lb_to_currency", 2.31);
+  }};
 
   // diameter in inches
   public TreeBenefitsCalculator(DSLContext db, String commonName, double diameter) {
     this.db = db;
     this.speciesCode = getSpeciesCode(commonName);
-    this.diameterCM = diameter*2.54;
+    this.diameterCM = diameter * 2.54;
+
+    double x0 = 0;
+    double x1 = 0;
+    for (int i = 0; i < intervals.length; i++) {
+      if (intervals[i] <= diameterCM) {
+        x0 = intervals[i];
+        x1 = intervals[i + 1];
+      }
+    }
+    if (x0 == 0 || x1 == 0) {
+      throw new IllegalArgumentException("diameter must be non-zero");
+    }
+    this.x0 = x0;
+    this.x1 = x1;
   }
 
   // helper to query species_master_list.csv and get the corresponding code
@@ -46,36 +62,22 @@ public class TreeBenefitsCalculator {
   }
 
   // helper to calculate the interpolated value of the given property
-  private double calcProperty(String property) {
-    double x0 = 0;
-    double x1 = 0;
-    for (int i=0; i<intervals.length; i++) {
-      if (intervals[i]<=diameterCM) {
-        x0 = intervals[i];
-        x1 = intervals[i+1];
-      }
-    }
-    if (x0==0 || x1==0) {
-      throw new IllegalArgumentException("diameter must be non-zero");
-    }
-    TreeBenefitsRecord y0Record = db.select().from(TREE_BENEFITS)
+  private double calcProperty(SelectFieldOrAsterisk property) {
+    double y0 = db.select(property).from(TREE_BENEFITS)
             .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
-            .and(TREE_BENEFITS.DIAMETER.eq(x0)).fetchOne();
-    TreeBenefitsRecord y1Record = db.selectFrom(TREE_BENEFITS)
+            .and(TREE_BENEFITS.DIAMETER.eq(x0)).fetchOne().value1();
+    double y1 = db.select(property).from(TREE_BENEFITS)
             .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
             .and(TREE_BENEFITS.DIAMETER.eq(x1)).fetchOne();
 
-    if (y0Record==null || y1Record==null) {
+    if (y0 == 0 || y1 == 0) {
       throw new ResourceDoesNotExistException(speciesCode, "tree benefits entry");
     }
 
-    double y0 = r0Record.get
-    double y1 = Double.parseDouble(queryRowCol(codeDF, speciesCode, String.valueOf(x1)));
-
     //interpolate value
-    double m = (y1-y0) / (x1-x0);
-    double b = y0 - (x0*m);
-    double value = m*diameterCM + b;
+    double m = (y1 - y0) / (x1 - x0);
+    double b = y0 - (x0 * m);
+    double value = m * diameterCM + b;
 
     return value;
   }
@@ -84,26 +86,38 @@ public class TreeBenefitsCalculator {
    * Calculates the total energy conserved (from natural gas and electricity) in kWh
    */
   public double calcEnergy() {
-    return calcProperty("natural_gas") + calcProperty("electricity");
+    // natural gas Kbtu to kWh
+    return (calcProperty(TREE_BENEFITS.NATURAL_GAS) / 3.4121416) +
+            calcProperty(TREE_BENEFITS.ELECTRICITY);
   }
 
   /**
-   * Calculates the total energy conserved (from natural gas and electricity) in kWh
+   * Calculates the total money saved from energy conserved (from natural gas and electricity) in USD
    */
   public double calcEnergyMoney() {
-    return calcProperty("natural_gas")* currencyConversion.get("natural_") + calcProperty("electricity");
+    return (calcProperty(TREE_BENEFITS.NATURAL_GAS) *
+            currencyConversion.get("natural_gas_kbtu_to_currency")) +
+            (calcProperty(TREE_BENEFITS.ELECTRICITY) *
+                    currencyConversion.get("electricity_kwh_to_currency"));
   }
 
   /**
    * Calculates the total water filtered in gal
    */
   public double calcStormwater() {
-    return calcProperty("hydro_interception");
+    return calcProperty(TREE_BENEFITS.HYDRO_INTERCEPTION);
+  }
+
+  /**
+   * Calculates the total money saved from water filtered in USD
+   */
+  public double calcStormwaterMoney() {
+    return this.calcStormwater() * currencyConversion.get("h20_gal_to_currency");
   }
 
   /**
    * Calculates the air quality improved based on the avoidance
-   * and deposition of various compounds in kg:
+   * and deposition of various compounds in lbs:
    * nitrous oxide (NOx) avoided
    * nitrous oxide (NOx) deposition
    * ozone deposition
@@ -114,27 +128,66 @@ public class TreeBenefitsCalculator {
    * volatile organic compounds (VOCs) avoided
    */
   public double calcAirQuality() {
-    return calcProperty("aq_nox_avoided") +
-            calcProperty("aq_nox_dep") +
-                calcProperty("aq_ozone_dep") +
-                  calcProperty("aq_p10_avoided") +
-                    calcProperty("aq_p10_dep") +
-                      calcProperty("aq_sox_avoided") +
-                        calcProperty("aq_sox_dep") +
-                          calcProperty("aq_voc_avoided");
+    // kgs to lbs
+    return (calcProperty(TREE_BENEFITS.AQ_NOX_AVOIDED) +
+            calcProperty(TREE_BENEFITS.AQ_NOX_DEP) +
+            calcProperty(TREE_BENEFITS.AQ_OZONE_DEP) +
+            calcProperty(TREE_BENEFITS.AQ_P10_AVOIDED) +
+            calcProperty(TREE_BENEFITS.AQ_P10_DEP) +
+            calcProperty(TREE_BENEFITS.AQ_SOX_AVOIDED) +
+            calcProperty(TREE_BENEFITS.AQ_SOX_DEP) +
+            calcProperty(TREE_BENEFITS.AQ_VOC_AVOIDED)) * 2.20462;
+  }
+
+  /**
+   * Calculates the total money saved from air quality improved in USD
+   */
+  public double calcAirQualityMoney() {
+    // kgs to lbs
+    // distributive property: v1*lbs*m1 + v2*lbs*m2 = lbs*(v1*m1 + v2*m2)
+    return (((calcProperty(TREE_BENEFITS.AQ_NOX_AVOIDED) +
+              calcProperty(TREE_BENEFITS.AQ_NOX_DEP)) *
+              currencyConversion.get("nox_lb_to_currency")) +
+            (calcProperty(TREE_BENEFITS.AQ_OZONE_DEP) *
+              currencyConversion.get("o3_lb_to_currency")) +
+            ((calcProperty(TREE_BENEFITS.AQ_P10_AVOIDED) +
+              calcProperty(TREE_BENEFITS.AQ_P10_DEP)) *
+              currencyConversion.get("pm10_lb_to_currency")) +
+            ((calcProperty(TREE_BENEFITS.AQ_SOX_AVOIDED) +
+              calcProperty(TREE_BENEFITS.AQ_SOX_DEP)) *
+              currencyConversion.get("sox_lb_to_currency")) +
+            (calcProperty(TREE_BENEFITS.AQ_VOC_AVOIDED) *
+              currencyConversion.get("voc_lb_to_currency"))) * 2.20462;
   }
 
   /**
    * Calculates the total carbon dioxide removed (from avoiding and sequestering) in lbs
    */
   public double calcCo2Removed() {
-    return calcProperty("co2_avoided") + calcProperty("co2_sequestered");
+    // kgs to lbs
+    return (calcProperty(TREE_BENEFITS.C02_AVOIDED) +
+            calcProperty(TREE_BENEFITS.C02_SEQUESTERED)) * 2.20462;
+  }
+
+  /**
+   * Calculates the total money saved from dioxide removed in USD
+   */
+  public double calcCo2RemovedMoney() {
+    return this.calcCo2Removed() * currencyConversion.get("co2_lb_to_currency");
   }
 
   /**
    * Calculates the total carbon dioxide stored in lbs
    */
   public double calcCo2Stored() {
-    return calcProperty("co2_storage");
+    // kgs to lbs
+    return calcProperty(TREE_BENEFITS.C02_STORAGE) * 2.20462;
+  }
+
+  /**
+   * Calculates the total money saved from dioxide stored in USD
+   */
+  public double calcCo2StoredMoney() {
+    return this.calcCo2Stored() * currencyConversion.get("co2_lb_to_currency");
   }
 }

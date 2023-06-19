@@ -260,7 +260,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
             calculator.calcStormwater(), calculator.calcStormwaterMoney(),
             calculator.calcAirQuality(), calculator.calcAirQualityMoney(),
             calculator.calcCo2Removed(), calculator.calcCo2RemovedMoney(),
-            calculator.calcCo2Stored(), calculator.calcCo2StoredMoney(),
+            calculator.calcCo2Stored(), calculator.calcCo2StoredMoney()
     );
   }
 }
