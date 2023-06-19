@@ -1,7 +1,6 @@
 package com.codeforcommunity.benefits;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.jooq.DSLContext;
@@ -50,7 +49,7 @@ public class TreeBenefitsCalculator {
     this.x1 = x1;
   }
 
-  // helper to query species_master_list.csv and get the corresponding code
+  // helper to query the species code from the tree_species table
   private String getSpeciesCode(String commonName) {
     TreeSpeciesRecord record = db.selectFrom(TREE_SPECIES)
             .where(TREE_SPECIES.COMMON_NAME.eq(commonName)).fetchOne();
