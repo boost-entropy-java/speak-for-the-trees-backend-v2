@@ -260,6 +260,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   public void forceUnadoptSite(JWTData userData, int siteId) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkSiteExists(siteId);
+
     if (!isAlreadyAdopted(siteId)) {
       throw new WrongAdoptionStatusException(false);
     }
