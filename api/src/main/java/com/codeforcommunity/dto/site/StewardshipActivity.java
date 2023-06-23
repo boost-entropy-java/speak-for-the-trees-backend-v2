@@ -9,8 +9,9 @@ public class StewardshipActivity {
 
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
-      pattern = "MM/dd/yyyy",
-      timezone = "America/New_York")
+      pattern = "MM/dd/yyyy"
+//      timezone = "America/New_York"
+  )
   private final Date date;
 
   private final Boolean watered;
