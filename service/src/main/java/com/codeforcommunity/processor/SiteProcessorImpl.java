@@ -17,7 +17,6 @@ import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.logger.SLogger;
 import com.codeforcommunity.requester.TreeBenefitsCalculator;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.jooq.DSLContext;

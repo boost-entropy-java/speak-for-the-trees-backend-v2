@@ -3,10 +3,11 @@ package com.codeforcommunity.requester;
 import static org.jooq.generated.Tables.TREE_BENEFITS;
 import static org.jooq.generated.Tables.TREE_SPECIES;
 
+import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.DSLContext;
-import org.jooq.SelectFieldOrAsterisk;
+import org.jooq.Field;
 import org.jooq.generated.tables.records.TreeSpeciesRecord;
 
 public class TreeBenefitsCalculator {
@@ -65,23 +66,20 @@ public class TreeBenefitsCalculator {
   }
 
   // helper to calculate the interpolated value of the given property
-  private double calcProperty(SelectFieldOrAsterisk property) {
+  private double calcProperty(Field property) {
     double y0 =
-        db.select(property)
-            .from(TREE_BENEFITS)
+        db.selectFrom(TREE_BENEFITS)
             .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
             .and(TREE_BENEFITS.DIAMETER.eq(x0))
-            .fetchOne()
-            .value1();
+            .fetchOne(property, Double.class);
     double y1 =
-        db.select(property)
-            .from(TREE_BENEFITS)
+        db.selectFrom(TREE_BENEFITS)
             .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
             .and(TREE_BENEFITS.DIAMETER.eq(x1))
-            .fetchOne();
+            .fetchOne(property, Double.class);
 
     if (y0 == 0 || y1 == 0) {
-      throw new ResourceDoesNotExistException(speciesCode, "tree benefits entry");
+      throw new ResourceDoesNotExistException(0, speciesCode + "tree benefits entry");
     }
 
     // interpolate value
@@ -131,8 +129,8 @@ public class TreeBenefitsCalculator {
     return (calcProperty(TREE_BENEFITS.AQ_NOX_AVOIDED)
             + calcProperty(TREE_BENEFITS.AQ_NOX_DEP)
             + calcProperty(TREE_BENEFITS.AQ_OZONE_DEP)
-            + calcProperty(TREE_BENEFITS.AQ_P10_AVOIDED)
-            + calcProperty(TREE_BENEFITS.AQ_P10_DEP)
+            + calcProperty(TREE_BENEFITS.AQ_PM10_AVOIDED)
+            + calcProperty(TREE_BENEFITS.AQ_PM10_DEP)
             + calcProperty(TREE_BENEFITS.AQ_SOX_AVOIDED)
             + calcProperty(TREE_BENEFITS.AQ_SOX_DEP)
             + calcProperty(TREE_BENEFITS.AQ_VOC_AVOIDED))
@@ -147,7 +145,8 @@ public class TreeBenefitsCalculator {
                 * currencyConversion.get("nox_lb_to_currency"))
             + (calcProperty(TREE_BENEFITS.AQ_OZONE_DEP)
                 * currencyConversion.get("o3_lb_to_currency"))
-            + ((calcProperty(TREE_BENEFITS.AQ_P10_AVOIDED) + calcProperty(TREE_BENEFITS.AQ_P10_DEP))
+            + ((calcProperty(TREE_BENEFITS.AQ_PM10_AVOIDED)
+                    + calcProperty(TREE_BENEFITS.AQ_PM10_DEP))
                 * currencyConversion.get("pm10_lb_to_currency"))
             + ((calcProperty(TREE_BENEFITS.AQ_SOX_AVOIDED) + calcProperty(TREE_BENEFITS.AQ_SOX_DEP))
                 * currencyConversion.get("sox_lb_to_currency"))
@@ -159,7 +158,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total carbon dioxide removed (from avoiding and sequestering) in lbs */
   public double calcCo2Removed() {
     // kgs to lbs
-    return (calcProperty(TREE_BENEFITS.C02_AVOIDED) + calcProperty(TREE_BENEFITS.C02_SEQUESTERED))
+    return (calcProperty(TREE_BENEFITS.CO2_AVOIDED) + calcProperty(TREE_BENEFITS.CO2_SEQUESTERED))
         * 2.20462;
   }
 
@@ -171,7 +170,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total carbon dioxide stored in lbs */
   public double calcCo2Stored() {
     // kgs to lbs
-    return calcProperty(TREE_BENEFITS.C02_STORAGE) * 2.20462;
+    return calcProperty(TREE_BENEFITS.CO2_STORAGE) * 2.20462;
   }
 
   /** Calculates the total money saved from dioxide stored in USD */
