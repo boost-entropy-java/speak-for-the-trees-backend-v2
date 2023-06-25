@@ -12,7 +12,6 @@ import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -206,8 +205,8 @@ public class S3Requester {
   }
 
   /**
-   * Validate the given string encoding of HTML and upload it to the user upload S3 bucket.
-   * HTML will be overwritten in S3 if another file of the same name is uploaded.
+   * Validate the given string encoding of HTML and upload it to the user upload S3 bucket. HTML
+   * will be overwritten in S3 if another file of the same name is uploaded.
    *
    * @param name the desired name of the new file in S3 (without a file extension).
    * @param directoryName the desired directory of the file in S3 (without leading or trailing '/').

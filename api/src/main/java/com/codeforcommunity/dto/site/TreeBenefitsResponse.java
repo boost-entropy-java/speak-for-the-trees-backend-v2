@@ -13,16 +13,16 @@ public class TreeBenefitsResponse {
   private final double co2StoredMoney;
 
   public TreeBenefitsResponse(
-          double energy,
-          double energyMoney,
-          double stormwater,
-          double stormwaterMoney,
-          double airQuality,
-          double airQualityMoney,
-          double co2Removed,
-          double co2RemovedMoney,
-          double co2Stored,
-          double co2StoredMoney) {
+      double energy,
+      double energyMoney,
+      double stormwater,
+      double stormwaterMoney,
+      double airQuality,
+      double airQualityMoney,
+      double co2Removed,
+      double co2RemovedMoney,
+      double co2Stored,
+      double co2StoredMoney) {
     this.energy = energy;
     this.energyMoney = energyMoney;
     this.stormwater = stormwater;
