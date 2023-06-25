@@ -7,8 +7,13 @@ import java.util.List;
 public class EditStewardshipRequest extends RecordStewardshipRequest {
 
   public EditStewardshipRequest(
-      Date date, boolean watered, boolean mulched, boolean cleaned, boolean weeded) {
-    super(date, watered, mulched, cleaned, weeded);
+      Date date,
+      boolean watered,
+      boolean mulched,
+      boolean cleaned,
+      boolean weeded,
+      boolean installedWateringBag) {
+    super(date, watered, mulched, cleaned, weeded, installedWateringBag);
   }
 
   private EditStewardshipRequest() {}

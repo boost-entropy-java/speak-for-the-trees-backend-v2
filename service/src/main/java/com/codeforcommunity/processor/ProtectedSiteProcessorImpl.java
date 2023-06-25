@@ -124,6 +124,23 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   /**
+   * Populate the fields of record in the stewardship table using information from a stewardship
+   * activity DTO
+   *
+   * @param recordStewardshipRequest the DTO to pull data from
+   * @param record the table record to populate
+   */
+  private void populateStewardshipRecord(
+      RecordStewardshipRequest recordStewardshipRequest, StewardshipRecord record) {
+    record.setPerformedOn(recordStewardshipRequest.getDate());
+    record.setWatered(recordStewardshipRequest.getWatered());
+    record.setMulched(recordStewardshipRequest.getMulched());
+    record.setCleaned(recordStewardshipRequest.getCleaned());
+    record.setWeeded(recordStewardshipRequest.getWeeded());
+    record.setInstalledWateringBag(recordStewardshipRequest.getInstalledWateringBag());
+  }
+
+  /**
    * Check if an image exists
    *
    * @param imageId to check
@@ -325,11 +342,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     StewardshipRecord record = db.newRecord(STEWARDSHIP);
     record.setUserId(userData.getUserId());
     record.setSiteId(siteId);
-    record.setPerformedOn(recordStewardshipRequest.getDate());
-    record.setWatered(recordStewardshipRequest.getWatered());
-    record.setMulched(recordStewardshipRequest.getMulched());
-    record.setCleaned(recordStewardshipRequest.getCleaned());
-    record.setWeeded(recordStewardshipRequest.getWeeded());
+
+    populateStewardshipRecord(recordStewardshipRequest, record);
 
     record.store();
   }
@@ -525,11 +539,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           "User needs to be an admin or the activity's author to edit the record.");
     }
 
-    activity.setPerformedOn(editStewardshipRequest.getDate());
-    activity.setWatered(editStewardshipRequest.getWatered());
-    activity.setMulched(editStewardshipRequest.getMulched());
-    activity.setCleaned(editStewardshipRequest.getCleaned());
-    activity.setWeeded(editStewardshipRequest.getWeeded());
+    populateStewardshipRecord(editStewardshipRequest, activity);
 
     activity.store();
   }

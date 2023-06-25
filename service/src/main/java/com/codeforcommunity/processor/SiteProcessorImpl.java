@@ -212,7 +212,8 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getWatered(),
                   record.getMulched(),
                   record.getCleaned(),
-                  record.getWeeded());
+                  record.getWeeded(),
+                  record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
 
           logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());

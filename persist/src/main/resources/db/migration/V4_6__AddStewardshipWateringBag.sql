@@ -1,0 +1,1 @@
+ALTER TABLE stewardship ADD COLUMN installed_watering_bag BOOLEAN DEFAULT FALSE;
