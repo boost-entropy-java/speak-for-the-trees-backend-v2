@@ -337,12 +337,14 @@ public class S3Requester {
    * @throws SdkClientException if the deletion from S3 failed.
    */
   public static void deleteHTML(String name, String directoryName) {
-    String HTMLPath = directoryName + "/" + name + "_template.html";
+    String htmlPath = directoryName + "/" + name + "_template.html";
 
-    Boolean htmlExists = externs.getS3Client().doesObjectExist(externs.getBucketPublic(), HTMLPath);
+    if (!pathExists(htmlPath)) {
+      throw new InvalidURLException();
+    }
 
     // Create the request to delete the HTML
-    DeleteObjectRequest awsRequest = new DeleteObjectRequest(externs.getBucketPublic(), HTMLPath);
+    DeleteObjectRequest awsRequest = new DeleteObjectRequest(externs.getBucketPublic(), htmlPath);
 
     externs.getS3Client().deleteObject(awsRequest);
   }

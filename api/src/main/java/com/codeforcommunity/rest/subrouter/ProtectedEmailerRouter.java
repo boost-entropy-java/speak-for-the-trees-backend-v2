@@ -63,7 +63,7 @@ public class ProtectedEmailerRouter implements IRouter {
   }
 
   private void registerDeleteTemplate(Router router) {
-    Route deleteTemplate = router.post("/delete_template/:template_name");
+    Route deleteTemplate = router.delete("/delete_template/:template_name");
     deleteTemplate.handler(this::handleDeleteTemplate);
   }
 
