@@ -16,6 +16,7 @@ public class Stewardship {
   private final Boolean mulched;
   private final Boolean cleaned;
   private final Boolean weeded;
+  private final Boolean installedWateringBag;
   private final String neighborhood;
 
   public Stewardship(
@@ -28,6 +29,7 @@ public class Stewardship {
       Boolean mulched,
       Boolean cleaned,
       Boolean weeded,
+      Boolean installedWateringBag,
       String neighborhood) {
     this.siteId = siteId;
     this.address = address;
@@ -38,6 +40,7 @@ public class Stewardship {
     this.mulched = mulched;
     this.cleaned = cleaned;
     this.weeded = weeded;
+    this.installedWateringBag = installedWateringBag;
     this.neighborhood = neighborhood;
   }
 
@@ -75,6 +78,10 @@ public class Stewardship {
 
   public Boolean getWeeded() {
     return weeded;
+  }
+
+  public Boolean getInstalledWateringBag() {
+    return installedWateringBag;
   }
 
   public String getNeighborhood() {

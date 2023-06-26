@@ -14,8 +14,9 @@ public class ParentRecordStewardshipRequest extends RecordStewardshipRequest {
       boolean mulched,
       boolean cleaned,
       boolean weeded,
+      boolean installedWateringBag,
       Integer childUserId) {
-    super(date, watered, mulched, cleaned, weeded);
+    super(date, watered, mulched, cleaned, weeded, installedWateringBag);
     this.childUserId = childUserId;
   }
 
