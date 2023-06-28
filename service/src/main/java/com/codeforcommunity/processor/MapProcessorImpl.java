@@ -182,20 +182,20 @@ public class MapProcessorImpl implements IMapProcessor {
       return SiteGeoResponseCache.getResponse();
     }
 
-    Field<Timestamp> maxDate = max(SITE_ENTRIES.UPDATED_AT).as("maxDate");
+    Field<Timestamp> maxDate = max(SITE_ENTRIES.CREATED_AT).as("maxDate");
 
     Table<
             Record2<
                 Integer, // Site Entry ID
-                Timestamp // Updated At
+                Timestamp // Created At
             >>
-        recentlyUpdated =
+        recentlyCreated =
             table(
                     this.db
                         .select(SITE_ENTRIES.SITE_ID, maxDate)
                         .from(SITE_ENTRIES)
                         .groupBy(SITE_ENTRIES.SITE_ID))
-                .as("recentlyUpdated");
+                .as("recentlyCreated");
 
     Table<
             Record6<
@@ -217,9 +217,9 @@ public class MapProcessorImpl implements IMapProcessor {
                             SITE_ENTRIES.SPECIES,
                             SITE_ENTRIES.PLANTING_DATE)
                         .from(SITE_ENTRIES)
-                        .join(recentlyUpdated)
-                        .on(SITE_ENTRIES.SITE_ID.eq(recentlyUpdated.field(SITE_ENTRIES.SITE_ID)))
-                        .and(SITE_ENTRIES.UPDATED_AT.eq(recentlyUpdated.field(maxDate))))
+                        .join(recentlyCreated)
+                        .on(SITE_ENTRIES.SITE_ID.eq(recentlyCreated.field(SITE_ENTRIES.SITE_ID)))
+                        .and(SITE_ENTRIES.CREATED_AT.eq(recentlyCreated.field(maxDate))))
                 .as("newEntries");
 
     Field<String> treeName =
