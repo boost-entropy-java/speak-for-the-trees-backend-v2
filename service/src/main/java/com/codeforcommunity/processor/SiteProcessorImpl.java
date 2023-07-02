@@ -239,8 +239,10 @@ public class SiteProcessorImpl implements ISiteProcessor {
   public TreeBenefitsResponse calculateBenefits(int siteId) {
     checkSiteExists(siteId);
 
-    SiteEntriesRecord record =
-        db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.SITE_ID.eq(siteId)).fetchOne();
+    SiteEntriesRecord record = db.selectFrom(SITE_ENTRIES)
+            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+            .orderBy(SITE_ENTRIES.CREATED_AT.desc())
+            .fetchOne();
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");
