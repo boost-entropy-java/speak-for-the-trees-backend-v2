@@ -28,6 +28,7 @@ public class ProtectedEmailerRouter implements IRouter {
 
     registerAddTemplate(router);
     registerLoadTemplate(router);
+    registerDeleteTemplate(router);
 
     return router;
   }
@@ -46,7 +47,7 @@ public class ProtectedEmailerRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
-
+  
   private void registerLoadTemplate(Router router) {
     Route loadTemplate = router.get("/load_template/:template_name");
     loadTemplate.handler(this::handleLoadTemplate);
@@ -59,5 +60,19 @@ public class ProtectedEmailerRouter implements IRouter {
     LoadTemplateResponse loadTemplateResponse = processor.loadTemplate(userData, templateName);
 
     end(ctx.response(), 200, JsonObject.mapFrom(loadTemplateResponse).toString());
+  }
+
+  private void registerDeleteTemplate(Router router) {
+    Route deleteTemplate = router.delete("/delete_template/:template_name");
+    deleteTemplate.handler(this::handleDeleteTemplate);
+  }
+
+  private void handleDeleteTemplate(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    String templateName = RestFunctions.getRequestParameterAsString(ctx.request(), "template_name");
+
+    processor.deleteTemplate(userData, templateName);
+
+    end(ctx.response(), 200);
   }
 }

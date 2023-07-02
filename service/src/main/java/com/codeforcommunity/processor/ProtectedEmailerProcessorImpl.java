@@ -4,15 +4,10 @@ import com.codeforcommunity.api.IProtectedEmailerProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
-import com.codeforcommunity.dto.leaderboard.LeaderboardEntry;
-import com.codeforcommunity.enums.PrivilegeLevel;
-import com.codeforcommunity.enums.ReservationAction;
 import com.codeforcommunity.exceptions.UserDoesNotExistException;
 import com.codeforcommunity.requester.S3Requester;
 
 import org.jooq.DSLContext;
-
-import java.util.List;
 
 import static org.jooq.impl.DSL.count;
 import static org.jooq.generated.tables.Users.USERS;
@@ -57,5 +52,11 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     );
 
     return loadTemplateResponse;
+  }
+
+  @Override
+  public void deleteTemplate(JWTData userData, String templateName) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    S3Requester.deleteHTML(templateName, TEMPLATE_DIR);
   }
 }
