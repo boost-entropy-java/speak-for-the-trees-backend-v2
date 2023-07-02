@@ -18,14 +18,21 @@ public class RecordStewardshipRequest extends ApiDto {
   protected boolean mulched;
   protected boolean cleaned;
   protected boolean weeded;
+  protected boolean installedWateringBag;
 
   public RecordStewardshipRequest(
-      Date date, boolean watered, boolean mulched, boolean cleaned, boolean weeded) {
+      Date date,
+      boolean watered,
+      boolean mulched,
+      boolean cleaned,
+      boolean weeded,
+      boolean installedWateringBag) {
     this.date = date;
     this.watered = watered;
     this.mulched = mulched;
     this.cleaned = cleaned;
     this.weeded = weeded;
+    this.installedWateringBag = installedWateringBag;
   }
 
   protected RecordStewardshipRequest() {}
@@ -70,13 +77,21 @@ public class RecordStewardshipRequest extends ApiDto {
     this.weeded = weeded;
   }
 
+  public boolean getInstalledWateringBag() {
+    return installedWateringBag;
+  }
+
+  public void setInstalledWateringBag(boolean installedWateringBag) {
+    this.installedWateringBag = installedWateringBag;
+  }
+
   protected List<String> validateStewardshipFields(String fieldName) {
     List<String> fields = new ArrayList<>();
 
     if (date == null) {
       fields.add(fieldName + "date");
     }
-    if (!(watered || mulched || cleaned || weeded)) {
+    if (!(watered || mulched || cleaned || weeded || installedWateringBag)) {
       fields.add(fieldName + "activities");
     }
 

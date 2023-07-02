@@ -7,16 +7,14 @@ public class StewardshipActivity {
   private final int id;
   private final int userId;
 
-  @JsonFormat(
-      shape = JsonFormat.Shape.STRING,
-      pattern = "MM/dd/yyyy",
-      timezone = "America/New_York")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private final Date date;
 
   private final Boolean watered;
   private final Boolean mulched;
   private final Boolean cleaned;
   private final Boolean weeded;
+  private final Boolean installedWateringBag;
 
   public StewardshipActivity(
       int id,
@@ -25,7 +23,8 @@ public class StewardshipActivity {
       Boolean watered,
       Boolean mulched,
       Boolean cleaned,
-      Boolean weeded) {
+      Boolean weeded,
+      Boolean installedWateringBag) {
     this.id = id;
     this.userId = userId;
     this.date = date;
@@ -33,6 +32,7 @@ public class StewardshipActivity {
     this.mulched = mulched;
     this.cleaned = cleaned;
     this.weeded = weeded;
+    this.installedWateringBag = installedWateringBag;
   }
 
   public int getId() {
@@ -61,5 +61,9 @@ public class StewardshipActivity {
 
   public Boolean getWeeded() {
     return weeded;
+  }
+
+  public Boolean getInstalledWateringBag() {
+    return installedWateringBag;
   }
 }
