@@ -32,6 +32,14 @@ public class TreeBenefitsCalculator {
           put("voc_lb_to_currency", 2.31);
         }
       };
+  static final Map<String, Double> unitConversion =
+          new HashMap<String, Double>() {
+            {
+              put("kBTU_to_kWh", 0.2930);
+              put("kg_to_lb", 2.20462);
+              put("m3_to_gal", 264.172);
+            }
+          };
 
   // diameter in inches
   public TreeBenefitsCalculator(DSLContext db, String commonName, double diameter) {
@@ -93,7 +101,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total energy conserved (from natural gas and electricity) in kWh */
   public double calcEnergy() {
     // natural gas Kbtu to kWh
-    return (calcProperty(TREE_BENEFITS.NATURAL_GAS) / 3.4121416)
+    return (calcProperty(TREE_BENEFITS.NATURAL_GAS)*unitConversion.get("kBTU_to_kWh"))
         + calcProperty(TREE_BENEFITS.ELECTRICITY);
   }
 
@@ -110,7 +118,8 @@ public class TreeBenefitsCalculator {
 
   /** Calculates the total water filtered in gal */
   public double calcStormwater() {
-    return calcProperty(TREE_BENEFITS.HYDRO_INTERCEPTION);
+    // m3 to gal
+    return calcProperty(TREE_BENEFITS.HYDRO_INTERCEPTION)*unitConversion.get("m3_to_gal");
   }
 
   /** Calculates the total money saved from water filtered in USD */
@@ -134,7 +143,7 @@ public class TreeBenefitsCalculator {
             + calcProperty(TREE_BENEFITS.AQ_SOX_AVOIDED)
             + calcProperty(TREE_BENEFITS.AQ_SOX_DEP)
             + calcProperty(TREE_BENEFITS.AQ_VOC_AVOIDED))
-        * 2.20462;
+        * unitConversion.get("kg_to_lb");
   }
 
   /** Calculates the total money saved from air quality improved in USD */
@@ -152,14 +161,14 @@ public class TreeBenefitsCalculator {
                 * currencyConversion.get("sox_lb_to_currency"))
             + (calcProperty(TREE_BENEFITS.AQ_VOC_AVOIDED)
                 * currencyConversion.get("voc_lb_to_currency")))
-        * 2.20462;
+        * unitConversion.get("kg_to_lb");
   }
 
   /** Calculates the total carbon dioxide removed (from avoiding and sequestering) in lbs */
   public double calcCo2Removed() {
     // kgs to lbs
     return (calcProperty(TREE_BENEFITS.CO2_AVOIDED) + calcProperty(TREE_BENEFITS.CO2_SEQUESTERED))
-        * 2.20462;
+        * unitConversion.get("kg_to_lb");
   }
 
   /** Calculates the total money saved from dioxide removed in USD */
@@ -170,7 +179,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total carbon dioxide stored in lbs */
   public double calcCo2Stored() {
     // kgs to lbs
-    return calcProperty(TREE_BENEFITS.CO2_STORAGE) * 2.20462;
+    return calcProperty(TREE_BENEFITS.CO2_STORAGE) * unitConversion.get("kg_to_lb");
   }
 
   /** Calculates the total money saved from dioxide stored in USD */
