@@ -124,6 +124,23 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   /**
+   * Populate the fields of record in the stewardship table using information from a stewardship
+   * activity DTO
+   *
+   * @param recordStewardshipRequest the DTO to pull data from
+   * @param record the table record to populate
+   */
+  private void populateStewardshipRecord(
+      RecordStewardshipRequest recordStewardshipRequest, StewardshipRecord record) {
+    record.setPerformedOn(recordStewardshipRequest.getDate());
+    record.setWatered(recordStewardshipRequest.getWatered());
+    record.setMulched(recordStewardshipRequest.getMulched());
+    record.setCleaned(recordStewardshipRequest.getCleaned());
+    record.setWeeded(recordStewardshipRequest.getWeeded());
+    record.setInstalledWateringBag(recordStewardshipRequest.getInstalledWateringBag());
+  }
+
+  /**
    * Check if an image exists
    *
    * @param imageId to check
@@ -236,9 +253,23 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       throw new WrongAdoptionStatusException(false);
     }
 
-    db.deleteFrom(ADOPTED_SITES)
-        .where(ADOPTED_SITES.USER_ID.eq(userData.getUserId()))
-        .and(ADOPTED_SITES.SITE_ID.eq(siteId))
+    db.transaction(
+        configuration -> {
+          db.deleteFrom(ADOPTED_SITES)
+              .where(ADOPTED_SITES.USER_ID.eq(userData.getUserId()))
+              .and(ADOPTED_SITES.SITE_ID.eq(siteId))
+              .execute();
+
+          this.resetTreeName(siteId);
+        });
+  }
+
+  private void resetTreeName(int siteId) {
+    int latestSiteEntryId = this.latestSiteEntry(siteId).getId();
+
+    db.update(SITE_ENTRIES)
+        .setNull(SITE_ENTRIES.TREE_NAME)
+        .where(SITE_ENTRIES.ID.eq(latestSiteEntryId))
         .execute();
   }
 
@@ -246,6 +277,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   public void forceUnadoptSite(JWTData userData, int siteId) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkSiteExists(siteId);
+
     if (!isAlreadyAdopted(siteId)) {
       throw new WrongAdoptionStatusException(false);
     }
@@ -265,7 +297,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       throw new AuthException("User does not have the required privilege level.");
     }
 
-    db.deleteFrom(ADOPTED_SITES).where(ADOPTED_SITES.SITE_ID.eq(siteId)).execute();
+    db.transaction(
+        configuration -> {
+          db.deleteFrom(ADOPTED_SITES).where(ADOPTED_SITES.SITE_ID.eq(siteId)).execute();
+
+          this.resetTreeName(siteId);
+        }
+    );
   }
 
   @Override
@@ -304,11 +342,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     StewardshipRecord record = db.newRecord(STEWARDSHIP);
     record.setUserId(userData.getUserId());
     record.setSiteId(siteId);
-    record.setPerformedOn(recordStewardshipRequest.getDate());
-    record.setWatered(recordStewardshipRequest.getWatered());
-    record.setMulched(recordStewardshipRequest.getMulched());
-    record.setCleaned(recordStewardshipRequest.getCleaned());
-    record.setWeeded(recordStewardshipRequest.getWeeded());
+
+    populateStewardshipRecord(recordStewardshipRequest, record);
 
     record.store();
   }
@@ -402,6 +437,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     siteEntriesRecord.setId(newSiteEntriesId);
     siteEntriesRecord.setUserId(userData.getUserId());
     siteEntriesRecord.setSiteId(sitesRecord.getId());
+    siteEntriesRecord.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+    siteEntriesRecord.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
     populateSiteEntry(siteEntriesRecord, addSiteRequest);
 
     siteEntriesRecord.store();
@@ -504,11 +541,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           "User needs to be an admin or the activity's author to edit the record.");
     }
 
-    activity.setPerformedOn(editStewardshipRequest.getDate());
-    activity.setWatered(editStewardshipRequest.getWatered());
-    activity.setMulched(editStewardshipRequest.getMulched());
-    activity.setCleaned(editStewardshipRequest.getCleaned());
-    activity.setWeeded(editStewardshipRequest.getWeeded());
+    populateStewardshipRecord(editStewardshipRequest, activity);
 
     activity.store();
   }
@@ -531,24 +564,27 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkSiteExists(siteId);
     checkAdminOrSiteAdopter(userData, siteId);
 
-    SiteEntriesRecord siteEntry =
-        db.selectFrom(SITE_ENTRIES)
-            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
-            .orderBy(SITE_ENTRIES.UPDATED_AT.desc())
-            .fetchOne();
-
-    if (siteEntry == null) {
+    SiteEntriesRecord latestSiteEntry = this.latestSiteEntry(siteId);
+    if (latestSiteEntry == null) {
       throw new LinkedResourceDoesNotExistException(
           "Site Entry", userData.getUserId(), "User", siteId, "Site");
     }
 
     if (nameSiteEntryRequest.getName().isEmpty()) {
-      siteEntry.setTreeName(null);
+      latestSiteEntry.setTreeName(null);
     } else {
-      siteEntry.setTreeName(nameSiteEntryRequest.getName());
+      latestSiteEntry.setTreeName(nameSiteEntryRequest.getName());
     }
 
-    siteEntry.store();
+    latestSiteEntry.store();
+  }
+
+  private SiteEntriesRecord latestSiteEntry(int siteId) {
+    return db.selectFrom(SITE_ENTRIES)
+        .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+        .orderBy(SITE_ENTRIES.CREATED_AT.desc())
+        .fetchInto(SiteEntriesRecord.class)
+        .get(0);
   }
 
   @Override
@@ -628,14 +664,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
               max(STEWARDSHIP.PERFORMED_ON).le(filterSitesRequest.getLastActivityEnd()));
 
     Result<
-            org.jooq.Record12<
+              org.jooq.Record11<
                 Integer,
                 String,
                 Integer,
                 Integer,
                 Date,
                 Date,
-                Timestamp,
                 String,
                 String,
                 String,
@@ -649,7 +684,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
                     ADOPTED_SITES.USER_ID,
                     ADOPTED_SITES.DATE_ADOPTED,
                     max(STEWARDSHIP.PERFORMED_ON).as(STEWARDSHIP.PERFORMED_ON),
-                    max(SITE_ENTRIES.UPDATED_AT).as(SITE_ENTRIES.UPDATED_AT),
                     SITE_ENTRIES.COMMON_NAME,
                     USERS.FIRST_NAME,
                     USERS.LAST_NAME,

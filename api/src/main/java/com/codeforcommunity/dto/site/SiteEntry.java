@@ -9,6 +9,8 @@ public class SiteEntry {
   private final String username;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
+  private final Timestamp createdAt;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private final Timestamp updatedAt;
 
   private final Boolean treePresent;
@@ -100,6 +102,7 @@ public class SiteEntry {
   public SiteEntry(
       Integer id,
       String username,
+      Timestamp createdAt,
       Timestamp updatedAt,
       Boolean treePresent,
       String status,
@@ -183,6 +186,7 @@ public class SiteEntry {
       String lastEditedUser) {
     this.id = id;
     this.username = username;
+    this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.treePresent = treePresent;
     this.status = status;
@@ -272,6 +276,10 @@ public class SiteEntry {
 
   public String getUsername() {
     return username;
+  }
+
+  public Timestamp getCreatedAt() {
+    return createdAt;
   }
 
   public Timestamp getUpdatedAt() {

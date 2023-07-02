@@ -43,7 +43,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
     List<SiteEntriesRecord> records =
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
-            .orderBy(SITE_ENTRIES.UPDATED_AT.desc())
+            .orderBy(SITE_ENTRIES.CREATED_AT.desc())
             .fetch();
 
     List<SiteEntry> siteEntries = new ArrayList<>();
@@ -82,6 +82,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
               new SiteEntry(
                   record.getId(),
                   username,
+                  record.getCreatedAt(),
                   record.getUpdatedAt(),
                   record.getTreePresent(),
                   record.getStatus(),
@@ -212,7 +213,8 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getWatered(),
                   record.getMulched(),
                   record.getCleaned(),
-                  record.getWeeded());
+                  record.getWeeded(),
+                  record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
 
           logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());

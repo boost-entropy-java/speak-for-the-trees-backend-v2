@@ -158,7 +158,7 @@ public class ProtectedReportProcessorImpl extends AbstractProcessor
 
     StringBuilder builder = new StringBuilder();
     builder.append(
-        "Site ID, Address, Name, Email, Date Performed, Watered, Mulched, Cleaned, Weeded, Neighborhood\n");
+        "Site ID, Address, Name, Email, Date Performed, Watered, Mulched, Cleaned, Weeded, Installed Watering Bag, Neighborhood\n");
     for (Stewardship site : stewardships) {
       builder
           .append(site.getSiteId())
@@ -178,6 +178,8 @@ public class ProtectedReportProcessorImpl extends AbstractProcessor
           .append(site.getCleaned())
           .append(", ")
           .append(site.getWeeded())
+          .append(", ")
+          .append(site.getInstalledWateringBag())
           .append(", ")
           .append(site.getNeighborhood())
           .append("\n");
@@ -205,6 +207,7 @@ public class ProtectedReportProcessorImpl extends AbstractProcessor
                 STEWARDSHIP.MULCHED,
                 STEWARDSHIP.CLEANED,
                 STEWARDSHIP.WEEDED,
+                STEWARDSHIP.INSTALLED_WATERING_BAG,
                 NEIGHBORHOODS.NEIGHBORHOOD_NAME)
             .from(STEWARDSHIP)
             .leftJoin(SITES)
