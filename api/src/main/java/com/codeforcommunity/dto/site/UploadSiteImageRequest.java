@@ -7,9 +7,11 @@ import java.util.List;
 
 public class UploadSiteImageRequest extends ApiDto {
   private String image;
+  private Boolean anonymous;
 
-  public UploadSiteImageRequest(String image) {
+  public UploadSiteImageRequest(String image, Boolean anonymous) {
     this.image = image;
+    this.anonymous = anonymous;
   }
 
   public UploadSiteImageRequest() {}
@@ -18,8 +20,16 @@ public class UploadSiteImageRequest extends ApiDto {
     return image;
   }
 
+  public Boolean getAnonymous() {
+    return anonymous;
+  }
+
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public void setAnon(Boolean anonymous) {
+    this.anonymous = anonymous;
   }
 
   @Override
@@ -27,8 +37,11 @@ public class UploadSiteImageRequest extends ApiDto {
     String fieldName = fieldPrefix + "upload_image_request.";
     List<String> fields = new ArrayList<>();
 
-    if (image != null && urlInvalid(image)) {
+    if (image == null) {
       fields.add(fieldName + "image");
+    }
+    if (anonymous == null) {
+      fields.add(fieldName + "anonymous");
     }
 
     return fields;

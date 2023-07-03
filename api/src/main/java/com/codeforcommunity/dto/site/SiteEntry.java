@@ -10,6 +10,7 @@ public class SiteEntry {
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private final Timestamp createdAt;
+
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private final Timestamp updatedAt;
 
