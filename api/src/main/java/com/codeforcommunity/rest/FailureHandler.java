@@ -42,6 +42,10 @@ public class FailureHandler {
     end(ctx, "Unauthorized user", 401);
   }
 
+  public void handleForbidden(RoutingContext ctx, String message) {
+    end(ctx, message, 403);
+  }
+
   public void handleMissingParameter(RoutingContext ctx, MissingParameterException e) {
     String message =
         String.format("Missing required path parameter: %s", e.getMissingParameterName());
@@ -257,6 +261,11 @@ public class FailureHandler {
       message = "Site is not marked as adopted";
     }
 
+    end(ctx, message, 400);
+  }
+
+  public void handleNoTreePresentException(RoutingContext ctx, int siteId) {
+    String message = String.format("No tree present at site %d", siteId);
     end(ctx, message, 400);
   }
 

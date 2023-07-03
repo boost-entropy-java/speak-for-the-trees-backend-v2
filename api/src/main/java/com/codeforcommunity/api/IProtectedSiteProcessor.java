@@ -77,12 +77,13 @@ public interface IProtectedSiteProcessor {
   void nameSiteEntry(JWTData userData, int siteId, NameSiteEntryRequest nameSiteEntryRequest);
 
   /**
-   * Used to update the image of a site. The `image` field of the most recent entry in the
-   * `site_entries` table associated with the specified site will be updated. Only users who are
-   * owners of the specified site, Admins, or Super Admins can perform this action. If the given URL
-   * is NULL, any pre-existing site image for the specified site will be deleted
+   * Used to upload a new image for a site entry with the given ID. The image must be given in the
+   * format of data:image/{extension};base64,{imageData}. For each image, a new row in the
+   * `SITE_IMAGES` table will be created. Only users who are Admins, or Super Admins can perform
+   * this action.
    */
-  void uploadSiteImage(JWTData userData, int siteId, UploadSiteImageRequest uploadSiteImageRequest);
+  void uploadSiteImage(
+      JWTData userData, int siteEntryId, UploadSiteImageRequest uploadSiteImageRequest);
 
   /** Removes the site image with the given image ID */
   void deleteSiteImage(JWTData userData, int imageId);

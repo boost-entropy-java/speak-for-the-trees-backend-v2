@@ -1,13 +1,11 @@
 package com.codeforcommunity.requester;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -19,7 +17,6 @@ import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
-import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,10 +33,14 @@ public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
   public static class Externs {
     private static final AmazonS3 s3Client =
-        AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).withCredentials(
-                new AWSStaticCredentialsProvider(new BasicAWSCredentials(PropertiesLoader
-                        .loadProperty("aws_access_key"), PropertiesLoader.
-                        loadProperty("aws_secret_key")))).build();
+        AmazonS3ClientBuilder.standard()
+            .withRegion(Regions.US_EAST_2)
+            .withCredentials(
+                new AWSStaticCredentialsProvider(
+                    new BasicAWSCredentials(
+                        PropertiesLoader.loadProperty("aws_access_key"),
+                        PropertiesLoader.loadProperty("aws_secret_key"))))
+            .build();
 
     private static final String BUCKET_PUBLIC_URL =
         PropertiesLoader.loadProperty("aws_s3_bucket_url");
@@ -64,6 +65,8 @@ public class S3Requester {
   }
 
   private static Externs externs = new Externs();
+
+  private static final String SITE_IMAGES_S3_DIR = "site_images";
 
   /**
    * This should only be used for testing purposes when we mock the s3Client.
@@ -163,9 +166,6 @@ public class S3Requester {
         new PutObjectRequest(
             externs.getBucketPublic(), directoryName + "/" + fullFileName, tempFile);
 
-    // Set the image to be publicly available
-    awsRequest.setCannedAcl(CannedAccessControlList.PublicRead);
-
     // Set the image file metadata (to be of type image)
     ObjectMetadata awsObjectMetadata = new ObjectMetadata();
     awsObjectMetadata.setContentType(encodedImage.getFileType() + encodedImage.getFileExtension());
@@ -186,33 +186,53 @@ public class S3Requester {
   }
 
   /**
-   * Validate the given base64 encoding of an image and upload it to the LLB public S3 bucket for
-   * Events.
+   * Validate the given base64 encoding of an image and upload it to the SFTT public S3 bucket for
+   * Site Images.
    *
-   * @param eventTitle the title of the Event.
+   * @param imageName the desired name of the new file in S3 (without a file extension).
    * @param base64Encoding the encoded image to upload.
-   * @return null if the initial base64Encoding was null, or the image URL if the upload was
-   *     successful.
+   * @return image URL if the upload was successful.
    * @throws BadRequestImageException if the base64 decoding failed.
    * @throws S3FailedUploadException if the upload to S3 failed.
    */
-  public static String validateUploadImageToS3LucyEvents(String eventTitle, String base64Encoding)
+  public static String uploadSiteImage(String imageName, String base64Encoding)
       throws BadRequestImageException, S3FailedUploadException {
-    String fileName = getFileNameWithoutExtension(eventTitle, "_thumbnail");
-    return validateBase64ImageAndUploadToS3(fileName, externs.getDirPublic(), base64Encoding);
+    String fileName = getFileNameWithoutExtension(imageName, "");
+
+    return validateBase64ImageAndUploadToS3(fileName, SITE_IMAGES_S3_DIR, base64Encoding);
+  }
+
+  /**
+   * Delete the existing site image with the given URL from the user uploads S3 bucket.
+   *
+   * @param imageUrl the URL of the image file in S3 to delete.
+   * @throws SdkClientException if the deletion from S3 failed.
+   */
+  public static void deleteSiteImage(String imageUrl) {
+    // Get just the file path from the full URL
+    String imagePath = imageUrl.split(externs.getBucketPublicUrl() + '/')[1];
+
+    DeleteObjectRequest deleteRequest =
+        new DeleteObjectRequest(externs.getBucketPublic(), imagePath);
+
+    try {
+      externs.getS3Client().deleteObject(deleteRequest);
+    } catch (SdkClientException e) {
+      // The AWS S3 delete failed
+      throw new S3FailedUploadException(e.getMessage());
+    }
   }
 
   /**
    * Removes special characters, replaces spaces, and appends a suffix.
    *
-   * @param eventTitle the title of the event.
+   * @param baseTitle the title of the file.
    * @param suffix the suffix to be appended
    * @return the String for the image file name (without the file extension).
    */
-  public static String getFileNameWithoutExtension(String eventTitle, String suffix) {
+  public static String getFileNameWithoutExtension(String baseTitle, String suffix) {
     String title =
-        eventTitle.replaceAll(
-            "[!@#$%^&*()=+./\\\\|<>`~\\[\\]{}?]", ""); // Remove special characters
+        baseTitle.replaceAll("[!@#$%^&*()=+./\\\\|<>`~\\[\\]{}?]", ""); // Remove special characters
     return title.replace(" ", "_").toLowerCase() + suffix; // The desired name of the file in S3
   }
 
