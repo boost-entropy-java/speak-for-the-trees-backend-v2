@@ -36,6 +36,7 @@ import com.codeforcommunity.exceptions.AuthException;
 import com.codeforcommunity.exceptions.HandledException;
 import com.codeforcommunity.exceptions.InvalidCSVException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
+import com.codeforcommunity.exceptions.NoTreePresentException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -237,6 +238,10 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkSiteExists(siteId);
     if (isAlreadyAdopted(siteId)) {
       throw new WrongAdoptionStatusException(true);
+    }
+    // prevent users from adopting a site with no tree
+    if (!latestSiteEntry(siteId).getTreePresent()) {
+      throw new NoTreePresentException(siteId);
     }
 
     AdoptedSitesRecord record = db.newRecord(ADOPTED_SITES);
@@ -445,6 +450,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   public void updateSite(JWTData userData, int siteId, UpdateSiteRequest updateSiteRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkSiteExists(siteId);
 
     SiteEntriesRecord record = db.newRecord(SITE_ENTRIES);
@@ -456,7 +462,12 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setSiteId(siteId);
     populateSiteEntry(record, updateSiteRequest);
 
-    record.store();
+    db.transaction(configuration -> {
+      record.store();
+      if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
+        forceUnadoptSite(userData, siteId);
+      }
+    });
   }
 
   @Override
@@ -759,6 +770,16 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     siteEntriesRecord.setUserId(userData.getUserId());
     populateSiteEntry(siteEntriesRecord, editSiteEntryRequest);
 
-    siteEntriesRecord.store();
+    int siteId = siteEntriesRecord.getSiteId();
+
+    db.transaction(configuration -> {
+      siteEntriesRecord.store();
+      // force unadopt only if we change the latest site entry of an adopted site to have no tree
+      if (!editSiteEntryRequest.isTreePresent()
+          && isAlreadyAdopted(siteId)
+          && entryId == latestSiteEntry(siteId).getId()) {
+        forceUnadoptSite(userData, siteId);
+      }
+    });
   }
 }
