@@ -47,7 +47,7 @@ public class ProtectedEmailerRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
-  
+
   private void registerLoadTemplate(Router router) {
     Route loadTemplate = router.get("/load_template/:template_name");
     loadTemplate.handler(this::handleLoadTemplate);

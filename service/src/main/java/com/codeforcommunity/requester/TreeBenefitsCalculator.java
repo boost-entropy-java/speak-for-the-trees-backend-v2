@@ -2,12 +2,14 @@ package com.codeforcommunity.requester;
 
 import static org.jooq.generated.Tables.TREE_BENEFITS;
 import static org.jooq.generated.Tables.TREE_SPECIES;
+import static org.jooq.impl.DSL.lower;
+import static org.jooq.impl.DSL.replace;
 
-import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.DSLContext;
 import org.jooq.Field;
+import org.jooq.generated.tables.records.TreeBenefitsRecord;
 import org.jooq.generated.tables.records.TreeSpeciesRecord;
 
 public class TreeBenefitsCalculator {
@@ -18,6 +20,8 @@ public class TreeBenefitsCalculator {
       new double[] {3.81, 11.43, 22.86, 38.10, 53.34, 68.58, 83.82, 99.06, 114.30};
   final double x0;
   final double x1;
+  final TreeBenefitsRecord y0Record;
+  final TreeBenefitsRecord y1Record;
   static final Map<String, Double> currencyConversion =
       new HashMap<String, Double>() {
         {
@@ -33,39 +37,52 @@ public class TreeBenefitsCalculator {
         }
       };
   static final Map<String, Double> unitConversion =
-          new HashMap<String, Double>() {
-            {
-              put("kBTU_to_kWh", 0.2930);
-              put("kg_to_lb", 2.20462);
-              put("m3_to_gal", 264.172);
-            }
-          };
-
+      new HashMap<String, Double>() {
+        {
+          put("kBTU_to_kWh", 0.2930);
+          put("kg_to_lb", 2.20462);
+          put("m3_to_gal", 264.172);
+        }
+      };
   // diameter in inches
   public TreeBenefitsCalculator(DSLContext db, String commonName, double diameter) {
     this.db = db;
     this.speciesCode = getSpeciesCode(commonName);
-    this.diameterCM = diameter * 2.54;
+    // clamp diameter to min and max of intervals
+    this.diameterCM =
+        Math.min(Math.max(diameter * 2.54, intervals[0]), intervals[intervals.length - 1]);
 
     double x0 = 0;
     double x1 = 0;
-    for (int i = 0; i < intervals.length; i++) {
+    // i should never reach the last element in intervals
+    for (int i = 0; i < intervals.length - 1; i++) {
       if (intervals[i] <= diameterCM) {
         x0 = intervals[i];
         x1 = intervals[i + 1];
       }
     }
-    if (x0 == 0 || x1 == 0) {
-      throw new IllegalArgumentException("diameter must be non-zero");
-    }
     this.x0 = x0;
     this.x1 = x1;
+    this.y0Record =
+        db.selectFrom(TREE_BENEFITS)
+            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
+            .and(TREE_BENEFITS.DIAMETER.eq(x0))
+            .fetchOne();
+    this.y1Record =
+        db.selectFrom(TREE_BENEFITS)
+            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
+            .and(TREE_BENEFITS.DIAMETER.eq(x1))
+            .fetchOne();
   }
 
   // helper to query the species code from the tree_species table
   private String getSpeciesCode(String commonName) {
     TreeSpeciesRecord record =
-        db.selectFrom(TREE_SPECIES).where(TREE_SPECIES.COMMON_NAME.eq(commonName)).fetchOne();
+        db.selectFrom(TREE_SPECIES)
+            .where(
+                lower(replace(TREE_SPECIES.COMMON_NAME, " ", ""))
+                    .eq(commonName.toLowerCase().replace(" ", "")))
+            .fetchOne();
     if (record == null) {
       throw new IllegalArgumentException("Unable to find entry with name " + commonName);
     }
@@ -75,19 +92,11 @@ public class TreeBenefitsCalculator {
 
   // helper to calculate the interpolated value of the given property
   private double calcProperty(Field property) {
-    double y0 =
-        db.selectFrom(TREE_BENEFITS)
-            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
-            .and(TREE_BENEFITS.DIAMETER.eq(x0))
-            .fetchOne(property, Double.class);
-    double y1 =
-        db.selectFrom(TREE_BENEFITS)
-            .where(TREE_BENEFITS.SPECIES_CODE.eq(speciesCode))
-            .and(TREE_BENEFITS.DIAMETER.eq(x1))
-            .fetchOne(property, Double.class);
+    double y0 = this.y0Record.get(property, Double.class);
+    double y1 = this.y1Record.get(property, Double.class);
 
-    if (y0 == 0 || y1 == 0) {
-      throw new ResourceDoesNotExistException(0, speciesCode + "tree benefits entry");
+    if (y0 == y1) {
+      return y0;
     }
 
     // interpolate value
@@ -101,7 +110,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total energy conserved (from natural gas and electricity) in kWh */
   public double calcEnergy() {
     // natural gas Kbtu to kWh
-    return (calcProperty(TREE_BENEFITS.NATURAL_GAS)*unitConversion.get("kBTU_to_kWh"))
+    return (calcProperty(TREE_BENEFITS.NATURAL_GAS) * unitConversion.get("kBTU_to_kWh"))
         + calcProperty(TREE_BENEFITS.ELECTRICITY);
   }
 
@@ -119,7 +128,7 @@ public class TreeBenefitsCalculator {
   /** Calculates the total water filtered in gal */
   public double calcStormwater() {
     // m3 to gal
-    return calcProperty(TREE_BENEFITS.HYDRO_INTERCEPTION)*unitConversion.get("m3_to_gal");
+    return calcProperty(TREE_BENEFITS.HYDRO_INTERCEPTION) * unitConversion.get("m3_to_gal");
   }
 
   /** Calculates the total money saved from water filtered in USD */

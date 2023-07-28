@@ -1,6 +1,5 @@
 package com.codeforcommunity.requester;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -19,7 +18,6 @@ import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
-import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,10 +34,14 @@ public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
   public static class Externs {
     private static final AmazonS3 s3Client =
-        AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).withCredentials(
-                new AWSStaticCredentialsProvider(new BasicAWSCredentials(PropertiesLoader
-                        .loadProperty("aws_access_key"), PropertiesLoader.
-                        loadProperty("aws_secret_key")))).build();
+        AmazonS3ClientBuilder.standard()
+            .withRegion(Regions.US_EAST_2)
+            .withCredentials(
+                new AWSStaticCredentialsProvider(
+                    new BasicAWSCredentials(
+                        PropertiesLoader.loadProperty("aws_access_key"),
+                        PropertiesLoader.loadProperty("aws_secret_key"))))
+            .build();
 
     private static final String BUCKET_PUBLIC_URL =
         PropertiesLoader.loadProperty("aws_s3_bucket_url");
@@ -284,7 +286,7 @@ public class S3Requester {
 
     return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }
-  
+
   // helper to check whether the given path exists
   public static boolean pathExists(String path) {
     return externs.getS3Client().doesObjectExist(externs.getBucketPublic(), path);

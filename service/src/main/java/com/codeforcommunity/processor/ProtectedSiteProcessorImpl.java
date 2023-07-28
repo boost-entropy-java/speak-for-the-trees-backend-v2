@@ -302,8 +302,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           db.deleteFrom(ADOPTED_SITES).where(ADOPTED_SITES.SITE_ID.eq(siteId)).execute();
 
           this.resetTreeName(siteId);
-        }
-    );
+        });
   }
 
   @Override
@@ -664,7 +663,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
               max(STEWARDSHIP.PERFORMED_ON).le(filterSitesRequest.getLastActivityEnd()));
 
     Result<
-              org.jooq.Record11<
+            org.jooq.Record11<
                 Integer,
                 String,
                 Integer,
