@@ -304,7 +304,7 @@ public class S3Requester {
 
     return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
   }
-  
+
   // helper to check whether the given path exists
   public static boolean pathExists(String path) {
     return externs.getS3Client().doesObjectExist(externs.getBucketPublic(), path);
