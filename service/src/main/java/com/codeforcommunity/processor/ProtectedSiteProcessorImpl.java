@@ -31,13 +31,18 @@ import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+import com.codeforcommunity.enums.ImageApprovalStatus;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.AuthException;
+import com.codeforcommunity.exceptions.ForbiddenException;
 import com.codeforcommunity.exceptions.HandledException;
 import com.codeforcommunity.exceptions.InvalidCSVException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
+import com.codeforcommunity.exceptions.NoTreePresentException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
+import com.codeforcommunity.logger.SLogger;
+import com.codeforcommunity.requester.S3Requester;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -55,6 +60,7 @@ import org.jooq.Table;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
 import org.jooq.generated.tables.records.ParentAccountsRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
+import org.jooq.generated.tables.records.SiteImagesRecord;
 import org.jooq.generated.tables.records.SitesRecord;
 import org.jooq.generated.tables.records.StewardshipRecord;
 import org.jooq.generated.tables.records.UsersRecord;
@@ -63,6 +69,11 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
 
   private final DSLContext db;
+
+  private final SLogger logger = new SLogger(ProtectedSiteProcessorImpl.class);
+
+  private static final int MAX_SUBMITTED_SITE_IMAGES = 20;
+  private static final int UPLOAD_SITE_IMAGE_SLACK_FREQ = 2;
 
   public ProtectedSiteProcessorImpl(DSLContext db) {
     this.db = db;
@@ -165,6 +176,56 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     }
   }
 
+  /**
+   * Check if the user is an admin or the uploader of the tree image with the given imageId
+   *
+   * @param userData the user's data
+   * @param imageId the ID of the site image to check
+   * @throws AuthException if the user is not an admin or the image's uploader
+   */
+  private void checkAdminOrImageUploader(JWTData userData, int imageId) throws AuthException {
+    if (isAdmin(userData.getPrivilegeLevel())) {
+      return;
+    }
+
+    int uploaderId =
+        db.select(SITE_IMAGES.UPLOADER_ID)
+            .from(SITE_IMAGES)
+            .where(SITE_IMAGES.ID.eq(imageId))
+            .fetchOne(0, int.class);
+    if (uploaderId != userData.getUserId()) {
+      throw new AuthException("User needs to be an admin or the image's uploader.");
+    }
+  }
+
+  /**
+   * Check if the user is able to upload a tree image. A user can upload if they are an admin or
+   * have less than `MAX_SUBMITTED_SITE_IMAGES` uploaded images that are waiting for admin approval
+   *
+   * @param userData the user's data
+   * @throws AuthException if the user has uploaded
+   */
+  private void checkCanUploadImage(JWTData userData) throws AuthException {
+    if (isAdmin(userData.getPrivilegeLevel())) {
+      return;
+    }
+
+    int numSubmittedImages =
+        db.selectCount()
+            .from(SITE_IMAGES)
+            .where(SITE_IMAGES.UPLOADER_ID.eq(userData.getUserId()))
+            .and(SITE_IMAGES.APPROVAL_STATUS.eq(String.valueOf(ImageApprovalStatus.SUBMITTED)))
+            .fetchOne(0, int.class);
+
+    if (numSubmittedImages >= MAX_SUBMITTED_SITE_IMAGES) {
+      throw new ForbiddenException(
+          String.format(
+              "Users can only upload %d images waiting for administrator approval at a time. Please"
+                  + " try again when currently uploaded images have been approved by an admin!",
+              MAX_SUBMITTED_SITE_IMAGES));
+    }
+  }
+
   private Boolean isAlreadyAdopted(int siteId) {
     return db.fetchExists(db.selectFrom(ADOPTED_SITES).where(ADOPTED_SITES.SITE_ID.eq(siteId)));
   }
@@ -237,6 +298,10 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkSiteExists(siteId);
     if (isAlreadyAdopted(siteId)) {
       throw new WrongAdoptionStatusException(true);
+    }
+    // prevent users from adopting a site with no tree
+    if (!latestSiteEntry(siteId).getTreePresent()) {
+      throw new NoTreePresentException(siteId);
     }
 
     AdoptedSitesRecord record = db.newRecord(ADOPTED_SITES);
@@ -444,6 +509,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   public void updateSite(JWTData userData, int siteId, UpdateSiteRequest updateSiteRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkSiteExists(siteId);
 
     SiteEntriesRecord record = db.newRecord(SITE_ENTRIES);
@@ -455,7 +521,12 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setSiteId(siteId);
     populateSiteEntry(record, updateSiteRequest);
 
-    record.store();
+    db.transaction(configuration -> {
+      record.store();
+      if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
+        forceUnadoptSite(userData, siteId);
+      }
+    });
   }
 
   @Override
@@ -588,21 +659,51 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
   @Override
   public void uploadSiteImage(
-      JWTData userData, int siteId, UploadSiteImageRequest uploadSiteImageRequest) {
-    checkSiteExists(siteId);
-    checkAdminOrSiteAdopter(userData, siteId);
+      JWTData userData, int siteEntryId, UploadSiteImageRequest uploadSiteImageRequest) {
+    checkEntryExists(siteEntryId);
+    checkCanUploadImage(userData);
 
-    // TODO upload image to S3 and save URL to database
+    Integer maxImageId =
+        db.select(max(SITE_IMAGES.ID)).from(SITE_IMAGES).fetchOne(0, Integer.class);
+    int newImageId = (maxImageId == null ? 0 : maxImageId) + 1;
 
-    // SitesRecord site = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
+    if (newImageId % UPLOAD_SITE_IMAGE_SLACK_FREQ == 0) {
+      logger.info("INFO: " + newImageId + "th site image uploaded", true);
+    }
 
-    // site.store();
+    String imageUrl =
+        S3Requester.uploadSiteImage(String.valueOf(newImageId), uploadSiteImageRequest.getImage());
+
+    ImageApprovalStatus status =
+        isAdmin(userData.getPrivilegeLevel())
+            ? ImageApprovalStatus.APPROVED
+            : ImageApprovalStatus.SUBMITTED;
+
+    SiteImagesRecord siteImagesRecord = db.newRecord(SITE_IMAGES);
+
+    siteImagesRecord.setId(newImageId);
+    siteImagesRecord.setSiteEntryId(siteEntryId);
+    siteImagesRecord.setUploaderId(userData.getUserId());
+    siteImagesRecord.setUploadedAt(new Timestamp(System.currentTimeMillis()));
+    siteImagesRecord.setImageUrl(imageUrl);
+    siteImagesRecord.setApprovalStatus(status.getApprovalStatus());
+    siteImagesRecord.setAnonymous(uploadSiteImageRequest.getAnonymous());
+
+    siteImagesRecord.store();
   }
 
   @Override
   public void deleteSiteImage(JWTData userData, int imageId) {
-    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkAdminOrImageUploader(userData, imageId);
     checkImageExists(imageId);
+
+    String imageUrl =
+        db.select(SITE_IMAGES.IMAGE_URL)
+            .from(SITE_IMAGES)
+            .where(SITE_IMAGES.ID.eq(imageId))
+            .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
+
+    S3Requester.deleteSiteImage(imageUrl);
 
     db.deleteFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageId)).execute();
   }
@@ -758,6 +859,16 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     siteEntriesRecord.setUserId(userData.getUserId());
     populateSiteEntry(siteEntriesRecord, editSiteEntryRequest);
 
-    siteEntriesRecord.store();
+    int siteId = siteEntriesRecord.getSiteId();
+
+    db.transaction(configuration -> {
+      siteEntriesRecord.store();
+      // force unadopt only if we change the latest site entry of an adopted site to have no tree
+      if (!editSiteEntryRequest.isTreePresent()
+          && isAlreadyAdopted(siteId)
+          && entryId == latestSiteEntry(siteId).getId()) {
+        forceUnadoptSite(userData, siteId);
+      }
+    });
   }
 }
