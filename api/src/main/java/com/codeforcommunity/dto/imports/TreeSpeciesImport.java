@@ -11,11 +11,14 @@ public class TreeSpeciesImport extends ApiDto {
   private String commonName;
   private String speciesCode;
 
-  public TreeSpeciesImport(String genus, String species, String commonName, String speciesCode) {
+  private String defaultImage;
+
+  public TreeSpeciesImport(String genus, String species, String commonName, String speciesCode, String defaultImage) {
     this.genus = genus;
     this.species = species;
     this.commonName = commonName;
     this.speciesCode = speciesCode;
+    this.defaultImage = defaultImage;
   }
 
   private TreeSpeciesImport() {}
@@ -52,6 +55,14 @@ public class TreeSpeciesImport extends ApiDto {
     this.speciesCode = speciesCode;
   }
 
+  public String getDefaultImage() {
+    return defaultImage;
+  }
+
+  public void setDefaultImage(String defaultImage) {
+    this.defaultImage = defaultImage;
+  }
+
   @Override
   public List<String> validateFields(String fieldPrefix) throws HandledException {
     String fieldName = fieldPrefix + "tree_species.";
@@ -68,6 +79,10 @@ public class TreeSpeciesImport extends ApiDto {
     }
     if (speciesCode == null || isEmpty(speciesCode)) {
       fields.add(fieldName + "speciesCode");
+    }
+    // default image can be null, but not empty
+    if (defaultImage != null && defaultImage.isEmpty()) {
+      fields.add(fieldName + "defaultImage");
     }
 
     return fields;

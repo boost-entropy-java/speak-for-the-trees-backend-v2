@@ -3,6 +3,7 @@ package com.codeforcommunity.dto.site;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class SiteEntry {
   private final Integer id;
@@ -99,6 +100,7 @@ public class SiteEntry {
   private final String scientificName;
   private final Boolean biocharAdded;
   private final String lastEditedUser;
+  private final List<SiteEntryImage> images;
 
   public SiteEntry(
       Integer id,
@@ -184,7 +186,7 @@ public class SiteEntry {
       Date removalDate,
       String scientificName,
       Boolean biocharAdded,
-      String lastEditedUser) {
+      String lastEditedUser, List<SiteEntryImage> images) {
     this.id = id;
     this.username = username;
     this.createdAt = createdAt;
@@ -269,6 +271,8 @@ public class SiteEntry {
     this.scientificName = scientificName;
     this.biocharAdded = biocharAdded;
     this.lastEditedUser = lastEditedUser;
+
+    this.images = images;
   }
 
   public Integer getId() {
@@ -599,4 +603,9 @@ public class SiteEntry {
   public String getLastEditedUser() {
     return lastEditedUser;
   }
+
+  public List<SiteEntryImage> getImages() {
+    return images;
+  }
+
 }
