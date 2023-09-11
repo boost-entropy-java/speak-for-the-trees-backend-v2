@@ -323,6 +323,7 @@ public class ImportProcessorImpl implements IImportProcessor {
       treeSpecies.setSpecies(treeSpeciesImport.getSpecies());
       treeSpecies.setCommonName(treeSpeciesImport.getCommonName());
       treeSpecies.setSpeciesCode(treeSpeciesImport.getSpeciesCode());
+      treeSpecies.setDefaultImage(treeSpeciesImport.getDefaultImage());
 
       treeSpecies.store();
     }
