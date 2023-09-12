@@ -61,6 +61,7 @@ public class SiteEntry {
       pattern = "MM/dd/yyyy",
       timezone = "America/New_York")
   private final Date plantingDate;
+  private final List<SiteEntryImage> images;
 
   /* Cambridge fields */
   private final Integer trunks;
@@ -100,7 +101,6 @@ public class SiteEntry {
   private final String scientificName;
   private final Boolean biocharAdded;
   private final String lastEditedUser;
-  private final List<SiteEntryImage> images;
 
   public SiteEntry(
       Integer id,
@@ -148,6 +148,7 @@ public class SiteEntry {
       String treeName,
       String adopter,
       Date plantingDate,
+      List<SiteEntryImage> images,
 
       /* Cambridge fields */
       Integer trunks,
@@ -186,7 +187,7 @@ public class SiteEntry {
       Date removalDate,
       String scientificName,
       Boolean biocharAdded,
-      String lastEditedUser, List<SiteEntryImage> images) {
+      String lastEditedUser) {
     this.id = id;
     this.username = username;
     this.createdAt = createdAt;
@@ -455,6 +456,10 @@ public class SiteEntry {
     return plantingDate;
   }
 
+  public List<SiteEntryImage> getImages() {
+    return images;
+  }
+
   /* Cambridge fields */
   public Integer getTrunks() {
     return trunks;
@@ -602,10 +607,6 @@ public class SiteEntry {
 
   public String getLastEditedUser() {
     return lastEditedUser;
-  }
-
-  public List<SiteEntryImage> getImages() {
-    return images;
   }
 
 }

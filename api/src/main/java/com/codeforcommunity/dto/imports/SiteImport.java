@@ -21,6 +21,7 @@ public class SiteImport extends ApiDto {
   private String zip;
   private String address;
   private Integer neighborhoodId;
+  private String owner;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private Timestamp deletedAt;
@@ -124,6 +125,7 @@ public class SiteImport extends ApiDto {
       String zip,
       String address,
       Integer neighborhoodId,
+      String owner,
       Timestamp deletedAt,
       Integer siteId,
       Integer userId,
@@ -219,6 +221,7 @@ public class SiteImport extends ApiDto {
     this.zip = zip;
     this.address = address;
     this.neighborhoodId = neighborhoodId;
+    this.owner = owner;
     this.deletedAt = deletedAt;
     this.siteId = siteId;
     this.userId = userId;
@@ -365,6 +368,14 @@ public class SiteImport extends ApiDto {
 
   public void setNeighborhoodId(Integer neighborhoodId) {
     this.neighborhoodId = neighborhoodId;
+  }
+
+  public String getOwner() {
+    return owner;
+  }
+
+  public void setOwner(String owner) {
+    this.owner = owner;
   }
 
   public Timestamp getDeletedAt() {

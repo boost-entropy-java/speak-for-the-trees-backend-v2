@@ -201,6 +201,7 @@ public class ImportProcessorImpl implements IImportProcessor {
               if (siteImport.getDeletedAt() != null) {
                 site.setDeletedAt(siteImport.getDeletedAt());
               }
+              site.setOwner(siteImport.getOwner());
 
               // Set all values for the site entry record
               siteEntry.setSiteId(siteImport.getSiteId());

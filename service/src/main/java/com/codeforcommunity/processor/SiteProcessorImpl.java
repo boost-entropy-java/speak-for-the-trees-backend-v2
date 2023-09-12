@@ -136,6 +136,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getTreeName(),
                   adopter,
                   record.getPlantingDate(),
+                  getSiteEntryImages(record.getId(), record.getCommonName()),
 
                   /* Cambridge fields */
                   record.getTrunks(),
@@ -174,8 +175,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getRemovalDate(),
                   record.getScientificName(),
                   record.getBiocharAdded(),
-                  record.getLastEditedUser(),
-                  getSiteEntryImages(record.getId(), record.getCommonName()));
+                  record.getLastEditedUser());
 
           siteEntries.add(siteEntry);
         });
