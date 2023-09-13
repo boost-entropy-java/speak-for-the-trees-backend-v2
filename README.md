@@ -25,7 +25,7 @@ Following these steps, all that is left is to import data into the database. Thi
       "lastName": "someLastName"
   }
   ```
-  - Using your preferred method for postgres (Intellij, PgAdmin, postgres consol, etc.) edit the user row you just created so that their `privilege_level` column is equal to `SUPER_ADMIN`
+  - Using your preferred method for postgres (Intellij, PgAdmin, postgres console, etc.) edit the user row you just created so that their `privilege_level` column is equal to `SUPER_ADMIN`
   - Call `POST /api/v1/user/login` to login to your admin user account with a JSON body that follows the format of:
   ```json
   {
@@ -36,12 +36,11 @@ Following these steps, all that is left is to import data into the database. Thi
   - Copy the "accessToken" returned by that call and add it as the _value_ of a header called 'X-Access-Token' for all seeding API calls
 - Import data is stored in the `SFTT.import.data` S3 bucket. Ask one of the team leads for the .json files
     - Call `POST api/v1/protected/import/neighborhoods` with the contents of `neighborhoods.json` as the body
-    - Call `POST api/v1/protected/import/blocks` with the contents of `blocks.json` as the body. At this point your database has been populated with neighborhood and block data. The following steps are only necessary if you need to test something related to reservations.
-    - Request a SQL script that imports users in the SFTT Slack channel. This is not public due to the sensitivity of the information.
-    - Call `POST api/v1/protected/import/reservations` with the contents of `reservations.json` as the body. 
-    - Call `POST api/v1/protected/import/sites` with the contents of `sites.json` as the body. 
+    - Call `POST api/v1/protected/import/sites` with the contents of `sites.json` as the body.
+    - Call `POST api/v1/protected/import/species` with the contents of `tree_species.json` as the body.
+    - Call `POST api/v1/protected/import/tree_benefits` with the contents of `tree_benefits.json` as the body.
 
-At this point your database is fully set up and contains real data for blocks, neighborhoods, users and reservations. 
+At this point your database is fully set up and contains real data for neighborhoods and trees around Boston!
 
 ## Running the API :robot:
 The `ServiceMain.java` class has the main method for running the code, this can be run directly in IntelliJ. Alternatively: `mvn install` creates a jar file at: `service/target/service-1.0-SNAPSHOT-jar-with-dependencies.jar`. This can be run from the command line with the command `java -jar service-1.0-SNA....`. The API will then be available at `http://localhost:8081` by default.
