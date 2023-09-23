@@ -521,12 +521,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setSiteId(siteId);
     populateSiteEntry(record, updateSiteRequest);
 
-    db.transaction(configuration -> {
-      record.store();
-      if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
-        forceUnadoptSite(userData, siteId);
-      }
-    });
+    db.transaction(
+        configuration -> {
+          record.store();
+          if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
+            forceUnadoptSite(userData, siteId);
+          }
+        });
   }
 
   @Override
@@ -861,14 +862,25 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
     int siteId = siteEntriesRecord.getSiteId();
 
-    db.transaction(configuration -> {
-      siteEntriesRecord.store();
-      // force unadopt only if we change the latest site entry of an adopted site to have no tree
-      if (!editSiteEntryRequest.isTreePresent()
-          && isAlreadyAdopted(siteId)
-          && entryId == latestSiteEntry(siteId).getId()) {
-        forceUnadoptSite(userData, siteId);
-      }
-    });
+    db.transaction(
+        configuration -> {
+          siteEntriesRecord.store();
+          // force unadopt only if we change the latest site entry of an adopted site to have no
+          // tree
+          if (!editSiteEntryRequest.isTreePresent()
+              && isAlreadyAdopted(siteId)
+              && entryId == latestSiteEntry(siteId).getId()) {
+            forceUnadoptSite(userData, siteId);
+          }
+        });
+  }
+
+  @Override
+  public void approveSiteImage(JWTData userData, int imageID) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkImageExists(imageID);
+    SiteImagesRecord imageRecord = db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageID)).fetchOne();
+    imageRecord.setApprovalStatus("Approved");
+    imageRecord.store();
   }
 }
