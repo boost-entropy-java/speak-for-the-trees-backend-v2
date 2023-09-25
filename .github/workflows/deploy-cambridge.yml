@@ -21,6 +21,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID:  ${{ secrets.AWS_ACCESS_KEY_ID_CAMBRIDGE }}
           AWS_SECRET_ACCESS_KEY:  ${{ secrets.AWS_SECRET_ACCESS_KEY_CAMBRIDGE }}
+          AWS_S3_UPLOAD_DIR: ${{ secrets.AWS_S3_UPLOAD_DIR_CAMBRIDGE }}
           DB_DOMAIN:  ${{ secrets.DB_DOMAIN_CAMBRIDGE }}
           DB_USERNAME:  ${{ secrets.DB_USERNAME_CAMBRIDGE }}
           DB_PASSWORD:  ${{ secrets.DB_PASSWORD_CAMBRIDGE }}
