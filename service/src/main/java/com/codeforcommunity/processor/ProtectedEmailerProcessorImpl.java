@@ -14,8 +14,6 @@ import org.jooq.generated.tables.records.UsersRecord;
 public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     implements IProtectedEmailerProcessor {
 
-  public static String TEMPLATE_DIR = "email_templates";
-
   private final DSLContext db;
 
   public ProtectedEmailerProcessorImpl(DSLContext db) {
@@ -27,7 +25,6 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     S3Requester.uploadHTML(
         addTemplateRequest.getName(),
-        TEMPLATE_DIR,
         userData.getUserId(),
         addTemplateRequest.getTemplate());
   }
@@ -35,7 +32,7 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   @Override
   public LoadTemplateResponse loadTemplate(JWTData userData, String templateName) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    LoadTemplateResponse s3Response = S3Requester.loadHTML(templateName, TEMPLATE_DIR);
+    LoadTemplateResponse s3Response = S3Requester.loadHTML(templateName);
     int userId = Integer.parseInt(s3Response.getAuthor());
     // has ID of author, replace with fullname of author
     UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(userId)).fetchOne();
@@ -53,6 +50,6 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   @Override
   public void deleteTemplate(JWTData userData, String templateName) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    S3Requester.deleteHTML(templateName, TEMPLATE_DIR);
+    S3Requester.deleteHTML(templateName);
   }
 }
