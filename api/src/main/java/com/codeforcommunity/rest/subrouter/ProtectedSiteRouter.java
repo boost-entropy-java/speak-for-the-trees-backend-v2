@@ -403,12 +403,12 @@ public class ProtectedSiteRouter implements IRouter {
     end(ctx.response(), 200);
   }
 
-  private void registerApproveSiteImage(Router router){
+  private void registerApproveSiteImage(Router router) {
     Route approveSiteImage = router.put("/approve_image/:image_id");
     approveSiteImage.handler(this::handleApproveSiteImage);
   }
 
-  private void handleApproveSiteImage(RoutingContext ctx){
+  private void handleApproveSiteImage(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
     int imageID = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
 
