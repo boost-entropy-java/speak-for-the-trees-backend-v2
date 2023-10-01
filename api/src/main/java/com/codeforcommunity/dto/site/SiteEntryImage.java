@@ -8,6 +8,8 @@ public class SiteEntryImage {
   private final Integer imageId;
   private final String uploaderUsername;
 
+  private String approvalStatus;
+
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private final Timestamp uploadedAt;
 
@@ -22,6 +24,7 @@ public class SiteEntryImage {
     this.uploaderUsername = uploaderUsername;
     this.uploadedAt = uploadedAt;
     this.imageUrl = imageUrl;
+    this.approvalStatus = "Unapproved";
   }
 
   public Integer getImageId() {
@@ -38,5 +41,9 @@ public class SiteEntryImage {
 
   public String getImageUrl() {
     return imageUrl;
+  }
+
+  public String getApprovalStatus(){
+    return this.approvalStatus;
   }
 }

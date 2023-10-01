@@ -63,7 +63,8 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteSiteImage(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
-
+    registerApproveSiteImage(router);
+    registerGetUnapprovedImages(router);
     return router;
   }
 
@@ -401,4 +402,31 @@ public class ProtectedSiteRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
+
+  private void registerApproveSiteImage(Router router) {
+    Route approveSiteImage = router.put("/approve_image/:image_id");
+    approveSiteImage.handler(this::handleApproveSiteImage);
+  }
+
+  private void handleApproveSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageID = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    processor.approveSiteImage(userData, imageID);
+
+    end(ctx.response(), 200);
+  }
+
+
+  private void registerGetUnapprovedImages(Router router) {
+    Route unapprovedSiteImages = router.get("/unapproved_images");
+    unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
+  }
+
+  private void handleGetUnapprovedImages(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    processor.getUnapprovedImages(userData);
+    end(ctx.response(), 200);
+  }
+
 }

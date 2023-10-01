@@ -12,6 +12,7 @@ import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import java.sql.Date;
@@ -107,4 +108,6 @@ public interface IProtectedSiteProcessor {
 
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
+
+  List<SiteEntryImage> getUnapprovedImages(JWTData userData);
 }
