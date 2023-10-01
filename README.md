@@ -37,7 +37,7 @@ Following these steps, all that is left is to import data into the database. Thi
 - Import data is stored in the `SFTT.import.data` S3 bucket. Ask one of the team leads for the .json files
     - Call `POST api/v1/protected/import/neighborhoods` with the contents of `neighborhoods.json` as the body
     - Call `POST api/v1/protected/import/sites` with the contents of `sites.json` as the body.
-    - Call `POST api/v1/protected/import/species` with the contents of `tree_species.json` as the body.
+    - Call `POST api/v1/protected/import/tree_species` with the contents of `tree_species.json` as the body.
     - Call `POST api/v1/protected/import/tree_benefits` with the contents of `tree_benefits.json` as the body.
 
 At this point your database is fully set up and contains real data for neighborhoods and trees around Boston!
