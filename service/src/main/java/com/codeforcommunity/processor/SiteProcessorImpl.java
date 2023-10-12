@@ -293,7 +293,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
             .orderBy(SITE_ENTRIES.CREATED_AT.desc())
-            .fetchOne();
+            .fetchInto(SiteEntriesRecord.class).get(0);
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");
