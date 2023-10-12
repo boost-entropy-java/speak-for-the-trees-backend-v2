@@ -300,20 +300,14 @@ public class SiteProcessorImpl implements ISiteProcessor {
     }
 
     String commonName = record.getCommonName();
-    double diameter = record.getDiameter();
+    Double diameter = record.getDiameter();
 
     if (commonName == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry common name");
-    } else if (diameter == 0) {
+    } else if (diameter == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry diameter");
     }
 
-    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(this.db, commonName, diameter);
-    return new TreeBenefitsResponse(
-        calculator.calcEnergy(), calculator.calcEnergyMoney(),
-        calculator.calcStormwater(), calculator.calcStormwaterMoney(),
-        calculator.calcAirQuality(), calculator.calcAirQualityMoney(),
-        calculator.calcCo2Removed(), calculator.calcCo2RemovedMoney(),
-        calculator.calcCo2Stored(), calculator.calcCo2StoredMoney());
+    return new TreeBenefitsCalculator(this.db, commonName, diameter).calculateBenefits();
   }
 }

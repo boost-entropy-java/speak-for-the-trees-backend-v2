@@ -1,28 +1,32 @@
 package com.codeforcommunity.dto.site;
 
 public class TreeBenefitsResponse {
-  private final double energy;
-  private final double energyMoney;
-  private final double stormwater;
-  private final double stormwaterMoney;
-  private final double airQuality;
-  private final double airQualityMoney;
-  private final double co2Removed;
-  private final double co2RemovedMoney;
-  private final double co2Stored;
-  private final double co2StoredMoney;
+  private final Double energy;
+  private final Double energyMoney;
+  private final Double stormwater;
+  private final Double stormwaterMoney;
+  private final Double airQuality;
+  private final Double airQualityMoney;
+  private final Double co2Removed;
+  private final Double co2RemovedMoney;
+  private final Double co2Stored;
+  private final Double co2StoredMoney;
+
+  public TreeBenefitsResponse() {
+    this(null, null, null, null, null, null, null, null, null, null);
+  }
 
   public TreeBenefitsResponse(
-      double energy,
-      double energyMoney,
-      double stormwater,
-      double stormwaterMoney,
-      double airQuality,
-      double airQualityMoney,
-      double co2Removed,
-      double co2RemovedMoney,
-      double co2Stored,
-      double co2StoredMoney) {
+      Double energy,
+      Double energyMoney,
+      Double stormwater,
+      Double stormwaterMoney,
+      Double airQuality,
+      Double airQualityMoney,
+      Double co2Removed,
+      Double co2RemovedMoney,
+      Double co2Stored,
+      Double co2StoredMoney) {
     this.energy = energy;
     this.energyMoney = energyMoney;
     this.stormwater = stormwater;
@@ -35,43 +39,43 @@ public class TreeBenefitsResponse {
     this.co2StoredMoney = co2StoredMoney;
   }
 
-  public double getEnergy() {
+  public Double getEnergy() {
     return energy;
   }
 
-  public double getEnergyMoney() {
+  public Double getEnergyMoney() {
     return energyMoney;
   }
 
-  public double getStormwater() {
+  public Double getStormwater() {
     return stormwater;
   }
 
-  public double getStormwaterMoney() {
+  public Double getStormwaterMoney() {
     return stormwaterMoney;
   }
 
-  public double getAirQuality() {
+  public Double getAirQuality() {
     return airQuality;
   }
 
-  public double getAirQualityMoney() {
+  public Double getAirQualityMoney() {
     return airQualityMoney;
   }
 
-  public double getCo2Removed() {
+  public Double getCo2Removed() {
     return co2Removed;
   }
 
-  public double getCo2RemovedMoney() {
+  public Double getCo2RemovedMoney() {
     return co2RemovedMoney;
   }
 
-  public double getCo2Stored() {
+  public Double getCo2Stored() {
     return co2Stored;
   }
 
-  public double getCo2StoredMoney() {
+  public Double getCo2StoredMoney() {
     return co2StoredMoney;
   }
 }
