@@ -878,7 +878,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   @Override
   public List<SiteEntryImage> getUnapprovedImages(JWTData userData) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    List<SiteImagesRecord> imageRecords = db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.APPROVAL_STATUS.eq("Unapproved"));
+    List<SiteImagesRecord> imageRecords = db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED));
     List<SiteEntryImage> unapprovedImages = imageRecords.stream().map(
             imageRecord ->
                     new SiteEntryImage(
