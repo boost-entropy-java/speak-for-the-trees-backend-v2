@@ -1,7 +1,6 @@
 package com.codeforcommunity.dto.site;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.sql.Timestamp;
 
 public class SiteEntryImage {
@@ -17,7 +16,8 @@ public class SiteEntryImage {
     this(null, null, null, imageUrl);
   }
 
-  public SiteEntryImage(Integer imageId, String uploaderUsername, Timestamp uploadedAt, String imageUrl) {
+  public SiteEntryImage(
+      Integer imageId, String uploaderUsername, Timestamp uploadedAt, String imageUrl) {
     this.imageId = imageId;
     this.uploaderUsername = uploaderUsername;
     this.uploadedAt = uploadedAt;

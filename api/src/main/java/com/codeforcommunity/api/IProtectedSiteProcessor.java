@@ -107,4 +107,7 @@ public interface IProtectedSiteProcessor {
 
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
+
+  /** Allows Admin users to approve uploaded site images of the given ID */
+  void approveSiteImage(JWTData userData, int imageID);
 }
