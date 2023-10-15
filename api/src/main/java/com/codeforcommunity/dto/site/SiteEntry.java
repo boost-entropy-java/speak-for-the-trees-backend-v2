@@ -61,6 +61,7 @@ public class SiteEntry {
       pattern = "MM/dd/yyyy",
       timezone = "America/New_York")
   private final Date plantingDate;
+
   private final List<SiteEntryImage> images;
 
   /* Cambridge fields */
@@ -608,5 +609,4 @@ public class SiteEntry {
   public String getLastEditedUser() {
     return lastEditedUser;
   }
-
 }
