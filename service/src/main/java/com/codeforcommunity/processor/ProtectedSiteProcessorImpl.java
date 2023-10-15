@@ -660,7 +660,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   @Override
   public void uploadSiteImage(
       JWTData userData, int siteEntryId, UploadSiteImageRequest uploadSiteImageRequest) {
-    checkEntryExists(siteEntryId);
+    checkSiteExists(siteEntryId);
     checkCanUploadImage(userData);
 
     Integer maxImageId =
