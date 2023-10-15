@@ -67,6 +67,8 @@ public class S3Requester {
   private static Externs externs = new Externs();
 
   private static final String SITE_IMAGES_S3_DIR = "site_images";
+  private static final String TEMPLATE_S3_DIR = "email_templates";
+  private static final String TEMPLATE_FILE_EXTENSION = "_template.html";
 
   /**
    * This should only be used for testing purposes when we mock the s3Client.
@@ -162,9 +164,9 @@ public class S3Requester {
     }
 
     // Create the request to upload the image
+    String objectName = String.join("/", directoryName, externs.getDirPublic(), fullFileName);
     PutObjectRequest awsRequest =
-        new PutObjectRequest(
-            externs.getBucketPublic(), directoryName + "/" + fullFileName, tempFile);
+        new PutObjectRequest(externs.getBucketPublic(), objectName, tempFile);
 
     // Set the image file metadata (to be of type image)
     ObjectMetadata awsObjectMetadata = new ObjectMetadata();
@@ -241,7 +243,6 @@ public class S3Requester {
    * will be overwritten in S3 if another file of the same name is uploaded.
    *
    * @param name the desired name of the new file in S3 (without a file extension).
-   * @param directoryName the desired directory of the file in S3 (without leading or trailing '/').
    * @param adminID the desired ID of the user uploading the HTML to S3.
    * @param htmlContent the string encoding of the HTML to upload.
    * @return HTML file URL if the upload was successful.
@@ -249,9 +250,9 @@ public class S3Requester {
    * @throws S3FailedUploadException if the upload to S3 failed.
    */
   public static String uploadHTML(
-      String name, String directoryName, Integer adminID, String htmlContent) {
+      String name, Integer adminID, String htmlContent) {
     // Save HTML to temp file
-    String fullFileName = getFileNameWithoutExtension(name, "_template") + ".html";
+    String fullFileName = getFileNameWithoutExtension(name, TEMPLATE_FILE_EXTENSION);
     File tempFile;
 
     // try to create a clean parse
@@ -280,9 +281,9 @@ public class S3Requester {
     }
 
     // Create the request to upload the HTML
+    String objectName = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic(), fullFileName);
     PutObjectRequest awsRequest =
-        new PutObjectRequest(
-            externs.getBucketPublic(), directoryName + "/" + fullFileName, tempFile);
+        new PutObjectRequest(externs.getBucketPublic(), objectName, tempFile);
 
     // Set the HTML file metadata to have the userID of the uploader
     ObjectMetadata awsObjectMetadata = new ObjectMetadata();
@@ -302,7 +303,7 @@ public class S3Requester {
     // Delete the temporary file that was written to disk
     tempFile.delete();
 
-    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, name);
+    return String.join("/", externs.getBucketPublicUrl(), TEMPLATE_S3_DIR, externs.getDirPublic(), name);
   }
 
   // helper to check whether the given path exists
@@ -314,14 +315,14 @@ public class S3Requester {
    * Load the existing HTML file with the given name from the user uploads S3 bucket.
    *
    * @param name the name of the HTML file in S3 to be loaded (without "_template.html extension).
-   * @param directoryName the directory of the file in S3 (without leading or trailing '/').
    * @return LoadTemplateResponse with the html file name, content, and author.
    * @throws InvalidURLException if the file does not exist.
    * @throws BadRequestHTMLException if the HTML file cannot be decoded to a string.
    * @throws SdkClientException if the loading from S3 failed.
    */
-  public static LoadTemplateResponse loadHTML(String name, String directoryName) {
-    String htmlPath = directoryName + "/" + name + "_template.html";
+  public static LoadTemplateResponse loadHTML(String name) {
+    String htmlPath = String.join("/",
+        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
@@ -352,12 +353,12 @@ public class S3Requester {
    * Delete the existing HTML file with the given name from the user uploads S3 bucket.
    *
    * @param name the name of the HTML file in S3 to be deleted.
-   * @param directoryName the directory of the file in S3 (without leading or trailing '/').
    * @throws InvalidURLException if the file does not exist.
    * @throws SdkClientException if the deletion from S3 failed.
    */
-  public static void deleteHTML(String name, String directoryName) {
-    String htmlPath = directoryName + "/" + name + "_template.html";
+  public static void deleteHTML(String name) {
+    String htmlPath = String.join("/",
+        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
