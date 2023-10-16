@@ -13,7 +13,8 @@ public class TreeSpeciesImport extends ApiDto {
 
   private String defaultImage;
 
-  public TreeSpeciesImport(String genus, String species, String commonName, String speciesCode, String defaultImage) {
+  public TreeSpeciesImport(
+      String genus, String species, String commonName, String speciesCode, String defaultImage) {
     this.genus = genus;
     this.species = species;
     this.commonName = commonName;
