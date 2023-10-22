@@ -79,6 +79,8 @@ public class S3Requester {
     externs = customExterns;
   }
 
+
+
   /**
    * Validates whether or not the given String is a base64 encoded image in the following format:
    * data:image/{extension};base64,{imageData}.
