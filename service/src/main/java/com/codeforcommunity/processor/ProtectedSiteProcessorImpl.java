@@ -882,7 +882,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     List<SiteImagesRecord> imageRecords =
             db.selectFrom(SITE_IMAGES).where(
-                    SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED)).fetch();
+                    SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED.getApprovalStatus())).fetch();
     List<SiteEntryImage> unapprovedImages = imageRecords.stream().map(
             imageRecord ->
                     new SiteEntryImage(
