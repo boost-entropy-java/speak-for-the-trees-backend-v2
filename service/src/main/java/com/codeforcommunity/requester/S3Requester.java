@@ -382,8 +382,9 @@ public class S3Requester {
     ListObjectsV2Request req = new ListObjectsV2Request();
     req.setBucketName(bucketName);
     req.setDelimiter("/");
-    req.setPrefix(TEMPLATE_S3_DIR+"/");
-    req.setStartAfter(TEMPLATE_S3_DIR+"/");
+    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic());
+    req.setPrefix(path);
+    req.setStartAfter(path);
 
     ListObjectsV2Result res;
     try {
