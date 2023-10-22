@@ -378,11 +378,16 @@ public class S3Requester {
     externs.getS3Client().deleteObject(awsRequest);
   }
 
+  /**
+   *
+   * @param bucketName
+   * @return
+   */
   public static List<String> getAllNamesinBucket(String bucketName) {
     ListObjectsV2Request req = new ListObjectsV2Request();
     req.setBucketName(bucketName);
     req.setDelimiter("/");
-    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic());
+    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic()+"/");
     req.setPrefix(path);
     req.setStartAfter(path);
 
@@ -392,7 +397,7 @@ public class S3Requester {
       res = externs.getS3Client().listObjectsV2(req);
       String prefix = req.getPrefix();
       List<String> result;
-      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "")).collect(Collectors.toList());
+      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "").replace("_template.html", "")).collect(Collectors.toList());
       return result;
     } catch (SdkClientException a) {
       throw new InvalidURLException();
