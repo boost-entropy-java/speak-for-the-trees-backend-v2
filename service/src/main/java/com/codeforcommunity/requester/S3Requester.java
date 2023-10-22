@@ -379,21 +379,13 @@ public class S3Requester {
   }
 
   public static List<String> getAllNamesinBucket(String bucketName) {
-
-
-
-//    ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-//            .bucket(bucketName)
-//            .build();
-
     ListObjectsV2Request req = new ListObjectsV2Request();
-    req.setBucketName("sftt-user-uploads");
+    req.setBucketName(bucketName);
     req.setDelimiter("/");
-    req.setPrefix("email_templates/");
-    req.setStartAfter("email_templates/");
+    req.setPrefix(TEMPLATE_S3_DIR+"/");
+    req.setStartAfter(TEMPLATE_S3_DIR+"/");
 
     ListObjectsV2Result res;
-
     try {
 
       res = externs.getS3Client().listObjectsV2(req);
