@@ -15,6 +15,7 @@ import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.rest.IRouter;
@@ -423,7 +424,11 @@ public class ProtectedSiteRouter implements IRouter {
 
   private void handleGetUnapprovedImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
-    processor.getUnapprovedImages(userData);
-    end(ctx.response(), 200);
+    List<SiteEntryImage> images = processor.getUnapprovedImages(userData);
+    List<JsonObject> jsonImages = images.stream()
+            .map(i -> JsonObject.mapFrom(i)).collect(Collectors.toList());
+    end(ctx.response(), 200,
+            JsonObject.mapFrom(Collections.singletonMap("images", jsonImages))
+            .toString());
   }
 }
