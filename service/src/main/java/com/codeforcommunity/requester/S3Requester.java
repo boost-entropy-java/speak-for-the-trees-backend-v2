@@ -397,7 +397,6 @@ public class S3Requester {
     try {
 
       res = externs.getS3Client().listObjectsV2(req);
-      List<S3ObjectSummary> summaries = res.getObjectSummaries();
       String prefix = req.getPrefix();
       List<String> result;
       result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "")).collect(Collectors.toList());
