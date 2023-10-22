@@ -30,6 +30,8 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
@@ -380,25 +382,31 @@ public class S3Requester {
 
 
 
-    ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
-            .bucket(bucketName)
-            .build();
-    ListObjectsV2Result listObjectsV2;
+//    ListObjectsV2Request listObjectsV2Request = ListObjectsV2Request.builder()
+//            .bucket(bucketName)
+//            .build();
+
+    ListObjectsV2Request req = new ListObjectsV2Request();
+    req.setBucketName("sftt-user-uploads");
+    req.setDelimiter("/");
+    req.setPrefix("email_templates/");
+    req.setStartAfter("email_templates/");
+
+    ListObjectsV2Result res;
 
     try {
 
-      listObjectsV2 = externs.getS3Client().listObjectsV2(listObjectsV2Request);
-      List<S3ObjectSummary> summaries = listObjectsV2.getObjectSummaries();
-      String prefix = listObjectsV2Request.getPrefix();
-      List<String> result = new ArrayList<String>();
-      for (S3ObjectSummary s : summaries) {
-        result.add(s.getKey().replace(prefix, ""));
-      }
-
+      res = externs.getS3Client().listObjectsV2(req);
+      List<S3ObjectSummary> summaries = res.getObjectSummaries();
+      String prefix = req.getPrefix();
+      List<String> result;
+      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "")).collect(Collectors.toList());
       return result;
     } catch (SdkClientException a) {
       throw new InvalidURLException();
     }
   }
+
+
 
 }
