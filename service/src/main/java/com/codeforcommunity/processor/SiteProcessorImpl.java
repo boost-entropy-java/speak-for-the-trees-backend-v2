@@ -206,7 +206,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                 }
 
                 return new SiteEntryImage(
-                    record.getId(), username, record.getUploadedAt(), record.getImageUrl());
+                    record.getId(), username, record.getUploaderId(), record.getUploadedAt(), record.getImageUrl());
               })
           .collect(Collectors.toList());
     }
