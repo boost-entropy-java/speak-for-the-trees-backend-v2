@@ -417,6 +417,7 @@ public class ProtectedSiteRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
+
   private void registerGetUnapprovedImages(Router router) {
     Route unapprovedSiteImages = router.get("/unapproved_images");
     unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
@@ -425,8 +426,9 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleGetUnapprovedImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
     List<SiteEntryImage> images = processor.getUnapprovedImages(userData);
-    end(ctx.response(), 200,
-            JsonObject.mapFrom(Collections.singletonMap("images", images))
-            .toString());
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
   }
 }

@@ -877,24 +877,30 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-
   public List<SiteEntryImage> getUnapprovedImages(JWTData userData) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     List<SiteImagesRecord> imageRecords =
-            db.selectFrom(SITE_IMAGES).where(
-                    SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED.getApprovalStatus())).fetch();
-    List<SiteEntryImage> unapprovedImages = imageRecords.stream().map(
-            imageRecord ->
+        db.selectFrom(SITE_IMAGES)
+            .where(
+                SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED.getApprovalStatus()))
+            .fetch();
+    List<SiteEntryImage> unapprovedImages =
+        imageRecords.stream()
+            .map(
+                imageRecord ->
                     new SiteEntryImage(
-                            imageRecord.getId(),
-                            this.getImageUploader(imageRecord),
-                            imageRecord.getUploadedAt(),
-                            imageRecord.getImageUrl())).collect(Collectors.toList());
+                        imageRecord.getId(),
+                        this.getImageUploader(imageRecord),
+                        imageRecord.getUploaderId(),
+                        imageRecord.getUploadedAt(),
+                        imageRecord.getImageUrl()))
+            .collect(Collectors.toList());
     return unapprovedImages;
   }
 
   private String getImageUploader(SiteImagesRecord imageRecord) {
-    String username = db.selectFrom(USERS)
+    String username =
+        db.selectFrom(USERS)
             .where(USERS.ID.eq(imageRecord.getUploaderId()))
             .fetchOne(USERS.USERNAME);
     return username;

@@ -79,8 +79,6 @@ public class S3Requester {
     externs = customExterns;
   }
 
-
-
   /**
    * Validates whether or not the given String is a base64 encoded image in the following format:
    * data:image/{extension};base64,{imageData}.
@@ -251,8 +249,7 @@ public class S3Requester {
    * @throws BadRequestHTMLException if the string to HTML decoding failed.
    * @throws S3FailedUploadException if the upload to S3 failed.
    */
-  public static String uploadHTML(
-      String name, Integer adminID, String htmlContent) {
+  public static String uploadHTML(String name, Integer adminID, String htmlContent) {
     // Save HTML to temp file
     String fullFileName = getFileNameWithoutExtension(name, TEMPLATE_FILE_EXTENSION);
     File tempFile;
@@ -305,7 +302,8 @@ public class S3Requester {
     // Delete the temporary file that was written to disk
     tempFile.delete();
 
-    return String.join("/", externs.getBucketPublicUrl(), TEMPLATE_S3_DIR, externs.getDirPublic(), name);
+    return String.join(
+        "/", externs.getBucketPublicUrl(), TEMPLATE_S3_DIR, externs.getDirPublic(), name);
   }
 
   // helper to check whether the given path exists
@@ -323,8 +321,8 @@ public class S3Requester {
    * @throws SdkClientException if the loading from S3 failed.
    */
   public static LoadTemplateResponse loadHTML(String name) {
-    String htmlPath = String.join("/",
-        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
+    String htmlPath =
+        String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
@@ -359,8 +357,8 @@ public class S3Requester {
    * @throws SdkClientException if the deletion from S3 failed.
    */
   public static void deleteHTML(String name) {
-    String htmlPath = String.join("/",
-        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
+    String htmlPath =
+        String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
