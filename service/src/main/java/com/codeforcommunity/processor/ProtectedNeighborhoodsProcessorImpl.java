@@ -16,7 +16,7 @@ import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.NeighborhoodsRecord;
 import org.simplejavamail.api.email.AttachmentResource;
 
-public class fProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
+public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
     implements IProtectedNeighborhoodsProcessor {
   private final DSLContext db;
   private final Emailer emailer;
