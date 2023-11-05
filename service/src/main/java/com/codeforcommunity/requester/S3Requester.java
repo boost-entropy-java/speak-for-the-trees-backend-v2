@@ -186,7 +186,7 @@ public class S3Requester {
     // Delete the temporary file that was written to disk
     tempFile.delete();
 
-    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, fullFileName);
+    return String.format("%s/%s", externs.getBucketPublicUrl(), objectName);
   }
 
   /**

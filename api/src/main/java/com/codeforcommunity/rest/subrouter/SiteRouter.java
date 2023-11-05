@@ -64,11 +64,11 @@ public class SiteRouter implements IRouter {
     StewardshipActivitiesResponse stewardshipActivitiesResponse =
         processor.getStewardshipActivities(siteId);
 
-    for (StewardshipActivity activity : stewardshipActivitiesResponse.getStewardshipActivities()) {
-      logger.info("Date: " + activity.getDate().toString());
-    }
+//    for (StewardshipActivity activity : stewardshipActivitiesResponse.getStewardshipActivities()) {
+//      logger.info("Date: " + activity.getDate().toString());
+//    }
 
-    logger.info(JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
+//    logger.info(JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
 
     end(ctx.response(), 200, JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
   }
