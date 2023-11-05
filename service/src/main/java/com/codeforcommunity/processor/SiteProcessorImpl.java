@@ -206,12 +206,17 @@ public class SiteProcessorImpl implements ISiteProcessor {
                 }
 
                 return new SiteEntryImage(
-                    record.getId(), username, record.getUploadedAt(), record.getImageUrl());
+                    record.getId(), username, record.getUploaderId(), record.getUploadedAt(), record.getImageUrl());
               })
           .collect(Collectors.toList());
     }
 
     // if no approved images exist for the entry, check if its tree has a default image.
+    // if the tree's common name is null, we won't find any default image - return empty list
+    if (commonName == null) {
+      return new ArrayList<>();
+    }
+
     // to counter any minor differences in tree name (e.g. Honey locust vs Honeylocust),
     // normalize the tree's common name by setting the name to all lowercase and removing empty
     // spaces
@@ -265,7 +270,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
     records.forEach(
         record -> {
-          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
+//          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
 
           StewardshipActivity stewardshipActivity =
               new StewardshipActivity(
@@ -279,7 +284,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
 
-          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
+//          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
         });
 
     return new StewardshipActivitiesResponse(activities);
@@ -303,27 +308,21 @@ public class SiteProcessorImpl implements ISiteProcessor {
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
             .orderBy(SITE_ENTRIES.CREATED_AT.desc())
-            .fetchOne();
+            .fetchInto(SiteEntriesRecord.class).get(0);
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");
     }
 
     String commonName = record.getCommonName();
-    double diameter = record.getDiameter();
+    Double diameter = record.getDiameter();
 
     if (commonName == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry common name");
-    } else if (diameter == 0) {
+    } else if (diameter == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry diameter");
     }
 
-    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(this.db, commonName, diameter);
-    return new TreeBenefitsResponse(
-        calculator.calcEnergy(), calculator.calcEnergyMoney(),
-        calculator.calcStormwater(), calculator.calcStormwaterMoney(),
-        calculator.calcAirQuality(), calculator.calcAirQualityMoney(),
-        calculator.calcCo2Removed(), calculator.calcCo2RemovedMoney(),
-        calculator.calcCo2Stored(), calculator.calcCo2StoredMoney());
+    return new TreeBenefitsCalculator(this.db, commonName, diameter).calculateBenefits();
   }
 }

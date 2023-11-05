@@ -874,4 +874,14 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           }
         });
   }
+
+  @Override
+  public void approveSiteImage(JWTData userData, int imageID) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkImageExists(imageID);
+    SiteImagesRecord imageRecord =
+        db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageID)).fetchOne();
+    imageRecord.setApprovalStatus(ImageApprovalStatus.APPROVED.getApprovalStatus());
+    imageRecord.store();
+  }
 }
