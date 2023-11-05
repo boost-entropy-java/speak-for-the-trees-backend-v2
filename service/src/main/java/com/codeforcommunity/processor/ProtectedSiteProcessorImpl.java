@@ -887,12 +887,17 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
             imageRecord ->
                     new SiteEntryImage(
                             imageRecord.getId(),
-                            db.selectFrom(USERS)
-                                    .where(USERS.ID.eq(imageRecord.getUploaderId()))
-                                    .fetchOne(USERS.USERNAME),
+                            this.getImageUploader(imageRecord),
                             imageRecord.getUploadedAt(),
                             imageRecord.getImageUrl())).collect(Collectors.toList());
     return unapprovedImages;
+  }
+
+  private String getImageUploader(SiteImagesRecord imageRecord) {
+    String username = db.selectFrom(USERS)
+            .where(USERS.ID.eq(imageRecord.getUploaderId()))
+            .fetchOne(USERS.USERNAME);
+    return username;
   }
 
   public void approveSiteImage(JWTData userData, int imageID) {
