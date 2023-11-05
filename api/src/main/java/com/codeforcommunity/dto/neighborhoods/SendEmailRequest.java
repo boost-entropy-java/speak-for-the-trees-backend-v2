@@ -1,7 +1,10 @@
 package com.codeforcommunity.dto.neighborhoods;
 
 import com.codeforcommunity.dto.ApiDto;
+import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.exceptions.HandledException;
+import org.simplejavamail.api.email.AttachmentResource;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,11 +13,21 @@ public class SendEmailRequest extends ApiDto {
   private String emailSubject;
   private String emailBody;
 
-  public SendEmailRequest(List<String> emails, String emailSubject, String emailBody) {
+  private List<AttachmentResource> attachments;
+
+  public SendEmailRequest(List<String> emails, String emailSubject, String emailBody,
+                          List<AttachmentResource> attachments) {
     this.emails = emails;
     this.emailSubject = emailSubject;
     this.emailBody = emailBody;
+    this.attachments = attachments;
   }
+
+  public SendEmailRequest(List<String> emails, String emailSubject, String emailBody) {
+    this(emails, emailSubject, emailBody, new ArrayList<>());
+
+  }
+
 
   private SendEmailRequest() {}
 
@@ -32,6 +45,10 @@ public class SendEmailRequest extends ApiDto {
 
   public void setSites(String emailBody) {
     this.emailBody = emailBody;
+  }
+
+  public List<AttachmentResource> getAttachments() {
+    return this.attachments;
   }
 
   public String getEmailSubject() {
@@ -55,6 +72,9 @@ public class SendEmailRequest extends ApiDto {
     }
     if (emailBody == null) {
       fields.add(fieldName + "emailBody");
+    }
+    if (attachments == null) {
+      fields.add(fieldName + "emailAttachment");
     }
 
     return fields;

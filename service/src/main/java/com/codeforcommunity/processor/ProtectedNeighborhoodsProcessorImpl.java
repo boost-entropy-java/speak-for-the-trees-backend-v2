@@ -5,6 +5,7 @@ import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import com.codeforcommunity.api.IProtectedNeighborhoodsProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.neighborhoods.EditCanopyCoverageRequest;
+import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.dto.neighborhoods.SendEmailRequest;
 import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
@@ -13,8 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.NeighborhoodsRecord;
+import org.simplejavamail.api.email.AttachmentResource;
 
-public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
+public class fProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
     implements IProtectedNeighborhoodsProcessor {
   private final DSLContext db;
   private final Emailer emailer;
@@ -33,8 +35,10 @@ public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
 
     String emailSubject = sendEmailRequest.getEmailSubject();
     String emailBody = sendEmailRequest.getEmailBody();
+    List<AttachmentResource> attachments = sendEmailRequest.getAttachments();
 
-    emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody);
+
+    emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody, attachments);
   }
 
   public void editCanopyCoverage(

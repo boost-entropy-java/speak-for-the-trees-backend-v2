@@ -5,15 +5,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.simplejavamail.MailException;
+import org.simplejavamail.api.email.AttachmentResource;
 import org.simplejavamail.api.email.Email;
 import org.simplejavamail.api.mailer.AsyncResponse;
 import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.MailerBuilder;
+
 
 public class EmailOperations {
   private final SLogger logger = new SLogger(EmailOperations.class);
@@ -172,7 +175,7 @@ public class EmailOperations {
 
   /** Send an email with the given subject and body to the users with the given email addresses. */
   public void sendEmailToMultipleRecipients(
-      HashSet<String> sendToEmails, String subject, String emailBody) {
+      HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
     if (!shouldSendEmails) {
       return;
     }
@@ -185,6 +188,7 @@ public class EmailOperations {
             .bccMultiple(sendToEmails.toArray(new String[0]))
             .withSubject(subject)
             .withHTMLText(emailBody)
+            .withAttachments(attachments)
             .buildEmail();
 
     this.sendEmail(email, subject);

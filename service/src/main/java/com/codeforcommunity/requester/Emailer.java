@@ -1,11 +1,11 @@
 package com.codeforcommunity.requester;
 
+import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.email.EmailOperations;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
+import org.simplejavamail.api.email.AttachmentResource;
+
+import java.util.*;
 
 public class Emailer {
   private final EmailOperations emailOperations;
@@ -121,14 +121,18 @@ public class Emailer {
     // TODO implement this
   }
 
-  public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body) {
+  public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,
+                                 List<AttachmentResource> attachments) {
     String filePath = "/emails/Email.html";
 
     Map<String, String> templateValues = new HashMap<>();
     templateValues.put("body", body.replaceAll("\n", "<br />"));
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
+
+
+
     emailBody.ifPresent(
-        email -> emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email));
+        email -> emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email, attachments));
   }
 }
