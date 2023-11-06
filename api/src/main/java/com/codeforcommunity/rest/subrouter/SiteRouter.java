@@ -5,7 +5,6 @@ import static com.codeforcommunity.rest.ApiRouter.end;
 import com.codeforcommunity.api.ISiteProcessor;
 import com.codeforcommunity.dto.site.GetSiteResponse;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
-import com.codeforcommunity.dto.site.StewardshipActivity;
 import com.codeforcommunity.dto.site.TreeBenefitsResponse;
 import com.codeforcommunity.logger.SLogger;
 import com.codeforcommunity.rest.IRouter;
@@ -64,11 +63,12 @@ public class SiteRouter implements IRouter {
     StewardshipActivitiesResponse stewardshipActivitiesResponse =
         processor.getStewardshipActivities(siteId);
 
-//    for (StewardshipActivity activity : stewardshipActivitiesResponse.getStewardshipActivities()) {
-//      logger.info("Date: " + activity.getDate().toString());
-//    }
+    //    for (StewardshipActivity activity :
+    // stewardshipActivitiesResponse.getStewardshipActivities()) {
+    //      logger.info("Date: " + activity.getDate().toString());
+    //    }
 
-//    logger.info(JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
+    //    logger.info(JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
 
     end(ctx.response(), 200, JsonObject.mapFrom(stewardshipActivitiesResponse).toString());
   }

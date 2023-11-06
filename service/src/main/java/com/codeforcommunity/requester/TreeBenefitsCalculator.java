@@ -1,12 +1,11 @@
 package com.codeforcommunity.requester;
 
-import com.codeforcommunity.dto.site.TreeBenefitsResponse;
-
 import static org.jooq.generated.Tables.TREE_BENEFITS;
 import static org.jooq.generated.Tables.TREE_SPECIES;
 import static org.jooq.impl.DSL.lower;
 import static org.jooq.impl.DSL.replace;
 
+import com.codeforcommunity.dto.site.TreeBenefitsResponse;
 import java.util.HashMap;
 import java.util.Map;
 import org.jooq.DSLContext;
