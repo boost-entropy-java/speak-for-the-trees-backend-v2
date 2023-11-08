@@ -13,21 +13,15 @@ public class SendEmailRequest extends ApiDto {
   private String emailSubject;
   private String emailBody;
 
-  private List<AttachmentResource> attachments;
+  private List<EmailAttachment> attachments;
 
   public SendEmailRequest(List<String> emails, String emailSubject, String emailBody,
-                          List<AttachmentResource> attachments) {
+                          List<EmailAttachment> attachments) {
     this.emails = emails;
     this.emailSubject = emailSubject;
     this.emailBody = emailBody;
     this.attachments = attachments;
   }
-
-  public SendEmailRequest(List<String> emails, String emailSubject, String emailBody) {
-    this(emails, emailSubject, emailBody, new ArrayList<>());
-
-  }
-
 
   private SendEmailRequest() {}
 
@@ -47,9 +41,11 @@ public class SendEmailRequest extends ApiDto {
     this.emailBody = emailBody;
   }
 
-  public List<AttachmentResource> getAttachments() {
+  public List<EmailAttachment> getAttachments() {
     return this.attachments;
   }
+  public void setAttachments(List<EmailAttachment> attachments) {
+    this.attachments = attachments; }
 
   public String getEmailSubject() {
     return this.emailSubject;

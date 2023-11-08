@@ -1,21 +1,30 @@
 package com.codeforcommunity.dto.emailer;
 
 import com.codeforcommunity.aws.EncodedImage;
+import com.codeforcommunity.dto.ApiDto;
 import com.codeforcommunity.exceptions.BadRequestImageException;
+import com.codeforcommunity.exceptions.HandledException;
+
 import org.simplejavamail.api.email.AttachmentResource;
 
 import javax.mail.util.ByteArrayDataSource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 
-public class EmailAttachment extends AttachmentResource {
+public class EmailAttachment extends ApiDto {
+    private String name;
+    private String data;
 
-
-    public EmailAttachment(String name, ByteArrayDataSource data) {
-        super(name, data);
+    public EmailAttachment(String name, String data) {
+        this.name = name;
+        this.data = data;
     }
+
+    private EmailAttachment() {}
 
     private static String getFileExtension(String base64Image) {
         // Expected Base64 format: "data:image/{extension};base64,{imageData}"
@@ -51,19 +60,52 @@ public class EmailAttachment extends AttachmentResource {
         String fileExtension = data[1]; // The image type (e.g. "png")
         return fileExtension;
     }
-    private static ByteArrayDataSource StringToDataSource(String data) {
+    private static ByteArrayDataSource stringToDataSource(String data) {
         byte[] imageData;
         String mimeType;
 
         try {
             // Temporarily writes the image to disk to decode
             mimeType = getFileExtension(data);
-            imageData = Base64.getDecoder().decode(data);
+            System.out.println(mimeType);
+            String[] base64Split = data.split(",", 2);
+            imageData = Base64.getDecoder().decode(base64Split[1]);
 
         } catch (IllegalArgumentException e) {
             // The image failed to decode
             throw new BadRequestImageException();
         }
         return new ByteArrayDataSource(imageData, mimeType);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) { this.name = name; }
+
+    public String getData() {
+        return data;
+    }
+
+    public void setData(String data) { this.data = data; }
+
+    public AttachmentResource getAttachmentResource() {
+        return new AttachmentResource(name, EmailAttachment.stringToDataSource(data));
+    }
+
+    @Override
+    public List<String> validateFields(String fieldPrefix) throws HandledException {
+        String fieldName = fieldPrefix + "email_attachment";
+        List<String> fields = new ArrayList<>();
+
+        if (this.name == null) {
+            fields.add(fieldName + "name");
+        }
+        if (this.data == null) {
+            fields.add(fieldName + "data");
+        }
+
+        return fields;
     }
 }
