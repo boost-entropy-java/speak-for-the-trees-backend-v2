@@ -51,13 +51,13 @@ public class EmailAttachment extends ApiDto {
             return null;
         }
 
-        String[] data = dataSplit[1].split("/", 2); // Split the image type here (e.g. "image/png")
-        if (data.length != 2 || !data[0].equals("image")) {
-            // Ensure the encoded data is an image
-            return null;
-        }
+        //String[] data = dataSplit[1].split("/", 2); // Split the image type here (e.g. "image/png")
+        //if (data.length != 2 || !data[0].equals("image")) {
+        //    // Ensure the encoded data is an image
+        //    return null;
+        //}
 
-        String fileExtension = data[1]; // The image type (e.g. "png")
+        String fileExtension = dataSplit[1]; // The image type (e.g. "png")
         return fileExtension;
     }
     private static ByteArrayDataSource stringToDataSource(String data) {
