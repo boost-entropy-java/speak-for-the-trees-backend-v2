@@ -392,7 +392,7 @@ public class ProtectedSiteRouter implements IRouter {
   }
 
   private void registerRejectSiteImage(Router router) {
-    Route rejectImage = router.post("/reject_image/:image_id");
+    Route rejectImage = router.delete("/reject_image/:image_id");
     rejectImage.handler(this::handleRejectSiteImage);
   }
 

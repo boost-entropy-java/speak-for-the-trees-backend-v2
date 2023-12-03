@@ -55,6 +55,7 @@ import org.jooq.generated.tables.records.SiteImagesRecord;
 import org.jooq.generated.tables.records.SitesRecord;
 import org.jooq.generated.tables.records.StewardshipRecord;
 import org.jooq.generated.tables.records.UsersRecord;
+import org.jooq.generated.tables.pojos.Users;
 
 public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
@@ -652,7 +653,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   @Override
   public void uploadSiteImage(
       JWTData userData, int siteEntryId, UploadSiteImageRequest uploadSiteImageRequest) {
-    checkSiteExists(siteEntryId);
+    checkEntryExists(siteEntryId);
     checkCanUploadImage(userData);
 
     Integer maxImageId =
@@ -870,18 +871,20 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     deleteSiteImage(userData, imageId);
 
-    if (rejectImageRequest.getReason() != null) {
-      int uploaderId =
-              db.select(SITE_IMAGES.UPLOADER_ID)
+    if (rejectImageRequest.getRejectionReason() != null) {
+      int uploaderId = db.select(SITE_IMAGES.UPLOADER_ID)
                       .from(SITE_IMAGES)
                       .where(SITE_IMAGES.ID.eq(imageId))
-                      .fetchOne();
+                      .fetchOne( 0 , int.class);
+
+      System.out.println(uploaderId);
 
       UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
+      System.out.println(user);
       String userEmail = user.getEmail();
       String userFullName =
               AuthDatabaseOperations.getFullName(user.into(Users.class));
-      emailer.sendRejectImageEmail(userEmail, userFullName, rejectImageRequest.getReason());
+      emailer.sendRejectImageEmail(userEmail, userFullName, rejectImageRequest.getRejectionReason());
     }
   }
 }

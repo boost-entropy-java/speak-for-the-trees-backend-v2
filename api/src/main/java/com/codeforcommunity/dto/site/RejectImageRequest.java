@@ -5,20 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RejectImageRequest extends ApiDto {
-    private String reason;
+    private String rejectionReason;
 
-    public RejectImageRequest(String reason) {
-        this.reason = reason;
+    public RejectImageRequest(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     private RejectImageRequest() {}
 
-    public String getReason() {
-        return reason;
+    public String getRejectionReason() {
+        return rejectionReason;
     }
 
     public void setNewReason(String newEmail) {
-        this.reason = reason;
+        this.rejectionReason = rejectionReason;
     }
 
     @Override
