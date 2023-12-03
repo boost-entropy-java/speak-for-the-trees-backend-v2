@@ -121,6 +121,19 @@ public class Emailer {
     // TODO implement this
   }
 
+  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason) {
+    String filePath = "/emails/RejectImageEmail.html";
+
+    Map<String, String> templateValues = new HashMap<>();
+    templateValues.put("reason", reason);
+    Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
+
+    emailBody.ifPresent(
+            s ->
+                    emailOperations.sendEmailToOneRecipient(
+                            sendToName, sendToEmail, subjectEmailChange, s));
+  }
+
   public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,
                                  List<AttachmentResource> attachments) {
     String filePath = "/emails/Email.html";

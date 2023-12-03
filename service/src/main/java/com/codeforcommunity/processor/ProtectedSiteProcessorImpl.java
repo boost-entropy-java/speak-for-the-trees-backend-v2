@@ -17,20 +17,8 @@ import static org.jooq.impl.DSL.when;
 
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
-import com.codeforcommunity.dto.site.AddSiteRequest;
-import com.codeforcommunity.dto.site.AddSitesRequest;
-import com.codeforcommunity.dto.site.AdoptedSitesResponse;
-import com.codeforcommunity.dto.site.CSVSiteUpload;
-import com.codeforcommunity.dto.site.EditSiteRequest;
-import com.codeforcommunity.dto.site.EditStewardshipRequest;
-import com.codeforcommunity.dto.site.FilterSitesRequest;
-import com.codeforcommunity.dto.site.FilterSitesResponse;
-import com.codeforcommunity.dto.site.NameSiteEntryRequest;
-import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
-import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
-import com.codeforcommunity.dto.site.RecordStewardshipRequest;
-import com.codeforcommunity.dto.site.UpdateSiteRequest;
-import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+import com.codeforcommunity.dataaccess.AuthDatabaseOperations;
+import com.codeforcommunity.dto.site.*;
 import com.codeforcommunity.enums.ImageApprovalStatus;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.AuthException;
@@ -42,6 +30,7 @@ import com.codeforcommunity.exceptions.NoTreePresentException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
 import com.codeforcommunity.logger.SLogger;
+import com.codeforcommunity.requester.Emailer;
 import com.codeforcommunity.requester.S3Requester;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -51,7 +40,9 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -69,14 +60,15 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
 
   private final DSLContext db;
-
+  private final Emailer emailer;
   private final SLogger logger = new SLogger(ProtectedSiteProcessorImpl.class);
 
   private static final int MAX_SUBMITTED_SITE_IMAGES = 20;
   private static final int UPLOAD_SITE_IMAGE_SLACK_FREQ = 2;
 
-  public ProtectedSiteProcessorImpl(DSLContext db) {
+  public ProtectedSiteProcessorImpl(DSLContext db, Emailer emailer) {
     this.db = db;
+    this.emailer = emailer;
   }
 
   /**
@@ -870,5 +862,26 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
         forceUnadoptSite(userData, siteId);
       }
     });
+  }
+
+  @Override
+  public void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest) {
+    checkImageExists(imageId);
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    deleteSiteImage(userData, imageId);
+
+    if (rejectImageRequest.getReason() != null) {
+      int uploaderId =
+              db.select(SITE_IMAGES.UPLOADER_ID)
+                      .from(SITE_IMAGES)
+                      .where(SITE_IMAGES.ID.eq(imageId))
+                      .fetchOne();
+
+      UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
+      String userEmail = user.getEmail();
+      String userFullName =
+              AuthDatabaseOperations.getFullName(user.into(Users.class));
+      emailer.sendRejectImageEmail(userEmail, userFullName, rejectImageRequest.getReason());
+    }
   }
 }

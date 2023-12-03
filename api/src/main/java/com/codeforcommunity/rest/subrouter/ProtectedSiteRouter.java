@@ -4,19 +4,7 @@ import static com.codeforcommunity.rest.ApiRouter.end;
 
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
-import com.codeforcommunity.dto.site.AddSiteRequest;
-import com.codeforcommunity.dto.site.AddSitesRequest;
-import com.codeforcommunity.dto.site.AdoptedSitesResponse;
-import com.codeforcommunity.dto.site.EditSiteRequest;
-import com.codeforcommunity.dto.site.EditStewardshipRequest;
-import com.codeforcommunity.dto.site.FilterSitesRequest;
-import com.codeforcommunity.dto.site.FilterSitesResponse;
-import com.codeforcommunity.dto.site.NameSiteEntryRequest;
-import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
-import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
-import com.codeforcommunity.dto.site.RecordStewardshipRequest;
-import com.codeforcommunity.dto.site.UpdateSiteRequest;
-import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+import com.codeforcommunity.dto.site.*;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -63,6 +51,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteSiteImage(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
+    registerRejectSiteImage(router);
 
     return router;
   }
@@ -398,6 +387,23 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, UpdateSiteRequest.class);
 
     processor.editSiteEntry(userData, entryId, editSiteEntryRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerRejectSiteImage(Router router) {
+    Route rejectImage = router.post("/reject_image/:image_id");
+    rejectImage.handler(this::handleRejectSiteImage);
+  }
+
+  private void handleRejectSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    RejectImageRequest rejectImageRequest =
+            RestFunctions.getJsonBodyAsClass(ctx, RejectImageRequest.class);
+
+    processor.rejectSiteImage(userData, imageId, rejectImageRequest);
 
     end(ctx.response(), 200);
   }

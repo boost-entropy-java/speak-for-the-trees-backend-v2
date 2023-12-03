@@ -1,19 +1,8 @@
 package com.codeforcommunity.api;
 
 import com.codeforcommunity.auth.JWTData;
-import com.codeforcommunity.dto.site.AddSiteRequest;
-import com.codeforcommunity.dto.site.AddSitesRequest;
-import com.codeforcommunity.dto.site.AdoptedSitesResponse;
-import com.codeforcommunity.dto.site.EditSiteRequest;
-import com.codeforcommunity.dto.site.EditStewardshipRequest;
-import com.codeforcommunity.dto.site.FilterSitesRequest;
-import com.codeforcommunity.dto.site.FilterSitesResponse;
-import com.codeforcommunity.dto.site.NameSiteEntryRequest;
-import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
-import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
-import com.codeforcommunity.dto.site.RecordStewardshipRequest;
-import com.codeforcommunity.dto.site.UpdateSiteRequest;
-import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+import com.codeforcommunity.dto.site.*;
+
 import java.sql.Date;
 import java.util.List;
 
@@ -107,4 +96,8 @@ public interface IProtectedSiteProcessor {
 
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
+
+  /** Rejects the site image (deletes and optionally sends an email with a rejection reason
+   * to the uploader) with the given imageId */
+  void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest);
 }
