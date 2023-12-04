@@ -58,6 +58,7 @@ public class CSVSiteUpload {
   private Boolean stump;
   private String treeNotes;
   private String siteNotes;
+  private Integer bostonId;
 
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
@@ -104,6 +105,7 @@ public class CSVSiteUpload {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      Integer bostonId,
       Date plantingDate,
       Integer blockId,
       BigDecimal lat,
@@ -160,6 +162,7 @@ public class CSVSiteUpload {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.bostonId = bostonId;
     this.plantingDate = plantingDate;
   }
 
@@ -210,6 +213,7 @@ public class CSVSiteUpload {
         stump,
         treeNotes,
         siteNotes,
+        bostonId,
         plantingDate,
         blockId,
         lat,
@@ -403,6 +407,14 @@ public class CSVSiteUpload {
 
   public String getSiteNotes() {
     return siteNotes;
+  }
+
+  public Integer getBostonId() {
+    return bostonId;
+  }
+
+  public void setBostonId(Integer bostonId) {
+    this.bostonId = bostonId;
   }
 
   public Date getPlantingDate() {

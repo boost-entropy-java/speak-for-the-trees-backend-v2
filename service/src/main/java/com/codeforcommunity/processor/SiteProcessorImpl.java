@@ -134,6 +134,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getSiteNotes(),
                   record.getTreeName(),
                   adopter,
+                  record.getBostonId(),
                   record.getPlantingDate(),
                   getSiteEntryImages(record.getId(), record.getCommonName()),
 

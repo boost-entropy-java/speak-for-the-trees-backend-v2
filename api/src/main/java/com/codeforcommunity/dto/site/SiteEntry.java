@@ -55,6 +55,7 @@ public class SiteEntry {
   private final String siteNotes;
   private final String treeName;
   private final String adopter;
+  private final Integer bostonId;
 
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
@@ -148,6 +149,7 @@ public class SiteEntry {
       String siteNotes,
       String treeName,
       String adopter,
+      Integer bostonId,
       Date plantingDate,
       List<SiteEntryImage> images,
 
@@ -233,6 +235,7 @@ public class SiteEntry {
     this.siteNotes = siteNotes;
     this.treeName = treeName;
     this.adopter = adopter;
+    this.bostonId = bostonId;
     this.plantingDate = plantingDate;
 
     /* Cambridge fields */
@@ -451,6 +454,10 @@ public class SiteEntry {
 
   public String getAdopter() {
     return adopter;
+  }
+
+  public Integer getBostonId() {
+    return bostonId;
   }
 
   public Date getPlantingDate() {

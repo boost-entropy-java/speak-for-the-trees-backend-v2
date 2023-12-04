@@ -55,6 +55,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      Integer bostonId,
       Date plantingDate,
       Integer blockId,
       BigDecimal lat,
@@ -103,6 +104,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
         stump,
         treeNotes,
         siteNotes,
+        bostonId,
         plantingDate);
     this.blockId = blockId;
     this.lat = lat;
