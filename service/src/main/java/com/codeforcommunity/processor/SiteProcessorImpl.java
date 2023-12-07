@@ -134,6 +134,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getSiteNotes(),
                   record.getTreeName(),
                   adopter,
+                  record.getBostonId(),
                   record.getPlantingDate(),
                   getSiteEntryImages(record.getId(), record.getCommonName()),
 
@@ -206,7 +207,11 @@ public class SiteProcessorImpl implements ISiteProcessor {
                 }
 
                 return new SiteEntryImage(
-                    record.getId(), username, record.getUploaderId(), record.getUploadedAt(), record.getImageUrl());
+                    record.getId(),
+                    username,
+                    record.getUploaderId(),
+                    record.getUploadedAt(),
+                    record.getImageUrl());
               })
           .collect(Collectors.toList());
     }
@@ -270,7 +275,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
     records.forEach(
         record -> {
-//          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
+          //          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
 
           StewardshipActivity stewardshipActivity =
               new StewardshipActivity(
@@ -284,7 +289,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
 
-//          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
+          //          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
         });
 
     return new StewardshipActivitiesResponse(activities);
@@ -308,7 +313,8 @@ public class SiteProcessorImpl implements ISiteProcessor {
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
             .orderBy(SITE_ENTRIES.CREATED_AT.desc())
-            .fetchInto(SiteEntriesRecord.class).get(0);
+            .fetchInto(SiteEntriesRecord.class)
+            .get(0);
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");

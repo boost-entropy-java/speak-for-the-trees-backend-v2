@@ -29,6 +29,7 @@ import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.enums.ImageApprovalStatus;
@@ -466,6 +467,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setStump(updateSiteRequest.isStump());
     record.setTreeNotes(updateSiteRequest.getTreeNotes());
     record.setSiteNotes(updateSiteRequest.getSiteNotes());
+    record.setBostonId(updateSiteRequest.getBostonId());
     record.setPlantingDate(updateSiteRequest.getPlantingDate());
   }
 
@@ -876,6 +878,35 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
+  public List<SiteEntryImage> getUnapprovedImages(JWTData userData) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    List<SiteImagesRecord> imageRecords =
+        db.selectFrom(SITE_IMAGES)
+            .where(
+                SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED.getApprovalStatus()))
+            .fetch();
+    List<SiteEntryImage> unapprovedImages =
+        imageRecords.stream()
+            .map(
+                imageRecord ->
+                    new SiteEntryImage(
+                        imageRecord.getId(),
+                        this.getImageUploader(imageRecord),
+                        imageRecord.getUploaderId(),
+                        imageRecord.getUploadedAt(),
+                        imageRecord.getImageUrl()))
+            .collect(Collectors.toList());
+    return unapprovedImages;
+  }
+
+  private String getImageUploader(SiteImagesRecord imageRecord) {
+    String username =
+        db.selectFrom(USERS)
+            .where(USERS.ID.eq(imageRecord.getUploaderId()))
+            .fetchOne(USERS.USERNAME);
+    return username;
+  }
+
   public void approveSiteImage(JWTData userData, int imageID) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkImageExists(imageID);

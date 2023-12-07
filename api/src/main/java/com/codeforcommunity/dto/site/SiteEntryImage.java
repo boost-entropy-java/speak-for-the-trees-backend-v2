@@ -20,7 +20,11 @@ public class SiteEntryImage {
   }
 
   public SiteEntryImage(
-      Integer imageId, String uploaderUsername, Integer uploaderId, Timestamp uploadedAt, String imageUrl) {
+      Integer imageId,
+      String uploaderUsername,
+      Integer uploaderId,
+      Timestamp uploadedAt,
+      String imageUrl) {
     this.imageId = imageId;
     this.uploaderUsername = uploaderUsername;
     this.uploaderId = uploaderId;
