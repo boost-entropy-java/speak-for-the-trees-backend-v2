@@ -1,5 +1,6 @@
 package com.codeforcommunity.requester;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -8,9 +9,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
@@ -21,9 +25,13 @@ import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
@@ -369,4 +377,33 @@ public class S3Requester {
 
     externs.getS3Client().deleteObject(awsRequest);
   }
+
+  /**
+   *
+   * @param bucketName
+   * @return
+   */
+  public static List<String> getAllNamesinBucket(String bucketName) {
+    ListObjectsV2Request req = new ListObjectsV2Request();
+    req.setBucketName(bucketName);
+    req.setDelimiter("/");
+    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic()+"/");
+    req.setPrefix(path);
+    req.setStartAfter(path);
+
+    ListObjectsV2Result res;
+    try {
+
+      res = externs.getS3Client().listObjectsV2(req);
+      String prefix = req.getPrefix();
+      List<String> result;
+      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "").replace("_template.html", "")).collect(Collectors.toList());
+      return result;
+    } catch (SdkClientException a) {
+      throw new InvalidURLException();
+    }
+  }
+
+
+
 }
