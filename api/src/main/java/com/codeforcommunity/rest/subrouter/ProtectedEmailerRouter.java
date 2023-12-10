@@ -8,6 +8,10 @@ import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
+
+import java.util.Collections;
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
@@ -29,6 +33,7 @@ public class ProtectedEmailerRouter implements IRouter {
     registerAddTemplate(router);
     registerLoadTemplate(router);
     registerDeleteTemplate(router);
+    registerLoadTemplateNames(router);
 
     return router;
   }
@@ -74,5 +79,20 @@ public class ProtectedEmailerRouter implements IRouter {
     processor.deleteTemplate(userData, templateName);
 
     end(ctx.response(), 200);
+  }
+
+  private void registerLoadTemplateNames(Router router) {
+    Route loadTemplateNames = router.get("/template_names");
+    loadTemplateNames.handler(this::handleLoadTemplateNames);
+  }
+
+  private void handleLoadTemplateNames(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    List<String> names = processor.loadTemplateNames(userData);
+    end(
+            ctx.response(),
+            200,
+            JsonObject.mapFrom(Collections.singletonMap("templates", names)).toString());
   }
 }
