@@ -40,7 +40,7 @@ public class Emailer {
     this.frontendUrl = PropertiesLoader.loadProperty("frontend_base_url");
     this.passwordResetTemplate =
         this.frontendUrl + PropertiesLoader.loadProperty("frontend_password_reset_route");
-  }
+  } 
 
   public void sendWelcomeEmail(String sendToEmail, String sendToName) {
     String filePath = "/emails/WelcomeEmail.html";
