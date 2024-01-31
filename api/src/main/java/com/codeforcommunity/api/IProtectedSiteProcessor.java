@@ -6,6 +6,7 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
@@ -105,6 +106,22 @@ public interface IProtectedSiteProcessor {
    * </ul>
    */
   List<FilterSitesResponse> filterSites(JWTData userData, FilterSitesRequest filterSitesRequest);
+
+  /**
+   * Retrieves unapproved site images based on site filters, as detailed below.
+   *
+   * <p>The optional criteria are:
+   *
+   * <ul>
+   *   <li>The species of the site's latest site entry is in `treeSpecies`
+   *   <li>The site has been adopted by a user on or after `adoptedStart`
+   *   <li>The site has been adopted by a user on or before `adoptedEnd`
+   *   <li>The site's latest stewardship activity was recorded on or after `lastActivityStart`
+   *   <li>The site's latest stewardship activity was recorded on or before `lastActivityEnd`
+   *   <li>The site is located in a neighborhood in `neighborhoodIds`
+   * </ul>
+   */
+  List<FilterSitesResponse> filterSiteImages(JWTData userData, FilterSiteImageRequest filterSiteImageRequest);
 
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);

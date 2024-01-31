@@ -62,6 +62,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerNameSiteEntry(router);
     registerUploadSiteImage(router);
     registerDeleteSiteImage(router);
+    registerFilterSiteImages(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
     registerApproveSiteImage(router);
@@ -329,6 +330,62 @@ public class ProtectedSiteRouter implements IRouter {
     processor.deleteSiteImage(userData, imageId);
 
     end(ctx.response(), 200);
+  }
+
+  private void registerFilterSiteImages(Router router) {
+    Route filterSites = router.get("/filter_site_images");
+    filterSites.handler(this::handleFilterSiteImages);
+  }
+
+  private void handleFilterSiteImages(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    int activityCountMin =
+        RestFunctions.getRequestParameterAsInt(ctx.request(), "activityCountMin");
+
+    Optional<List<String>> treeCommonNames =
+        RestFunctions.getOptionalQueryParam(
+            ctx,
+            "treeCommonNames",
+            (string) -> Arrays.stream(string.split(",")).collect(Collectors.toList()));
+    Optional<Date> adoptedStart =
+        RestFunctions.getOptionalQueryParam(ctx, "adoptedStart", Date::valueOf);
+    Optional<Date> adoptedEnd =
+        RestFunctions.getOptionalQueryParam(ctx, "adoptedEnd", Date::valueOf);
+    Optional<Date> lastActivityStart =
+        RestFunctions.getOptionalQueryParam(ctx, "lastActivityStart", Date::valueOf);
+    Optional<Date> lastActivityEnd =
+        RestFunctions.getOptionalQueryParam(ctx, "lastActivityEnd", Date::valueOf);
+    Optional<List<Integer>> neighborhoodIds =
+        RestFunctions.getOptionalQueryParam(
+            ctx,
+            "neighborhoodIds",
+            (string) ->
+                Arrays.stream(string.split(","))
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList()));
+    Optional<Integer> activityCountMax =
+        RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
+
+    FilterSitesRequest filterSitesRequest =
+        new FilterSitesRequest(
+            treeCommonNames.orElse(null),
+            adoptedStart.orElse(null),
+            adoptedEnd.orElse(null),
+            lastActivityStart.orElse(null),
+            lastActivityEnd.orElse(null),
+            neighborhoodIds.orElse(null),
+            activityCountMin,
+            activityCountMax.orElse(null));
+
+    List<FilterSitesResponse> filterSitesResponse =
+        processor.filterSites(userData, filterSitesRequest);
+
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("filteredSites", filterSitesResponse))
+            .toString());
   }
 
   private void registerFilterSites(Router router) {

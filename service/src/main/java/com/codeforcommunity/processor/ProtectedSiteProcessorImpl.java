@@ -23,6 +23,7 @@ import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.CSVSiteUpload;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
@@ -850,6 +851,14 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
                   lastActivityWeeks);
             })
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<FilterSitesResponse> filterSiteImages(JWTData userData,
+      FilterSiteImageRequest filterSiteImageRequest) {
+    // Idea: Call filter sites to get the relevant sites
+    // db query to get all images by all sites that match the filter (and approval_status = UNAPPROVED)
+    return null;
   }
 
   public void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest) {
