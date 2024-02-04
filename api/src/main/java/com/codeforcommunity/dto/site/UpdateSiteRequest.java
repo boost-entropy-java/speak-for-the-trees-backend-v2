@@ -48,6 +48,8 @@ public class UpdateSiteRequest extends ApiDto {
   private String treeNotes;
   private String siteNotes;
 
+  private Integer bostonId;
+
   @JsonFormat(
       shape = JsonFormat.Shape.STRING,
       pattern = "MM/dd/yyyy",
@@ -93,6 +95,7 @@ public class UpdateSiteRequest extends ApiDto {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      Integer bostonId,
       Date plantingDate) {
     this.treePresent = treePresent;
     this.status = status;
@@ -132,6 +135,7 @@ public class UpdateSiteRequest extends ApiDto {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.bostonId = bostonId;
     this.plantingDate = plantingDate;
   }
 
@@ -439,6 +443,14 @@ public class UpdateSiteRequest extends ApiDto {
 
   public void setSiteNotes(String siteNotes) {
     this.siteNotes = siteNotes;
+  }
+
+  public Integer getBostonId() {
+    return bostonId;
+  }
+
+  public void setBostonId(Integer bostonId) {
+    this.bostonId = bostonId;
   }
 
   public Date getPlantingDate() {

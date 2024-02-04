@@ -15,6 +15,7 @@ import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.rest.IRouter;
@@ -63,7 +64,8 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteSiteImage(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
-
+    registerApproveSiteImage(router);
+    registerGetUnapprovedImages(router);
     return router;
   }
 
@@ -400,5 +402,33 @@ public class ProtectedSiteRouter implements IRouter {
     processor.editSiteEntry(userData, entryId, editSiteEntryRequest);
 
     end(ctx.response(), 200);
+  }
+
+  private void registerApproveSiteImage(Router router) {
+    Route approveSiteImage = router.put("/approve_image/:image_id");
+    approveSiteImage.handler(this::handleApproveSiteImage);
+  }
+
+  private void handleApproveSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageID = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    processor.approveSiteImage(userData, imageID);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerGetUnapprovedImages(Router router) {
+    Route unapprovedSiteImages = router.get("/unapproved_images");
+    unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
+  }
+
+  private void handleGetUnapprovedImages(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    List<SiteEntryImage> images = processor.getUnapprovedImages(userData);
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
   }
 }

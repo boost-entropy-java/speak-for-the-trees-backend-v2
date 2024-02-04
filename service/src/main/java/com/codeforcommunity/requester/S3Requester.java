@@ -1,5 +1,6 @@
 package com.codeforcommunity.requester;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -8,9 +9,12 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
@@ -21,9 +25,13 @@ import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
@@ -184,7 +192,7 @@ public class S3Requester {
     // Delete the temporary file that was written to disk
     tempFile.delete();
 
-    return String.format("%s/%s/%s", externs.getBucketPublicUrl(), directoryName, fullFileName);
+    return String.format("%s/%s", externs.getBucketPublicUrl(), objectName);
   }
 
   /**
@@ -249,8 +257,7 @@ public class S3Requester {
    * @throws BadRequestHTMLException if the string to HTML decoding failed.
    * @throws S3FailedUploadException if the upload to S3 failed.
    */
-  public static String uploadHTML(
-      String name, Integer adminID, String htmlContent) {
+  public static String uploadHTML(String name, Integer adminID, String htmlContent) {
     // Save HTML to temp file
     String fullFileName = getFileNameWithoutExtension(name, TEMPLATE_FILE_EXTENSION);
     File tempFile;
@@ -303,7 +310,8 @@ public class S3Requester {
     // Delete the temporary file that was written to disk
     tempFile.delete();
 
-    return String.join("/", externs.getBucketPublicUrl(), TEMPLATE_S3_DIR, externs.getDirPublic(), name);
+    return String.join(
+        "/", externs.getBucketPublicUrl(), TEMPLATE_S3_DIR, externs.getDirPublic(), name);
   }
 
   // helper to check whether the given path exists
@@ -321,8 +329,8 @@ public class S3Requester {
    * @throws SdkClientException if the loading from S3 failed.
    */
   public static LoadTemplateResponse loadHTML(String name) {
-    String htmlPath = String.join("/",
-        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
+    String htmlPath =
+        String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
@@ -357,8 +365,8 @@ public class S3Requester {
    * @throws SdkClientException if the deletion from S3 failed.
    */
   public static void deleteHTML(String name) {
-    String htmlPath = String.join("/",
-        TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
+    String htmlPath =
+        String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic(), name + TEMPLATE_FILE_EXTENSION);
 
     if (!pathExists(htmlPath)) {
       throw new InvalidURLException();
@@ -369,4 +377,33 @@ public class S3Requester {
 
     externs.getS3Client().deleteObject(awsRequest);
   }
+
+  /**
+   *
+   * @param bucketName
+   * @return
+   */
+  public static List<String> getAllNamesinBucket(String bucketName) {
+    ListObjectsV2Request req = new ListObjectsV2Request();
+    req.setBucketName(bucketName);
+    req.setDelimiter("/");
+    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic()+"/");
+    req.setPrefix(path);
+    req.setStartAfter(path);
+
+    ListObjectsV2Result res;
+    try {
+
+      res = externs.getS3Client().listObjectsV2(req);
+      String prefix = req.getPrefix();
+      List<String> result;
+      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "").replace("_template.html", "")).collect(Collectors.toList());
+      return result;
+    } catch (SdkClientException a) {
+      throw new InvalidURLException();
+    }
+  }
+
+
+
 }

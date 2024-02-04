@@ -17,8 +17,8 @@ import com.codeforcommunity.dto.site.SiteEntry;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.StewardshipActivitiesResponse;
 import com.codeforcommunity.dto.site.StewardshipActivity;
-import com.codeforcommunity.enums.ImageApprovalStatus;
 import com.codeforcommunity.dto.site.TreeBenefitsResponse;
+import com.codeforcommunity.enums.ImageApprovalStatus;
 import com.codeforcommunity.enums.SiteOwner;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.logger.SLogger;
@@ -26,7 +26,6 @@ import com.codeforcommunity.requester.TreeBenefitsCalculator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
@@ -135,6 +134,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getSiteNotes(),
                   record.getTreeName(),
                   adopter,
+                  record.getBostonId(),
                   record.getPlantingDate(),
                   getSiteEntryImages(record.getId(), record.getCommonName()),
 
@@ -184,34 +184,54 @@ public class SiteProcessorImpl implements ISiteProcessor {
   }
 
   private List<SiteEntryImage> getSiteEntryImages(int entryId, String commonName) {
-    List<SiteImagesRecord> imageRecords = db.selectFrom(SITE_IMAGES)
-        .where(SITE_IMAGES.SITE_ENTRY_ID.eq(entryId))
-        .and(SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.APPROVED.getApprovalStatus()))
-        .orderBy(SITE_IMAGES.UPLOADED_AT.desc())
-        .fetch();
+    List<SiteImagesRecord> imageRecords =
+        db.selectFrom(SITE_IMAGES)
+            .where(SITE_IMAGES.SITE_ENTRY_ID.eq(entryId))
+            .and(SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.APPROVED.getApprovalStatus()))
+            .orderBy(SITE_IMAGES.UPLOADED_AT.desc())
+            .fetch();
 
     if (!imageRecords.isEmpty()) {
-      return imageRecords.stream().map(record -> {
-        String username;
-        if (record.getAnonymous()) {
-          username = "Anonymous";
-        } else {
-          username = db.selectFrom(USERS)
-              .where(USERS.ID.eq(record.getUploaderId()))
-              .fetchOne().getUsername();
-        }
+      return imageRecords.stream()
+          .map(
+              record -> {
+                String username;
+                if (record.getAnonymous()) {
+                  username = "Anonymous";
+                } else {
+                  username =
+                      db.selectFrom(USERS)
+                          .where(USERS.ID.eq(record.getUploaderId()))
+                          .fetchOne()
+                          .getUsername();
+                }
 
-        return new SiteEntryImage(record.getId(), username, record.getUploadedAt(), record.getImageUrl());
-      }).collect(Collectors.toList());
+                return new SiteEntryImage(
+                    record.getId(),
+                    username,
+                    record.getUploaderId(),
+                    record.getUploadedAt(),
+                    record.getImageUrl());
+              })
+          .collect(Collectors.toList());
     }
 
     // if no approved images exist for the entry, check if its tree has a default image.
-    // to counter any minor differences in tree name (e.g. Honey locust vs Honeylocust), 
-    // normalize the tree's common name by setting the name to all lowercase and removing empty spaces
-    String defaultUrl = db.select(TREE_SPECIES.DEFAULT_IMAGE).from(TREE_SPECIES)
-        .where(lower(replace(TREE_SPECIES.COMMON_NAME, " ", ""))
-            .eq(commonName.toLowerCase().replace(" ", "")))
-        .fetchOne(0, String.class);
+    // if the tree's common name is null, we won't find any default image - return empty list
+    if (commonName == null) {
+      return new ArrayList<>();
+    }
+
+    // to counter any minor differences in tree name (e.g. Honey locust vs Honeylocust),
+    // normalize the tree's common name by setting the name to all lowercase and removing empty
+    // spaces
+    String defaultUrl =
+        db.select(TREE_SPECIES.DEFAULT_IMAGE)
+            .from(TREE_SPECIES)
+            .where(
+                lower(replace(TREE_SPECIES.COMMON_NAME, " ", ""))
+                    .eq(commonName.toLowerCase().replace(" ", "")))
+            .fetchOne(0, String.class);
 
     if (defaultUrl != null) {
       List<SiteEntryImage> images = new ArrayList<SiteEntryImage>();
@@ -255,7 +275,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
     records.forEach(
         record -> {
-          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
+          //          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
 
           StewardshipActivity stewardshipActivity =
               new StewardshipActivity(
@@ -269,7 +289,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
 
-          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
+          //          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
         });
 
     return new StewardshipActivitiesResponse(activities);
@@ -293,27 +313,22 @@ public class SiteProcessorImpl implements ISiteProcessor {
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
             .orderBy(SITE_ENTRIES.CREATED_AT.desc())
-            .fetchOne();
+            .fetchInto(SiteEntriesRecord.class)
+            .get(0);
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");
     }
 
     String commonName = record.getCommonName();
-    double diameter = record.getDiameter();
+    Double diameter = record.getDiameter();
 
     if (commonName == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry common name");
-    } else if (diameter == 0) {
+    } else if (diameter == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry diameter");
     }
 
-    TreeBenefitsCalculator calculator = new TreeBenefitsCalculator(this.db, commonName, diameter);
-    return new TreeBenefitsResponse(
-        calculator.calcEnergy(), calculator.calcEnergyMoney(),
-        calculator.calcStormwater(), calculator.calcStormwaterMoney(),
-        calculator.calcAirQuality(), calculator.calcAirQualityMoney(),
-        calculator.calcCo2Removed(), calculator.calcCo2RemovedMoney(),
-        calculator.calcCo2Stored(), calculator.calcCo2StoredMoney());
+    return new TreeBenefitsCalculator(this.db, commonName, diameter).calculateBenefits();
   }
 }
