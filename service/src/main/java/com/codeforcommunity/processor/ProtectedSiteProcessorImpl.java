@@ -927,22 +927,19 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   public void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest) {
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    deleteSiteImage(userData, imageId);
 
     if (rejectImageRequest.getRejectionReason() != null) {
-      int uploaderId = db.select(SITE_IMAGES.UPLOADER_ID)
+      int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
                       .from(SITE_IMAGES)
                       .where(SITE_IMAGES.ID.eq(imageId))
-                      .fetchOne( 0 , int.class);
-
-      System.out.println(uploaderId);
+                      .fetchOne(0, int.class);
 
       UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
-      System.out.println(user);
       String userEmail = user.getEmail();
       String userFullName =
               AuthDatabaseOperations.getFullName(user.into(Users.class));
       emailer.sendRejectImageEmail(userEmail, userFullName, rejectImageRequest.getRejectionReason());
     }
+    deleteSiteImage(userData, imageId);
   }
 }
