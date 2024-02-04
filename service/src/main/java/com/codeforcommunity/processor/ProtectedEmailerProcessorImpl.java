@@ -7,9 +7,12 @@ import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.UserDoesNotExistException;
+import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import com.codeforcommunity.requester.S3Requester;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.UsersRecord;
+
+import java.util.List;
 
 public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     implements IProtectedEmailerProcessor {
@@ -24,9 +27,7 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   public void addTemplate(JWTData userData, AddTemplateRequest addTemplateRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     S3Requester.uploadHTML(
-        addTemplateRequest.getName(),
-        userData.getUserId(),
-        addTemplateRequest.getTemplate());
+        addTemplateRequest.getName(), userData.getUserId(), addTemplateRequest.getTemplate());
   }
 
   @Override
@@ -51,5 +52,12 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   public void deleteTemplate(JWTData userData, String templateName) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     S3Requester.deleteHTML(templateName);
+  }
+
+  @Override
+  public List<String> loadTemplateNames(JWTData userData) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    List<String> names = S3Requester.getAllNamesinBucket(PropertiesLoader.loadProperty("aws_s3_bucket_name"));
+    return names;
   }
 }

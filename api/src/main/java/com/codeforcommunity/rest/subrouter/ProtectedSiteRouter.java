@@ -4,7 +4,24 @@ import static com.codeforcommunity.rest.ApiRouter.end;
 
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
+<<<<<<< HEAD
 import com.codeforcommunity.dto.site.*;
+=======
+import com.codeforcommunity.dto.site.AddSiteRequest;
+import com.codeforcommunity.dto.site.AddSitesRequest;
+import com.codeforcommunity.dto.site.AdoptedSitesResponse;
+import com.codeforcommunity.dto.site.EditSiteRequest;
+import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSitesRequest;
+import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.NameSiteEntryRequest;
+import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
+import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
+import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
+import com.codeforcommunity.dto.site.UpdateSiteRequest;
+import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+>>>>>>> 9db7eb8646279bb174f4f57e23c7ac045bfc73c6
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -51,8 +68,13 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteSiteImage(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
+<<<<<<< HEAD
     registerRejectSiteImage(router);
 
+=======
+    registerApproveSiteImage(router);
+    registerGetUnapprovedImages(router);
+>>>>>>> 9db7eb8646279bb174f4f57e23c7ac045bfc73c6
     return router;
   }
 
@@ -391,6 +413,7 @@ public class ProtectedSiteRouter implements IRouter {
     end(ctx.response(), 200);
   }
 
+<<<<<<< HEAD
   private void registerRejectSiteImage(Router router) {
     Route rejectImage = router.delete("/reject_image/:image_id");
     rejectImage.handler(this::handleRejectSiteImage);
@@ -407,4 +430,33 @@ public class ProtectedSiteRouter implements IRouter {
 
     end(ctx.response(), 200);
   }
+=======
+  private void registerApproveSiteImage(Router router) {
+    Route approveSiteImage = router.put("/approve_image/:image_id");
+    approveSiteImage.handler(this::handleApproveSiteImage);
+  }
+
+  private void handleApproveSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageID = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    processor.approveSiteImage(userData, imageID);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerGetUnapprovedImages(Router router) {
+    Route unapprovedSiteImages = router.get("/unapproved_images");
+    unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
+  }
+
+  private void handleGetUnapprovedImages(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    List<SiteEntryImage> images = processor.getUnapprovedImages(userData);
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
+  }
+>>>>>>> 9db7eb8646279bb174f4f57e23c7ac045bfc73c6
 }

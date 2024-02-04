@@ -19,6 +19,21 @@ import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dataaccess.AuthDatabaseOperations;
 import com.codeforcommunity.dto.site.*;
+import com.codeforcommunity.dto.site.AddSiteRequest;
+import com.codeforcommunity.dto.site.AddSitesRequest;
+import com.codeforcommunity.dto.site.AdoptedSitesResponse;
+import com.codeforcommunity.dto.site.CSVSiteUpload;
+import com.codeforcommunity.dto.site.EditSiteRequest;
+import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSitesRequest;
+import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.NameSiteEntryRequest;
+import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
+import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
+import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.SiteEntryImage;
+import com.codeforcommunity.dto.site.UpdateSiteRequest;
+import com.codeforcommunity.dto.site.UploadSiteImageRequest;
 import com.codeforcommunity.enums.ImageApprovalStatus;
 import com.codeforcommunity.enums.PrivilegeLevel;
 import com.codeforcommunity.exceptions.AuthException;
@@ -459,6 +474,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setStump(updateSiteRequest.isStump());
     record.setTreeNotes(updateSiteRequest.getTreeNotes());
     record.setSiteNotes(updateSiteRequest.getSiteNotes());
+    record.setBostonId(updateSiteRequest.getBostonId());
     record.setPlantingDate(updateSiteRequest.getPlantingDate());
   }
 
@@ -514,12 +530,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setSiteId(siteId);
     populateSiteEntry(record, updateSiteRequest);
 
-    db.transaction(configuration -> {
-      record.store();
-      if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
-        forceUnadoptSite(userData, siteId);
-      }
-    });
+    db.transaction(
+        configuration -> {
+          record.store();
+          if (!updateSiteRequest.isTreePresent() && isAlreadyAdopted(siteId)) {
+            forceUnadoptSite(userData, siteId);
+          }
+        });
   }
 
   @Override
@@ -854,15 +871,56 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
     int siteId = siteEntriesRecord.getSiteId();
 
-    db.transaction(configuration -> {
-      siteEntriesRecord.store();
-      // force unadopt only if we change the latest site entry of an adopted site to have no tree
-      if (!editSiteEntryRequest.isTreePresent()
-          && isAlreadyAdopted(siteId)
-          && entryId == latestSiteEntry(siteId).getId()) {
-        forceUnadoptSite(userData, siteId);
-      }
-    });
+    db.transaction(
+        configuration -> {
+          siteEntriesRecord.store();
+          // force unadopt only if we change the latest site entry of an adopted site to have no
+          // tree
+          if (!editSiteEntryRequest.isTreePresent()
+              && isAlreadyAdopted(siteId)
+              && entryId == latestSiteEntry(siteId).getId()) {
+            forceUnadoptSite(userData, siteId);
+          }
+        });
+  }
+
+  @Override
+  public List<SiteEntryImage> getUnapprovedImages(JWTData userData) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    List<SiteImagesRecord> imageRecords =
+        db.selectFrom(SITE_IMAGES)
+            .where(
+                SITE_IMAGES.APPROVAL_STATUS.eq(ImageApprovalStatus.SUBMITTED.getApprovalStatus()))
+            .fetch();
+    List<SiteEntryImage> unapprovedImages =
+        imageRecords.stream()
+            .map(
+                imageRecord ->
+                    new SiteEntryImage(
+                        imageRecord.getId(),
+                        this.getImageUploader(imageRecord),
+                        imageRecord.getUploaderId(),
+                        imageRecord.getUploadedAt(),
+                        imageRecord.getImageUrl()))
+            .collect(Collectors.toList());
+    return unapprovedImages;
+  }
+
+  private String getImageUploader(SiteImagesRecord imageRecord) {
+    String username =
+        db.selectFrom(USERS)
+            .where(USERS.ID.eq(imageRecord.getUploaderId()))
+            .fetchOne(USERS.USERNAME);
+    return username;
+  }
+
+  public void approveSiteImage(JWTData userData, int imageID) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkImageExists(imageID);
+    SiteImagesRecord imageRecord =
+        db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageID)).fetchOne();
+    imageRecord.setApprovalStatus(ImageApprovalStatus.APPROVED.getApprovalStatus());
+    imageRecord.store();
   }
 
   @Override
