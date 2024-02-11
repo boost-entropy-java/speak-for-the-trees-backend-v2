@@ -120,7 +120,8 @@ public interface IProtectedSiteProcessor {
    *   <li>The image is for a site located in a neighborhood in `neighborhoodIds`
    * </ul>
    */
-  List<FilterSiteImageResponse> filterSiteImages(JWTData userData, FilterSiteImageRequest filterSiteImageRequest);
+  List<FilterSiteImageResponse> filterSiteImages(
+      JWTData userData, FilterSiteImageRequest filterSiteImageRequest);
 
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);

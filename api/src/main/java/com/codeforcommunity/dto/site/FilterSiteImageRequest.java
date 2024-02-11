@@ -2,6 +2,7 @@ package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.dto.ApiDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,6 @@ public class FilterSiteImageRequest extends ApiDto {
   private List<Integer> neighborhoodIds;
 
   public FilterSiteImageRequest(
-      List<String> treeCommonNames,
       Timestamp submittedStart,
       Timestamp submittedEnd,
       List<Integer> siteIds,

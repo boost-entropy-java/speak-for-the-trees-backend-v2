@@ -58,7 +58,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Record10;
 import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.Table;
@@ -857,8 +856,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public List<FilterSiteImageResponse> filterSiteImages(JWTData userData,
-      FilterSiteImageRequest filterSiteImageRequest) {
+  public List<FilterSiteImageResponse> filterSiteImages(
+      JWTData userData, FilterSiteImageRequest filterSiteImageRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
     // table should contain:
@@ -873,12 +872,10 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
      */
 
     Condition filterCondition =
-        SITE_IMAGES.APPROVAL_STATUS
-            .eq(String.valueOf(ImageApprovalStatus.SUBMITTED));
+        SITE_IMAGES.APPROVAL_STATUS.eq(String.valueOf(ImageApprovalStatus.SUBMITTED));
 
     if (filterSiteImageRequest.getSiteIds() != null)
-      filterCondition =
-          filterCondition.and(SITES.ID.in(filterSiteImageRequest.getSiteIds()));
+      filterCondition = filterCondition.and(SITES.ID.in(filterSiteImageRequest.getSiteIds()));
     if (filterSiteImageRequest.getNeighborhoodIds() != null)
       filterCondition =
           filterCondition.and(NEIGHBORHOODS.ID.in(filterSiteImageRequest.getNeighborhoodIds()));
@@ -890,37 +887,49 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           filterCondition.and(SITE_IMAGES.UPLOADED_AT.le(filterSiteImageRequest.getSubmittedEnd()));
 
     Result<
-        Record11<
-            Integer,
-            String,
-            Integer,
-            String,
-            String,
-            String,
-            Timestamp,
-            String,
-            Integer,
-            String,
-            String>>
+            Record11<
+                Integer,
+                String,
+                Integer,
+                String,
+                String,
+                String,
+                Timestamp,
+                String,
+                Integer,
+                String,
+                String>>
         imagesFiltered =
-        db.select(SITE_IMAGES.ID, SITE_IMAGES.IMAGE_URL, SITES.ID, USERS.FIRST_NAME,
-            USERS.LAST_NAME, USERS.EMAIL, SITE_IMAGES.UPLOADED_AT, SITE_ENTRIES.COMMON_NAME,
-            SITES.NEIGHBORHOOD_ID, SITES.ADDRESS, SITE_IMAGES.APPROVAL_STATUS)
-            .from(SITE_IMAGES)
-            .leftJoin(SITE_ENTRIES)
-            .on(SITE_IMAGES.SITE_ENTRY_ID.eq(SITE_ENTRIES.ID))
-            .leftJoin(SITES).on(SITES.ID.eq(SITE_ENTRIES.SITE_ID))
-            .leftJoin(NEIGHBORHOODS).on(SITES.NEIGHBORHOOD_ID.eq(NEIGHBORHOODS.ID))
-            .leftJoin(USERS).on(USERS.ID.eq(SITE_IMAGES.UPLOADER_ID))
-            .where(filterCondition)
-            .fetch();
+            db.select(
+                    SITE_IMAGES.ID,
+                    SITE_IMAGES.IMAGE_URL,
+                    SITES.ID,
+                    USERS.FIRST_NAME,
+                    USERS.LAST_NAME,
+                    USERS.EMAIL,
+                    SITE_IMAGES.UPLOADED_AT,
+                    SITE_ENTRIES.COMMON_NAME,
+                    SITES.NEIGHBORHOOD_ID,
+                    SITES.ADDRESS,
+                    SITE_IMAGES.APPROVAL_STATUS)
+                .from(SITE_IMAGES)
+                .leftJoin(SITE_ENTRIES)
+                .on(SITE_IMAGES.SITE_ENTRY_ID.eq(SITE_ENTRIES.ID))
+                .leftJoin(SITES)
+                .on(SITES.ID.eq(SITE_ENTRIES.SITE_ID))
+                .leftJoin(NEIGHBORHOODS)
+                .on(SITES.NEIGHBORHOOD_ID.eq(NEIGHBORHOODS.ID))
+                .leftJoin(USERS)
+                .on(USERS.ID.eq(SITE_IMAGES.UPLOADER_ID))
+                .where(filterCondition)
+                .fetch();
 
     return imagesFiltered.stream()
         .map(
             rec -> {
               String uploaderName = rec.get(USERS.FIRST_NAME) + ' ' + rec.get(USERS.LAST_NAME);
-              Date dateSubmitted = Date
-                  .valueOf(rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate());
+              Date dateSubmitted =
+                  Date.valueOf(rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate());
 
               return new FilterSiteImageResponse(
                   rec.get(SITE_IMAGES.ID),

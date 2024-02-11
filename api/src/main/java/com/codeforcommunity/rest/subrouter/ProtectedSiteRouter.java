@@ -9,6 +9,8 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
@@ -26,6 +28,8 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -340,22 +344,18 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleFilterSiteImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
 
-    int activityCountMin =
-        RestFunctions.getRequestParameterAsInt(ctx.request(), "activityCountMin");
-
-    Optional<List<String>> treeCommonNames =
+    Optional<Timestamp> submittedStart =
+        RestFunctions.getOptionalQueryParam(ctx, "submittedStart", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<Timestamp> submittedEnd =
+        RestFunctions.getOptionalQueryParam(ctx, "submittedEnd", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<List<Integer>> siteIds =
         RestFunctions.getOptionalQueryParam(
             ctx,
-            "treeCommonNames",
-            (string) -> Arrays.stream(string.split(",")).collect(Collectors.toList()));
-    Optional<Date> adoptedStart =
-        RestFunctions.getOptionalQueryParam(ctx, "adoptedStart", Date::valueOf);
-    Optional<Date> adoptedEnd =
-        RestFunctions.getOptionalQueryParam(ctx, "adoptedEnd", Date::valueOf);
-    Optional<Date> lastActivityStart =
-        RestFunctions.getOptionalQueryParam(ctx, "lastActivityStart", Date::valueOf);
-    Optional<Date> lastActivityEnd =
-        RestFunctions.getOptionalQueryParam(ctx, "lastActivityEnd", Date::valueOf);
+            "siteIds",
+            (string) ->
+                Arrays.stream(string.split(","))
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toList()));
     Optional<List<Integer>> neighborhoodIds =
         RestFunctions.getOptionalQueryParam(
             ctx,
@@ -364,27 +364,21 @@ public class ProtectedSiteRouter implements IRouter {
                 Arrays.stream(string.split(","))
                     .map(Integer::parseInt)
                     .collect(Collectors.toList()));
-    Optional<Integer> activityCountMax =
-        RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
 
-    FilterSitesRequest filterSitesRequest =
-        new FilterSitesRequest(
-            treeCommonNames.orElse(null),
-            adoptedStart.orElse(null),
-            adoptedEnd.orElse(null),
-            lastActivityStart.orElse(null),
-            lastActivityEnd.orElse(null),
-            neighborhoodIds.orElse(null),
-            activityCountMin,
-            activityCountMax.orElse(null));
+    FilterSiteImageRequest filterSiteImageRequest =
+        new FilterSiteImageRequest(
+            submittedStart.orElse(null),
+            submittedEnd.orElse(null),
+            siteIds.orElse(null),
+            neighborhoodIds.orElse(null));
 
-    List<FilterSitesResponse> filterSitesResponse =
-        processor.filterSites(userData, filterSitesRequest);
+    List<FilterSiteImageResponse> filterSiteImageResponse =
+        processor.filterSiteImages(userData, filterSiteImageRequest);
 
     end(
         ctx.response(),
         200,
-        JsonObject.mapFrom(Collections.singletonMap("filteredSites", filterSitesResponse))
+        JsonObject.mapFrom(Collections.singletonMap("filteredSiteImages", filterSiteImageResponse))
             .toString());
   }
 
