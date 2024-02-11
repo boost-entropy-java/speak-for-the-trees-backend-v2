@@ -24,6 +24,7 @@ import com.codeforcommunity.dto.site.CSVSiteUpload;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
 import com.codeforcommunity.dto.site.FilterSiteImageRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
@@ -57,6 +58,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record10;
+import org.jooq.Record11;
 import org.jooq.Result;
 import org.jooq.Table;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
@@ -854,11 +857,104 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public List<FilterSitesResponse> filterSiteImages(JWTData userData,
+  public List<FilterSiteImageResponse> filterSiteImages(JWTData userData,
       FilterSiteImageRequest filterSiteImageRequest) {
-    // Idea: Call filter sites to get the relevant sites
-    // db query to get all images by all sites that match the filter (and approval_status = UNAPPROVED)
-    return null;
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+
+    // table should contain:
+    /*
+    site_image.id
+    + siteId
+    + neighborhoodId
+    + uploader_name
+    + uploader_email
+    + common_name
+    + address
+     */
+
+    Condition filterCondition =
+        SITE_IMAGES.APPROVAL_STATUS
+            .eq(String.valueOf(ImageApprovalStatus.SUBMITTED));
+
+    if (filterSiteImageRequest.getSiteIds() != null)
+      filterCondition =
+          filterCondition.and(SITES.ID.in(filterSiteImageRequest.getSiteIds()));
+    if (filterSiteImageRequest.getNeighborhoodIds() != null)
+      filterCondition =
+          filterCondition.and(NEIGHBORHOODS.ID.in(filterSiteImageRequest.getNeighborhoodIds()));
+    if (filterSiteImageRequest.getSubmittedStart() != null)
+      filterCondition =
+          filterCondition.and(SITE_IMAGES.UPLOADED_AT.ge(filterSiteImageRequest.getSubmittedStart()));
+    if (filterSiteImageRequest.getSubmittedEnd() != null)
+      filterCondition =
+          filterCondition.and(SITE_IMAGES.UPLOADED_AT.le(filterSiteImageRequest.getSubmittedEnd()));
+
+    Result<
+        Record11<
+            Integer,
+            String,
+            Integer,
+            String,
+            String,
+            String,
+            Timestamp,
+            String,
+            Integer,
+            String,
+            String>>
+        imagesFiltered =
+        db.select(SITE_IMAGES.ID, SITE_IMAGES.IMAGE_URL, SITES.ID, USERS.FIRST_NAME,
+            USERS.LAST_NAME, USERS.EMAIL, SITE_IMAGES.UPLOADED_AT, SITE_ENTRIES.COMMON_NAME,
+            SITES.NEIGHBORHOOD_ID, SITES.ADDRESS, SITE_IMAGES.APPROVAL_STATUS)
+            .from(SITE_IMAGES)
+            .leftJoin(SITE_ENTRIES)
+            .on(SITE_IMAGES.SITE_ENTRY_ID.eq(SITE_ENTRIES.ID))
+            .leftJoin(SITES).on(SITES.ID.eq(SITE_ENTRIES.SITE_ID))
+            .leftJoin(NEIGHBORHOODS).on(SITES.NEIGHBORHOOD_ID.eq(NEIGHBORHOODS.ID))
+            .leftJoin(USERS).on(USERS.ID.eq(SITE_IMAGES.UPLOADER_ID))
+            .where(filterCondition)
+            .fetch();
+
+    return imagesFiltered.stream()
+        .map(
+            rec -> {
+              String uploaderName = rec.get(USERS.FIRST_NAME) + ' ' + rec.get(USERS.LAST_NAME);
+              Date dateSubmitted = Date
+                  .valueOf(rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate());
+
+              return new FilterSiteImageResponse(
+                  rec.get(SITE_IMAGES.ID),
+                  rec.get(SITE_IMAGES.IMAGE_URL),
+                  rec.get(SITES.ID),
+                  uploaderName,
+                  rec.get(USERS.EMAIL),
+                  dateSubmitted,
+                  rec.get(SITE_ENTRIES.COMMON_NAME),
+                  rec.get(SITES.NEIGHBORHOOD_ID),
+                  rec.get(SITES.ADDRESS));
+            })
+        .collect(Collectors.toList());
+
+    // filter by
+    /*
+    submittedStart/End; site_images.uploadedAt
+    siteId; site_entries[site_images.site_entry_id].site_id
+    neighborhoodId; sites[site_entries[site_images.site_entry_id].site_id].neighborhood_id
+     */
+
+    // return
+    /*
+    imageId = site_images.id
+    imageUrl = site_images.image_url
+    siteId = site_entries[site_images.site_entry_id].site_id
+    uploaderName = users.id[site_images.uploader_id].firstname + ...lastname
+    uploaderEmail = uploaderName = users.id[site_images.uploader_id].email
+    dateSubmitted = site_images.uploaded_at
+    commonName = site_entries[site_images.site_entry_id].common_name
+    neighborhoodId = sites[site_entries[site_images.site_entry_id].site_id].neighborhood_id
+    address = sites[site_entries[site_images.site_entry_id].site_id].address
+     */
+
   }
 
   public void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest) {
