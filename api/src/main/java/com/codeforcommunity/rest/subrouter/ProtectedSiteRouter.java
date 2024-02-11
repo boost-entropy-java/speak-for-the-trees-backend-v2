@@ -372,6 +372,12 @@ public class ProtectedSiteRouter implements IRouter {
             siteIds.orElse(null),
             neighborhoodIds.orElse(null));
 
+    System.out.println(submittedStart);
+    System.out.println(submittedEnd);
+    System.out.println(siteIds);
+    System.out.println(neighborhoodIds);
+
+
     List<FilterSiteImageResponse> filterSiteImageResponse =
         processor.filterSiteImages(userData, filterSiteImageRequest);
 
@@ -430,6 +436,8 @@ public class ProtectedSiteRouter implements IRouter {
 
     List<FilterSitesResponse> filterSitesResponse =
         processor.filterSites(userData, filterSitesRequest);
+
+    System.out.println(neighborhoodIds);
 
     end(
         ctx.response(),
