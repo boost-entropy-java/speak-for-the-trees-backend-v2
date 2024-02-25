@@ -860,17 +860,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       JWTData userData, FilterSiteImageRequest filterSiteImageRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
-    // table should contain:
-    /*
-    site_image.id
-    + siteId
-    + neighborhoodId
-    + uploader_name
-    + uploader_email
-    + common_name
-    + address
-     */
-
     Condition filterCondition =
         SITE_IMAGES.APPROVAL_STATUS.eq(String.valueOf(ImageApprovalStatus.SUBMITTED));
 
@@ -944,27 +933,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
                   rec.get(SITES.ADDRESS));
             })
         .collect(Collectors.toList());
-
-    // filter by
-    /*
-    submittedStart/End; site_images.uploadedAt
-    siteId; site_entries[site_images.site_entry_id].site_id
-    neighborhoodId; sites[site_entries[site_images.site_entry_id].site_id].neighborhood_id
-     */
-
-    // return
-    /*
-    imageId = site_images.id
-    imageUrl = site_images.image_url
-    siteId = site_entries[site_images.site_entry_id].site_id
-    uploaderName = users.id[site_images.uploader_id].firstname + ...lastname
-    uploaderEmail = uploaderName = users.id[site_images.uploader_id].email
-    dateSubmitted = site_images.uploaded_at
-    commonName = site_entries[site_images.site_entry_id].common_name
-    neighborhoodId = sites[site_entries[site_images.site_entry_id].site_id].neighborhood_id
-    address = sites[site_entries[site_images.site_entry_id].site_id].address
-     */
-
   }
 
   public void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest) {

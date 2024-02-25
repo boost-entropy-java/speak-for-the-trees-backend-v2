@@ -66,7 +66,6 @@ public class ProtectedSiteRouter implements IRouter {
     registerNameSiteEntry(router);
     registerUploadSiteImage(router);
     registerDeleteSiteImage(router);
-//    registerFilterSiteImages(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
     registerApproveSiteImage(router);
@@ -336,10 +335,10 @@ public class ProtectedSiteRouter implements IRouter {
     end(ctx.response(), 200);
   }
 
-//  private void registerFilterSiteImages(Router router) {
-//    Route filterSites = router.get("/filter_site_images");
-//    filterSites.handler(this::handleFilterSiteImages);
-//  }
+  private void registerGetUnapprovedImages(Router router) {
+    Route unapprovedSiteImages = router.get("/unapproved_images");
+    unapprovedSiteImages.handler(this::handleFilterSiteImages);
+  }
 
   private void handleFilterSiteImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
@@ -371,12 +370,6 @@ public class ProtectedSiteRouter implements IRouter {
             submittedEnd.orElse(null),
             siteIds.orElse(null),
             neighborhoodIds.orElse(null));
-
-    System.out.println(submittedStart);
-    System.out.println(submittedEnd);
-    System.out.println(siteIds);
-    System.out.println(neighborhoodIds);
-
 
     List<FilterSiteImageResponse> filterSiteImageResponse =
         processor.filterSiteImages(userData, filterSiteImageRequest);
@@ -437,8 +430,6 @@ public class ProtectedSiteRouter implements IRouter {
     List<FilterSitesResponse> filterSitesResponse =
         processor.filterSites(userData, filterSitesRequest);
 
-    System.out.println(neighborhoodIds);
-
     end(
         ctx.response(),
         200,
@@ -475,19 +466,5 @@ public class ProtectedSiteRouter implements IRouter {
     processor.approveSiteImage(userData, imageID);
 
     end(ctx.response(), 200);
-  }
-
-  private void registerGetUnapprovedImages(Router router) {
-    Route unapprovedSiteImages = router.get("/unapproved_images");
-    unapprovedSiteImages.handler(this::handleFilterSiteImages);
-  }
-
-  private void handleGetUnapprovedImages(RoutingContext ctx) {
-    JWTData userData = ctx.get("jwt_data");
-    List<SiteEntryImage> images = processor.getUnapprovedImages(userData);
-    end(
-        ctx.response(),
-        200,
-        JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
   }
 }

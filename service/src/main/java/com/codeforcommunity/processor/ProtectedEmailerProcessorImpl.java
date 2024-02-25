@@ -9,9 +9,10 @@ import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.UserDoesNotExistException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import com.codeforcommunity.requester.S3Requester;
-import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.UsersRecord;
+
+import java.util.List;
 
 public class ProtectedEmailerProcessorImpl extends AbstractProcessor
     implements IProtectedEmailerProcessor {
@@ -56,8 +57,7 @@ public class ProtectedEmailerProcessorImpl extends AbstractProcessor
   @Override
   public List<String> loadTemplateNames(JWTData userData) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
-    List<String> names =
-        S3Requester.getAllNamesinBucket(PropertiesLoader.loadProperty("aws_s3_bucket_name"));
+    List<String> names = S3Requester.getAllNamesinBucket(PropertiesLoader.loadProperty("aws_s3_bucket_name"));
     return names;
   }
 }
