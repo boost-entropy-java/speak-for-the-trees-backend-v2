@@ -66,7 +66,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerNameSiteEntry(router);
     registerUploadSiteImage(router);
     registerDeleteSiteImage(router);
-    registerFilterSiteImages(router);
+//    registerFilterSiteImages(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
     registerApproveSiteImage(router);
@@ -336,10 +336,10 @@ public class ProtectedSiteRouter implements IRouter {
     end(ctx.response(), 200);
   }
 
-  private void registerFilterSiteImages(Router router) {
-    Route filterSites = router.get("/filter_site_images");
-    filterSites.handler(this::handleFilterSiteImages);
-  }
+//  private void registerFilterSiteImages(Router router) {
+//    Route filterSites = router.get("/filter_site_images");
+//    filterSites.handler(this::handleFilterSiteImages);
+//  }
 
   private void handleFilterSiteImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
@@ -479,7 +479,7 @@ public class ProtectedSiteRouter implements IRouter {
 
   private void registerGetUnapprovedImages(Router router) {
     Route unapprovedSiteImages = router.get("/unapproved_images");
-    unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
+    unapprovedSiteImages.handler(this::handleFilterSiteImages);
   }
 
   private void handleGetUnapprovedImages(RoutingContext ctx) {

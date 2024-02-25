@@ -9,7 +9,7 @@ public class FilterSiteImageResponse {
   private int siteId;
   private String uploaderName;
   private String uploaderEmail;
-  private Date dateSubmitted;
+  private String dateSubmitted;
   private String commonName;
   private int neighborhoodId;
   private String address;
@@ -20,7 +20,7 @@ public class FilterSiteImageResponse {
       int siteId,
       String uploaderName,
       String uploaderEmail,
-      Date dateSubmitted,
+      String dateSubmitted,
       String commonName,
       int neighborhoodId,
       String address) {
@@ -75,11 +75,11 @@ public class FilterSiteImageResponse {
     this.uploaderEmail = uploaderEmail;
   }
 
-  public Date getDateSubmitted() {
+  public String getDateSubmitted() {
     return dateSubmitted;
   }
 
-  public void setDateSubmitted(Date dateSubmitted) {
+  public void setDateSubmitted(String dateSubmitted) {
     this.dateSubmitted = dateSubmitted;
   }
 

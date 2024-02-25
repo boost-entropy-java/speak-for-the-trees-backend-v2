@@ -928,8 +928,9 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
         .map(
             rec -> {
               String uploaderName = rec.get(USERS.FIRST_NAME) + ' ' + rec.get(USERS.LAST_NAME);
-              Date dateSubmitted =
-                  Date.valueOf(rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate());
+
+              String dateSubmitted =
+                  rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate().toString();
 
               return new FilterSiteImageResponse(
                   rec.get(SITE_IMAGES.ID),
