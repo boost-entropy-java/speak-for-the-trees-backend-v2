@@ -28,7 +28,6 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -363,10 +362,7 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getOptionalQueryParam(
             ctx,
             "neighborhoodIds",
-            (string) ->
-                Arrays.stream(string.split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList()));
+            this::parseOptionalQueryParamList);
     Optional<Integer> activityCountMax =
         RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
 
@@ -424,10 +420,10 @@ public class ProtectedSiteRouter implements IRouter {
 
   private void registerGetUnapprovedImages(Router router) {
     Route unapprovedSiteImages = router.get("/unapproved_images");
-    unapprovedSiteImages.handler(this::handleFilterSiteImages);
+    unapprovedSiteImages.handler(this::handleFilterUnapprovedSiteImages);
   }
 
-  private void handleFilterSiteImages(RoutingContext ctx) {
+  private void handleFilterUnapprovedSiteImages(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
 
     Optional<Timestamp> submittedStart =
@@ -438,19 +434,12 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getOptionalQueryParam(
             ctx,
             "siteIds",
-            (string) ->
-                Arrays.stream(string.split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList()));
+            this::parseOptionalQueryParamList);
     Optional<List<Integer>> neighborhoodIds =
         RestFunctions.getOptionalQueryParam(
             ctx,
             "neighborhoodIds",
-            (string) ->
-                Arrays.stream(string.split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList()));
-
+            this::parseOptionalQueryParamList);
     FilterSiteImageRequest filterSiteImageRequest =
         new FilterSiteImageRequest(
             submittedStart.orElse(null),
@@ -459,7 +448,7 @@ public class ProtectedSiteRouter implements IRouter {
             neighborhoodIds.orElse(null));
 
     List<FilterSiteImageResponse> filterSiteImageResponse =
-        processor.filterSiteImages(userData, filterSiteImageRequest);
+        processor.filterUnapprovedSiteImages(userData, filterSiteImageRequest);
 
     end(
         ctx.response(),
@@ -475,5 +464,9 @@ public class ProtectedSiteRouter implements IRouter {
         ctx.response(),
         200,
         JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
+  }
+
+  private List<Integer> parseOptionalQueryParamList(String list) {
+    return Arrays.stream(list.split(",")).map(Integer::parseInt).collect(Collectors.toList());
   }
 }

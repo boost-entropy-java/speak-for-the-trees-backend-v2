@@ -1,6 +1,7 @@
 package com.codeforcommunity.dto.site;
 
-import java.sql.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.sql.Timestamp;
 
 public class FilterSiteImageResponse {
 
@@ -9,7 +10,8 @@ public class FilterSiteImageResponse {
   private int siteId;
   private String uploaderName;
   private String uploaderEmail;
-  private String dateSubmitted;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
+  private Timestamp dateSubmitted;
   private String commonName;
   private int neighborhoodId;
   private String address;
@@ -20,7 +22,7 @@ public class FilterSiteImageResponse {
       int siteId,
       String uploaderName,
       String uploaderEmail,
-      String dateSubmitted,
+      Timestamp dateSubmitted,
       String commonName,
       int neighborhoodId,
       String address) {
@@ -75,11 +77,11 @@ public class FilterSiteImageResponse {
     this.uploaderEmail = uploaderEmail;
   }
 
-  public String getDateSubmitted() {
+  public Timestamp getDateSubmitted() {
     return dateSubmitted;
   }
 
-  public void setDateSubmitted(String dateSubmitted) {
+  public void setDateSubmitted(Timestamp dateSubmitted) {
     this.dateSubmitted = dateSubmitted;
   }
 

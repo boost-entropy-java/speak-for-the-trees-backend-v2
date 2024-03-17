@@ -856,7 +856,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public List<FilterSiteImageResponse> filterSiteImages(
+  public List<FilterSiteImageResponse> filterUnapprovedSiteImages(
       JWTData userData, FilterSiteImageRequest filterSiteImageRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
@@ -918,8 +918,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
             rec -> {
               String uploaderName = rec.get(USERS.FIRST_NAME) + ' ' + rec.get(USERS.LAST_NAME);
 
-              String dateSubmitted =
-                  rec.get(SITE_IMAGES.UPLOADED_AT).toLocalDateTime().toLocalDate().toString();
+              Timestamp dateSubmitted =
+                  rec.get(SITE_IMAGES.UPLOADED_AT);
 
               return new FilterSiteImageResponse(
                   rec.get(SITE_IMAGES.ID),
