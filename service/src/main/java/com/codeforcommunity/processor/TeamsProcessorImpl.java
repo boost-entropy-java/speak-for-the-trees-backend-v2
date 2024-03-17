@@ -234,7 +234,7 @@ public class TeamsProcessorImpl implements ITeamsProcessor {
   @Override
   public UsersResponse getApplicants(JWTData userData, int teamId) {
     checkTeamExists(teamId);
-    UsersTeamsRecord usersTeamsRecord = getUsersLeadTeams(userData, teamId);
+    UsersTeamsRecord usersTeamsRecord = getUsersLeadTeams(userData, teamId); 
 
     if (usersTeamsRecord != null) {
       return getUsers(teamId, TeamRole.PENDING);
