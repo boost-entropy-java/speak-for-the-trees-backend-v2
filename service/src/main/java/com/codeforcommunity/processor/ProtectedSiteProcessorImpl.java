@@ -1011,18 +1011,23 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
+    String reason;
     if (rejectImageRequest.getRejectionReason() != null) {
-      int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
-                      .from(SITE_IMAGES)
-                      .where(SITE_IMAGES.ID.eq(imageId))
-                      .fetchOne(0, int.class);
-
-      UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
-      String userEmail = user.getEmail();
-      String userFullName =
-              AuthDatabaseOperations.getFullName(user.into(Users.class));
-      emailer.sendRejectImageEmail(userEmail, userFullName, rejectImageRequest.getRejectionReason());
+      reason = rejectImageRequest.getRejectionReason();
+    } else {
+      reason = "Your image upload was rejected by an admin.";
     }
+
+    int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
+            .from(SITE_IMAGES)
+            .where(SITE_IMAGES.ID.eq(imageId))
+            .fetchOne(0, int.class);
+
+    UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
+    String userEmail = user.getEmail();
+    String userFullName =
+            AuthDatabaseOperations.getFullName(user.into(Users.class));
+    emailer.sendRejectImageEmail(userEmail, userFullName, reason);
     deleteSiteImage(userData, imageId);
   }
 }
