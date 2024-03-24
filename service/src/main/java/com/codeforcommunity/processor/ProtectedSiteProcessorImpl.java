@@ -14,6 +14,7 @@ import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.when;
+import static org.jooq.impl.DSL.withRecursive;
 
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
@@ -1015,19 +1016,27 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (rejectImageRequest.getRejectionReason() != null) {
       reason = rejectImageRequest.getRejectionReason();
     } else {
-      reason = "Your image upload was rejected by an admin.";
+      reason = "Your image upload was rejected by an admin";
     }
 
-    int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
+    String approvalStatus = db.select(SITE_IMAGES.APPROVAL_STATUS)
             .from(SITE_IMAGES)
-            .where(SITE_IMAGES.ID.eq(imageId))
-            .fetchOne(0, int.class);
+            .where(SITE_IMAGES.ID.eq(imageId)).fetchOne(0, String.class);
+    if (approvalStatus.equals(ImageApprovalStatus.SUBMITTED.getApprovalStatus())) {
+      int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
+              .from(SITE_IMAGES)
+              .where(SITE_IMAGES.ID.eq(imageId))
+              .fetchOne(0, int.class);
 
-    UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
-    String userEmail = user.getEmail();
-    String userFullName =
-            AuthDatabaseOperations.getFullName(user.into(Users.class));
-    emailer.sendRejectImageEmail(userEmail, userFullName, reason);
-    deleteSiteImage(userData, imageId);
+      UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
+      String userEmail = user.getEmail();
+      String userFullName =
+              AuthDatabaseOperations.getFullName(user.into(Users.class));
+      emailer.sendRejectImageEmail(userEmail, userFullName, reason);
+      deleteSiteImage(userData, imageId);
+    } else {
+      throw new IllegalStateException("Cannot reject an already approved image");
+    }
+
   }
 }

@@ -23,6 +23,8 @@ public class Emailer {
       PropertiesLoader.loadProperty("email_subject_account_deleted");
   private final String subjectEmailNeighborhoods =
       PropertiesLoader.loadProperty("email_subject_neighborhood_notification");
+  private final String subjectImageRejected =
+      PropertiesLoader.loadProperty("email_subject_image_rejected");
 
   public Emailer() {
     String senderName = PropertiesLoader.loadProperty("email_sender_name");
@@ -131,7 +133,7 @@ public class Emailer {
     emailBody.ifPresent(
             s ->
                     emailOperations.sendEmailToOneRecipient(
-                            sendToName, sendToEmail, subjectEmailChange, s));
+                            sendToName, sendToEmail, subjectImageRejected, s));
   }
 
   public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,
