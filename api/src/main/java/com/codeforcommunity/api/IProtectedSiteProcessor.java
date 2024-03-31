@@ -1,6 +1,7 @@
 package com.codeforcommunity.api;
 
 import com.codeforcommunity.auth.JWTData;
+import com.codeforcommunity.dto.site.*;
 import com.codeforcommunity.dto.site.AddSiteRequest;
 import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
@@ -126,6 +127,9 @@ public interface IProtectedSiteProcessor {
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
 
+  /** Rejects the site image (deletes and optionally sends an email with a rejection reason
+   * to the uploader) with the given imageId */
+  void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest);
   List<SiteEntryImage> getUnapprovedImages(JWTData userData);
 
   /** Allows Admin users to approve uploaded site images of the given ID */
