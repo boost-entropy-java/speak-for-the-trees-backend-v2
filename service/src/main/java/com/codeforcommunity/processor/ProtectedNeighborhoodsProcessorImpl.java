@@ -5,14 +5,18 @@ import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import com.codeforcommunity.api.IProtectedNeighborhoodsProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.neighborhoods.EditCanopyCoverageRequest;
+import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.dto.neighborhoods.SendEmailRequest;
 import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.requester.Emailer;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.NeighborhoodsRecord;
+import org.simplejavamail.api.email.AttachmentResource;
 
 public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
     implements IProtectedNeighborhoodsProcessor {
@@ -33,8 +37,10 @@ public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
 
     String emailSubject = sendEmailRequest.getEmailSubject();
     String emailBody = sendEmailRequest.getEmailBody();
+    List<AttachmentResource> attachments = sendEmailRequest.getAttachments().stream()
+            .map(ea -> ea.getAttachmentResource()).collect(Collectors.toList());
 
-    emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody);
+    emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody, attachments);
   }
 
   public void editCanopyCoverage(
