@@ -1,11 +1,14 @@
 package com.codeforcommunity.api;
 
 import com.codeforcommunity.auth.JWTData;
+import com.codeforcommunity.dto.site.*;
 import com.codeforcommunity.dto.site.AddSiteRequest;
 import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
@@ -106,9 +109,27 @@ public interface IProtectedSiteProcessor {
    */
   List<FilterSitesResponse> filterSites(JWTData userData, FilterSitesRequest filterSitesRequest);
 
+  /**
+   * Retrieves unapproved site images, as detailed below
+   *
+   * <p>The optional criteria are:
+   *
+   * <ul>
+   *   <li>The image was submitted on or after `submittedStart`
+   *   <li>The image was submitted on or after `submittedEnd`
+   *   <li>The image is for a site in `siteIds`
+   *   <li>The image is for a site located in a neighborhood in `neighborhoodIds`
+   * </ul>
+   */
+  List<FilterSiteImageResponse> filterUnapprovedSiteImages(
+      JWTData userData, FilterSiteImageRequest filterSiteImageRequest);
+
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
 
+  /** Rejects the site image (deletes and optionally sends an email with a rejection reason
+   * to the uploader) with the given imageId */
+  void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest);
   List<SiteEntryImage> getUnapprovedImages(JWTData userData);
 
   /** Allows Admin users to approve uploaded site images of the given ID */

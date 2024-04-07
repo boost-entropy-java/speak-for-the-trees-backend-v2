@@ -25,31 +25,29 @@ public class EmailAttachment extends ApiDto {
     private EmailAttachment() {}
 
     private static String getFileMimeType(String base64File) {
-        // Expected Base64 format: "data:image/{extension};base64,{imageData}"
-
         if (base64File == null || base64File.length() < 10) {
             return null;
         }
 
-        String[] base64ImageSplit = base64File.split(",", 2); // Split the metadata from the image data
+        String[] base64ImageSplit = base64File.split(",", 2);
         if (base64ImageSplit.length != 2) {
             return null;
         }
 
-        String meta = base64ImageSplit[0]; // The image metadata (e.g. "data:image/png;base64")
-        String[] metaSplit = meta.split(";", 2); // Split the metadata into data type and encoding type
+        String meta = base64ImageSplit[0];
+        String[] metaSplit = meta.split(";", 2);
 
         if (metaSplit.length != 2 || !metaSplit[1].equals("base64")) {
-            // Ensure the encoding type is base64
             return null;
         }
 
-        String[] dataSplit = metaSplit[0].split(":", 2); // Split the data type
+        String[] dataSplit = metaSplit[0].split(":", 2);
+
         if (dataSplit.length != 2) {
             return null;
         }
 
-        String fileExtension = dataSplit[1]; // The image type (e.g. "png")
+        String fileExtension = dataSplit[1];
         return fileExtension;
     }
     private static ByteArrayDataSource stringToDataSource(String data) {
@@ -57,11 +55,11 @@ public class EmailAttachment extends ApiDto {
         String mimeType;
 
         try {
-            // Temporarily writes the image to disk to decode
             mimeType = getFileMimeType(data);
             if (mimeType==null) {
                 throw new MalformedParameterException("data");
             }
+
             String[] base64Split = data.split(",", 2);
             imageData = Base64.getDecoder().decode(base64Split[1]);
 

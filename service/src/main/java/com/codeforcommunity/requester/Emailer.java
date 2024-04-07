@@ -23,6 +23,8 @@ public class Emailer {
       PropertiesLoader.loadProperty("email_subject_account_deleted");
   private final String subjectEmailNeighborhoods =
       PropertiesLoader.loadProperty("email_subject_neighborhood_notification");
+  private final String subjectImageRejected =
+      PropertiesLoader.loadProperty("email_subject_image_rejected");
 
   public Emailer() {
     String senderName = PropertiesLoader.loadProperty("email_sender_name");
@@ -119,6 +121,19 @@ public class Emailer {
             emailOperations.sendEmailToOneRecipient(
                 sendToName, sendToEmail, subjectAccountDeleted, s));
     // TODO implement this
+  }
+
+  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason) {
+    String filePath = "/emails/RejectImageEmail.html";
+
+    Map<String, String> templateValues = new HashMap<>();
+    templateValues.put("reason", reason);
+    Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
+
+    emailBody.ifPresent(
+            s ->
+                    emailOperations.sendEmailToOneRecipient(
+                            sendToName, sendToEmail, subjectImageRejected, s));
   }
 
   public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,

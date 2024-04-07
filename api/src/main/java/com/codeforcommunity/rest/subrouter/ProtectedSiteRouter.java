@@ -9,12 +9,15 @@ import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
 import com.codeforcommunity.dto.site.EditSiteRequest;
 import com.codeforcommunity.dto.site.EditStewardshipRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageRequest;
+import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
+import com.codeforcommunity.dto.site.RejectImageRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
@@ -26,6 +29,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +68,7 @@ public class ProtectedSiteRouter implements IRouter {
     registerDeleteSiteImage(router);
     registerFilterSites(router);
     registerEditSiteEntry(router);
+    registerRejectSiteImage(router);
     registerApproveSiteImage(router);
     registerGetUnapprovedImages(router);
     return router;
@@ -359,10 +364,7 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getOptionalQueryParam(
             ctx,
             "neighborhoodIds",
-            (string) ->
-                Arrays.stream(string.split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList()));
+            this::parseOptionalQueryParamList);
     Optional<Integer> activityCountMax =
         RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
 
@@ -404,6 +406,23 @@ public class ProtectedSiteRouter implements IRouter {
     end(ctx.response(), 200);
   }
 
+  private void registerRejectSiteImage(Router router) {
+    Route rejectImage = router.delete("/reject_image/:image_id");
+    rejectImage.handler(this::handleRejectSiteImage);
+  }
+
+  private void handleRejectSiteImage(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+    int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+
+    RejectImageRequest rejectImageRequest =
+            RestFunctions.getJsonBodyAsClass(ctx, RejectImageRequest.class);
+
+    processor.rejectSiteImage(userData, imageId, rejectImageRequest);
+
+    end(ctx.response(), 200);
+  }
+
   private void registerApproveSiteImage(Router router) {
     Route approveSiteImage = router.put("/approve_image/:image_id");
     approveSiteImage.handler(this::handleApproveSiteImage);
@@ -420,7 +439,41 @@ public class ProtectedSiteRouter implements IRouter {
 
   private void registerGetUnapprovedImages(Router router) {
     Route unapprovedSiteImages = router.get("/unapproved_images");
-    unapprovedSiteImages.handler(this::handleGetUnapprovedImages);
+    unapprovedSiteImages.handler(this::handleFilterUnapprovedSiteImages);
+  }
+
+  private void handleFilterUnapprovedSiteImages(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    Optional<Timestamp> submittedStart =
+        RestFunctions.getOptionalQueryParam(ctx, "submittedStart", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<Timestamp> submittedEnd =
+        RestFunctions.getOptionalQueryParam(ctx, "submittedEnd", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<List<Integer>> siteIds =
+        RestFunctions.getOptionalQueryParam(
+            ctx,
+            "siteIds",
+            this::parseOptionalQueryParamList);
+    Optional<List<Integer>> neighborhoodIds =
+        RestFunctions.getOptionalQueryParam(
+            ctx,
+            "neighborhoodIds",
+            this::parseOptionalQueryParamList);
+    FilterSiteImageRequest filterSiteImageRequest =
+        new FilterSiteImageRequest(
+            submittedStart.orElse(null),
+            submittedEnd.orElse(null),
+            siteIds.orElse(null),
+            neighborhoodIds.orElse(null));
+
+    List<FilterSiteImageResponse> filterSiteImageResponse =
+        processor.filterUnapprovedSiteImages(userData, filterSiteImageRequest);
+
+    end(
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("filteredSiteImages", filterSiteImageResponse))
+            .toString());
   }
 
   private void handleGetUnapprovedImages(RoutingContext ctx) {
@@ -430,5 +483,9 @@ public class ProtectedSiteRouter implements IRouter {
         ctx.response(),
         200,
         JsonObject.mapFrom(Collections.singletonMap("images", images)).toString());
+  }
+
+  private List<Integer> parseOptionalQueryParamList(String list) {
+    return Arrays.stream(list.split(",")).map(Integer::parseInt).collect(Collectors.toList());
   }
 }
