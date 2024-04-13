@@ -26,6 +26,7 @@ email_sender_name = Speak For The Trees Boston
 email_host = smtp.gmail.com
 email_port = 465
 email_should_send = false
+email_report_destination = placeholder_email
 
 email_subject_welcome = Welcome!
 email_subject_email_change = Your Email Has Changed
@@ -35,6 +36,7 @@ email_subject_account_deleted = Your Account Has Been Deleted
 email_subject_inactive_user = Inactivity at your Tree Site
 email_subject_neighborhood_notification = Neighborhood Notification
 email_subject_image_rejected = Your Image Was Rejected
+email_subject_site_report = User Reported a Site
 
 
 # =======================================================================================================
