@@ -41,10 +41,6 @@ public class ReportSiteRequest extends ApiDto {
       fields.add(fieldName + "reason");
     }
 
-    if (description == null) {
-      fields.add(fieldName + "description");
-    }
-
     return fields;
   }
 }

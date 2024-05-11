@@ -148,12 +148,17 @@ public class Emailer {
       String reportDescription) {
     String filePath = "/emails/SiteIssueReport.html";
 
+    String description = reportDescription;
+    if (description == null || description.isEmpty()) {
+      description = "N/A";
+    }
+
     Map<String, String> templateValues = new HashMap<>();
     templateValues.put("name", userFullName);
     templateValues.put("email", userEmail);
     templateValues.put("siteId", String.valueOf(siteId));
     templateValues.put("reportReason", reportReason);
-    templateValues.put("reportDescription", reportDescription);
+    templateValues.put("reportDescription", description);
 
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
     emailBody.ifPresent(
