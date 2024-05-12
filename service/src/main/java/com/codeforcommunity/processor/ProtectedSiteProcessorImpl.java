@@ -106,7 +106,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (!db.fetchExists(db.selectFrom(SITES).where(SITES.ID.eq(siteId)))) {
       throw new ResourceDoesNotExistException(siteId, "Site");
     }
-  }
+  } 
 
   /**
    * Check if an entry with the given entryId exists.
