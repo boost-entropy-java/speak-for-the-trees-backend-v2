@@ -416,11 +416,9 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleRejectSiteImage(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
     int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
+    String rejectionReason = RestFunctions.getRequestParameterAsString(ctx.request(), "reason");
 
-    RejectImageRequest rejectImageRequest =
-            RestFunctions.getJsonBodyAsClass(ctx, RejectImageRequest.class);
-
-    processor.rejectSiteImage(userData, imageId, rejectImageRequest);
+    processor.rejectSiteImage(userData, imageId, rejectionReason);
 
     end(ctx.response(), 200);
   }

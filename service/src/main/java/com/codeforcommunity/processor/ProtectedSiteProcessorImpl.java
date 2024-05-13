@@ -106,7 +106,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (!db.fetchExists(db.selectFrom(SITES).where(SITES.ID.eq(siteId)))) {
       throw new ResourceDoesNotExistException(siteId, "Site");
     }
-  }
+  } 
 
   /**
    * Check if an entry with the given entryId exists.
@@ -1030,16 +1030,11 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public void rejectSiteImage(JWTData userData, int imageId, RejectImageRequest rejectImageRequest) {
+  public void rejectSiteImage(JWTData userData, int imageId, String rejectionReason) {
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
-    String reason;
-    if (rejectImageRequest.getRejectionReason() != null) {
-      reason = rejectImageRequest.getRejectionReason();
-    } else {
-      reason = "Your image upload was rejected by an admin";
-    }
+    String reason = rejectionReason == null ? "Your image upload was rejected by an admin" : rejectionReason;
 
     String approvalStatus = db.select(SITE_IMAGES.APPROVAL_STATUS)
             .from(SITE_IMAGES)
