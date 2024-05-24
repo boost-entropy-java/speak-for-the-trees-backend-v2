@@ -127,17 +127,17 @@ public class Emailer {
     // TODO implement this
   }
 
-  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason) {
+  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason, AttachmentResource rejectedImage) {
     String filePath = "/emails/RejectImageEmail.html";
 
     Map<String, String> templateValues = new HashMap<>();
     templateValues.put("reason", reason);
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
-
+    List<AttachmentResource> attachments = Arrays.asList(rejectedImage);
     emailBody.ifPresent(
             s ->
                     emailOperations.sendEmailToOneRecipient(
-                            sendToName, sendToEmail, subjectImageRejected, s));
+                            sendToName, sendToEmail, subjectImageRejected, s, attachments));
   }
 
   public void sendIssueReportEmail(

@@ -37,6 +37,9 @@ import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
 import org.jsoup.parser.Parser;
 
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
   public static class Externs {
@@ -231,6 +234,41 @@ public class S3Requester {
       // The AWS S3 delete failed
       throw new S3FailedUploadException(e.getMessage());
     }
+  }
+
+  /**
+   * Load the existing site image with the given URL from the user uploads S3 bucket.
+   *
+   * @param imageUrl the URL of the image file in S3 to delete.
+   * @throws SdkClientException if the load from S3 failed.
+   */
+  public static DataSource loadS3Image(String imageUrl) {
+    String imagePath = imageUrl.split(externs.getBucketPublicUrl() + '/')[1];
+
+    if (!pathExists(imagePath)) {
+      throw new InvalidURLException();
+    }
+
+    // Create the request to get the HTML
+    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), imagePath);
+
+    S3Object image = externs.getS3Client().getObject(awsRequest);
+    StringBuilder content = new StringBuilder();
+    try {
+      int c = 0;
+      while ((c = image.getObjectContent().read()) != -1) {
+        content.append((char) c);
+      }
+    } catch (IOException e) {
+      throw new BadRequestHTMLException("Image file could not be decoded to string");
+    }
+
+    String imageContent = content.toString();
+    //#String mimeType =
+    //String htmlAuthor = image.getObjectMetadata().getUserMetaDataOf("userID");
+
+    return new FileDataSource();
+    };
   }
 
   /**
