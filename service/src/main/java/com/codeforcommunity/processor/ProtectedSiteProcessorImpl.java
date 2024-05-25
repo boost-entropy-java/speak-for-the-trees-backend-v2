@@ -1,5 +1,6 @@
 package com.codeforcommunity.processor;
 
+import static com.codeforcommunity.requester.S3Requester.loadS3Image;
 import static com.codeforcommunity.requester.S3Requester.loadSiteImage;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;

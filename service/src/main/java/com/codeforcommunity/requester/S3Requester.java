@@ -264,11 +264,18 @@ public class S3Requester {
     }
 
     String imageContent = content.toString();
-    //#String mimeType =
-    //String htmlAuthor = image.getObjectMetadata().getUserMetaDataOf("userID");
-
-    return new FileDataSource();
-    };
+    try {
+      File tempFile = File.createTempFile("reject_image_tmp", null, null);
+      FileOutputStream fos = new FileOutputStream(tempFile);
+      byte[] bytesArray = imageContent.getBytes();
+      fos.write(bytesArray);
+      fos.flush();
+      fos.close();
+      return new FileDataSource(tempFile);
+    } catch (IllegalArgumentException | IOException e) {
+      // The string failed to decode to HTML
+      throw new BadRequestHTMLException("HTML could not be written to disk.");
+    }
   }
 
   /**
