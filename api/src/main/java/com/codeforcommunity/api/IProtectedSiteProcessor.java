@@ -19,6 +19,9 @@ import com.codeforcommunity.dto.site.ReportSiteRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+
+import org.simplejavamail.api.email.AttachmentResource;
+
 import java.sql.Date;
 import java.util.List;
 
@@ -138,4 +141,7 @@ public interface IProtectedSiteProcessor {
 
   /** Reports the site for an issue by sending an email to SFTT */
   void reportSiteForIssues(JWTData userData, int siteId, ReportSiteRequest reportSiteRequest);
+
+  /** Loads a site image with the given ID as an attachment resource*/
+  AttachmentResource loadSiteImage(JWTData userData, int imageId);
 }

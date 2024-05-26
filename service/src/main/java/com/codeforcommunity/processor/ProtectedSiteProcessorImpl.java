@@ -1,7 +1,6 @@
 package com.codeforcommunity.processor;
 
 import static com.codeforcommunity.requester.S3Requester.loadS3Image;
-import static com.codeforcommunity.requester.S3Requester.loadSiteImage;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;
 import static org.jooq.generated.Tables.NEIGHBORHOODS;
@@ -747,7 +746,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     db.deleteFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageId)).execute();
   }
 
-  @Override AttachmentResource loadSiteImage(JWTData userData, int imageId) {
+  @Override
+  public AttachmentResource loadSiteImage(JWTData userData, int imageId) {
     checkAdminOrImageUploader(userData, imageId);
     checkImageExists(imageId);
 
@@ -756,7 +756,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
                     .from(SITE_IMAGES)
                     .where(SITE_IMAGES.ID.eq(imageId))
                     .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
-    return new AttachmentResource(imageUrl, loadS3Image(imageUrl));
+    return loadS3Image(imageUrl);
   }
 
   @Override
@@ -1049,8 +1049,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
-    String reason = rejectionReason == null ? "Your image upload was rejected by an admin" : rejectionReason;
-
     String approvalStatus = db.select(SITE_IMAGES.APPROVAL_STATUS)
             .from(SITE_IMAGES)
             .where(SITE_IMAGES.ID.eq(imageId)).fetchOne(0, String.class);
@@ -1065,7 +1063,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       String userFullName =
               AuthDatabaseOperations.getFullName(user.into(Users.class));
       AttachmentResource image = loadSiteImage(userData, imageId);
-      emailer.sendRejectImageEmail(userEmail, userFullName, reason, image);
+      emailer.sendRejectImageEmail(userEmail, userFullName, rejectionReason, image);
       deleteSiteImage(userData, imageId);
     } else {
       throw new IllegalStateException("Cannot reject an already approved image");

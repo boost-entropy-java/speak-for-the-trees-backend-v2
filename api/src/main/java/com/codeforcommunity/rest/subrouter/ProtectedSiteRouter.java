@@ -22,6 +22,7 @@ import com.codeforcommunity.dto.site.ReportSiteRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
+import com.codeforcommunity.exceptions.MissingParameterException;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -416,7 +417,13 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleRejectSiteImage(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
     int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
-    String rejectionReason = RestFunctions.getRequestParameterAsString(ctx.request(), "reason");
+
+    String rejectionReason;
+    try {
+      rejectionReason = RestFunctions.getRequestParameterAsString(ctx.request(), "reason");
+    } catch (MissingParameterException e) {
+      rejectionReason = "Your image upload was rejected by an admin";
+    }
 
     processor.rejectSiteImage(userData, imageId, rejectionReason);
 

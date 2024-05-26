@@ -14,6 +14,7 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
@@ -22,10 +23,11 @@ import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -36,9 +38,10 @@ import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
 import org.jsoup.parser.Parser;
+import org.simplejavamail.api.email.AttachmentResource;
 
 import javax.activation.DataSource;
-import javax.activation.FileDataSource;
+import javax.mail.util.ByteArrayDataSource;
 
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
@@ -242,7 +245,7 @@ public class S3Requester {
    * @param imageUrl the URL of the image file in S3 to delete.
    * @throws SdkClientException if the load from S3 failed.
    */
-  public static DataSource loadS3Image(String imageUrl) {
+  public static AttachmentResource loadS3Image(String imageUrl) {
     String imagePath = imageUrl.split(externs.getBucketPublicUrl() + '/')[1];
 
     if (!pathExists(imagePath)) {
@@ -253,29 +256,26 @@ public class S3Requester {
     GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), imagePath);
 
     S3Object image = externs.getS3Client().getObject(awsRequest);
-    StringBuilder content = new StringBuilder();
+    S3ObjectInputStream is = image.getObjectContent();
+
+   ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    byte[] data = new byte[(int) image.getObjectMetadata().getContentLength()];
     try {
       int c = 0;
-      while ((c = image.getObjectContent().read()) != -1) {
-        content.append((char) c);
+      while ((c = is.read(data, 0, data.length)) != -1) {
+        buffer.write(data, 0, c);
       }
     } catch (IOException e) {
       throw new BadRequestHTMLException("Image file could not be decoded to string");
     }
+    String base64String = Base64.getEncoder().encodeToString(data);
+    System.out.println(base64String);
+    byte[] base64bytes = Base64.getDecoder().decode(base64String);
 
-    String imageContent = content.toString();
-    try {
-      File tempFile = File.createTempFile("reject_image_tmp", null, null);
-      FileOutputStream fos = new FileOutputStream(tempFile);
-      byte[] bytesArray = imageContent.getBytes();
-      fos.write(bytesArray);
-      fos.flush();
-      fos.close();
-      return new FileDataSource(tempFile);
-    } catch (IllegalArgumentException | IOException e) {
-      // The string failed to decode to HTML
-      throw new BadRequestHTMLException("HTML could not be written to disk.");
-    }
+    String mimeType = "img/" + image.getObjectMetadata().getContentType();
+    DataSource datasource = new ByteArrayDataSource(data, mimeType);
+    String name = image.getKey();
+    return new AttachmentResource(name, datasource);
   }
 
   /**
