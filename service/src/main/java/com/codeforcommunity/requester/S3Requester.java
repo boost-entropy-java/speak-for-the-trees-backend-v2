@@ -21,6 +21,7 @@ import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
+import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 
@@ -42,6 +43,8 @@ import org.simplejavamail.api.email.AttachmentResource;
 
 import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
+
+import software.amazon.ion.IonException;
 
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
@@ -258,22 +261,14 @@ public class S3Requester {
     S3Object image = externs.getS3Client().getObject(awsRequest);
     S3ObjectInputStream is = image.getObjectContent();
 
-   ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    byte[] data = new byte[(int) image.getObjectMetadata().getContentLength()];
-    try {
-      int c = 0;
-      while ((c = is.read(data, 0, data.length)) != -1) {
-        buffer.write(data, 0, c);
-      }
-    } catch (IOException e) {
-      throw new BadRequestHTMLException("Image file could not be decoded to string");
-    }
-    String base64String = Base64.getEncoder().encodeToString(data);
-    System.out.println(base64String);
-    byte[] base64bytes = Base64.getDecoder().decode(base64String);
-
     String mimeType = "img/" + image.getObjectMetadata().getContentType();
-    DataSource datasource = new ByteArrayDataSource(data, mimeType);
+    DataSource datasource;
+    try {
+      datasource = new ByteArrayDataSource(is, mimeType);
+    } catch (IOException e) {
+      throw new MalformedParameterException("Image encoding is incompatible");
+    }
+
     String name = image.getKey();
     return new AttachmentResource(name, datasource);
   }
