@@ -18,6 +18,8 @@ import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.when;
 import static org.jooq.impl.DSL.withRecursive;
 
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dataaccess.AuthDatabaseOperations;
@@ -47,6 +49,7 @@ import com.codeforcommunity.exceptions.ForbiddenException;
 import com.codeforcommunity.exceptions.HandledException;
 import com.codeforcommunity.exceptions.InvalidCSVException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
+import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.NoTreePresentException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
@@ -82,6 +85,9 @@ import org.jooq.generated.tables.records.UserSiteReportsRecord;
 import org.jooq.generated.tables.records.UsersRecord;
 import org.jooq.generated.tables.pojos.Users;
 import org.simplejavamail.api.email.AttachmentResource;
+
+import javax.activation.DataSource;
+import javax.mail.util.ByteArrayDataSource;
 
 public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
@@ -756,7 +762,19 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
                     .from(SITE_IMAGES)
                     .where(SITE_IMAGES.ID.eq(imageId))
                     .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
-    return loadS3Image(imageUrl);
+    S3Object image = loadS3Image(imageUrl);
+    S3ObjectInputStream is = image.getObjectContent();
+
+    String mimeType = "img/" + image.getObjectMetadata().getContentType();
+    DataSource datasource;
+    try {
+      datasource = new ByteArrayDataSource(is, mimeType);
+    } catch (IOException e) {
+      throw new MalformedParameterException("Image encoding is incompatible");
+    }
+
+    String name = image.getKey();
+    return new AttachmentResource(name, datasource);
   }
 
   @Override

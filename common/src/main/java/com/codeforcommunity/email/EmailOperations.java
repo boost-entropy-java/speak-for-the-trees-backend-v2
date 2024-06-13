@@ -179,20 +179,6 @@ public class EmailOperations {
     this.sendEmail(email, subject);
   }
 
-  /**
-   * Send an email with the given subject and body to the user with the given name at the given
-   * email.
-   */
-  public void sendEmailToOneRecipient(
-      String sendToName, String sendToEmail, String subject, String emailBody) {
-    if (!shouldSendEmails) {
-      return;
-    }
-    logger.info(String.format("Sending email with subject `%s`", subject));
-    Email email = buildEmailSingleRecipient(sendToName, sendToEmail, subject, emailBody, new ArrayList<>());
-    this.sendEmail(email, subject);
-  }
-
   private Email buildEmailMultipleRecipient(
           HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
     Email email =
@@ -215,17 +201,6 @@ public class EmailOperations {
     }
     logger.info(String.format("Sending emails with subject `%s`", subject));
     Email email = buildEmailMultipleRecipient(sendToEmails, subject, emailBody, attachments);
-    this.sendEmail(email, subject);
-  }
-
-  /** Send an email with the given subject and body to the users with the given email addresses. */
-  public void sendEmailToMultipleRecipients(
-          HashSet<String> sendToEmails, String subject, String emailBody) {
-    if (!shouldSendEmails) {
-      return;
-    }
-    logger.info(String.format("Sending emails with subject `%s`", subject));
-    Email email = buildEmailMultipleRecipient(sendToEmails, subject, emailBody, new ArrayList<>());
     this.sendEmail(email, subject);
   }
 }

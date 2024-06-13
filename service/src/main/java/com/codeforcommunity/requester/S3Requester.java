@@ -248,7 +248,7 @@ public class S3Requester {
    * @param imageUrl the URL of the image file in S3 to delete.
    * @throws SdkClientException if the load from S3 failed.
    */
-  public static AttachmentResource loadS3Image(String imageUrl) {
+  public static S3Object loadS3Image(String imageUrl) {
     String imagePath = imageUrl.split(externs.getBucketPublicUrl() + '/')[1];
 
     if (!pathExists(imagePath)) {
@@ -259,18 +259,7 @@ public class S3Requester {
     GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), imagePath);
 
     S3Object image = externs.getS3Client().getObject(awsRequest);
-    S3ObjectInputStream is = image.getObjectContent();
-
-    String mimeType = "img/" + image.getObjectMetadata().getContentType();
-    DataSource datasource;
-    try {
-      datasource = new ByteArrayDataSource(is, mimeType);
-    } catch (IOException e) {
-      throw new MalformedParameterException("Image encoding is incompatible");
-    }
-
-    String name = image.getKey();
-    return new AttachmentResource(name, datasource);
+    return image;
   }
 
   /**
