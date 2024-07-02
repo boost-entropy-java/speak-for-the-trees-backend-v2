@@ -49,10 +49,20 @@ public class SiteProcessorImpl implements ISiteProcessor {
     }
   }
 
+  private SiteEntriesRecord latestSiteEntry(int siteId) {
+    return db.selectFrom(SITE_ENTRIES)
+        .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+        .and(SITE_ENTRIES.DELETED_AT.isNull())
+        .orderBy(SITE_ENTRIES.CREATED_AT.desc())
+        .fetchInto(SiteEntriesRecord.class)
+        .get(0);
+  }
+
   private List<SiteEntry> getSiteEntries(int siteId) {
     List<SiteEntriesRecord> records =
         db.selectFrom(SITE_ENTRIES)
             .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+            .and(SITE_ENTRIES.DELETED_AT.isNull())
             .orderBy(SITE_ENTRIES.CREATED_AT.desc())
             .fetch();
 
@@ -245,7 +255,8 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
   @Override
   public GetSiteResponse getSite(int siteId) {
-    SitesRecord sitesRecord = db.selectFrom(SITES).where(SITES.ID.eq(siteId)).fetchOne();
+    SitesRecord sitesRecord = db.selectFrom(SITES).where(SITES.ID.eq(siteId))
+            .and(SITES.DELETED_AT.isNull()).fetchOne();
 
     if (sitesRecord == null) {
       throw new ResourceDoesNotExistException(siteId, "site");
@@ -275,8 +286,6 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
     records.forEach(
         record -> {
-          //          logger.info("Stewardship activity recorded on: " + record.getPerformedOn());
-
           StewardshipActivity stewardshipActivity =
               new StewardshipActivity(
                   record.getId(),
@@ -288,8 +297,6 @@ public class SiteProcessorImpl implements ISiteProcessor {
                   record.getWeeded(),
                   record.getInstalledWateringBag());
           activities.add(stewardshipActivity);
-
-          //          logger.info("Stewardship recorded on: " + stewardshipActivity.getDate());
         });
 
     return new StewardshipActivitiesResponse(activities);
@@ -301,6 +308,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
         .from(SITE_ENTRIES)
         .where(SITE_ENTRIES.COMMON_NAME.isNotNull())
         .and(SITE_ENTRIES.COMMON_NAME.notEqual(""))
+        .and(SITE_ENTRIES.DELETED_AT.isNull())
         .orderBy(SITE_ENTRIES.COMMON_NAME.asc())
         .fetchInto(String.class);
   }
@@ -309,12 +317,7 @@ public class SiteProcessorImpl implements ISiteProcessor {
   public TreeBenefitsResponse calculateBenefits(int siteId) {
     checkSiteExists(siteId);
 
-    SiteEntriesRecord record =
-        db.selectFrom(SITE_ENTRIES)
-            .where(SITE_ENTRIES.SITE_ID.eq(siteId))
-            .orderBy(SITE_ENTRIES.CREATED_AT.desc())
-            .fetchInto(SiteEntriesRecord.class)
-            .get(0);
+    SiteEntriesRecord record = latestSiteEntry(siteId);
 
     if (record == null) {
       throw new ResourceDoesNotExistException(siteId, "site entry");

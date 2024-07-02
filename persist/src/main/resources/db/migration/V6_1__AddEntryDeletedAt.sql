@@ -1,0 +1,1 @@
+ALTER TABLE site_entries ADD COLUMN deleted_at TIMESTAMP DEFAULT NULL;
