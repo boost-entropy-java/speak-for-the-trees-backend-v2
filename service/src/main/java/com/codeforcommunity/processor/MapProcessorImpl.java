@@ -194,6 +194,7 @@ public class MapProcessorImpl implements IMapProcessor {
                     this.db
                         .select(SITE_ENTRIES.SITE_ID, maxDate)
                         .from(SITE_ENTRIES)
+                        .where(SITE_ENTRIES.DELETED_AT.isNull())
                         .groupBy(SITE_ENTRIES.SITE_ID))
                 .as("recentlyCreated");
 
@@ -273,6 +274,7 @@ public class MapProcessorImpl implements IMapProcessor {
                 .on(SITES.ID.eq(newEntries.field(SITE_ENTRIES.SITE_ID)))
                 .leftJoin(ADOPTED_SITES)
                 .on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
+                .where(SITES.DELETED_AT.isNull())
                 .orderBy(SITES.ID)
                 .fetch();
 
@@ -293,7 +295,7 @@ public class MapProcessorImpl implements IMapProcessor {
   private static class SiteGeoResponseCache {
     private static SiteGeoResponse response;
     private static long expireTime = 0;
-    private static final long timeToLive = 10000; // in milliseconds, 5000 is the avg. response time
+    private static final long timeToLive = 20 * 1000; // in milliseconds, 5000 is the avg. response time
 
     public static SiteGeoResponse getResponse() {
       return response;

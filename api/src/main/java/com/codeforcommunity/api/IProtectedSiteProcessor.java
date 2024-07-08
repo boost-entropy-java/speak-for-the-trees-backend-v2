@@ -134,6 +134,7 @@ public interface IProtectedSiteProcessor {
   /** Rejects the site image (deletes and sends an email with a rejection reason and the
    * rejected image to the uploader's email) with the given imageId */
   void rejectSiteImage(JWTData userData, int imageId, String rejectionReason);
+
   List<SiteEntryImage> getUnapprovedImages(JWTData userData);
 
   /** Allows Admin users to approve uploaded site images of the given ID */
@@ -144,4 +145,11 @@ public interface IProtectedSiteProcessor {
 
   /** Loads a site image with the given ID as an attachment resource*/
   AttachmentResource loadSiteImage(JWTData userData, int imageId);
+
+  /** Deletes the given site entry and associated data */
+  void deleteSiteEntry(JWTData userData, int entryId);
+
+  void editManySites(JWTData userData, ManyEditSitesRequest manyEditSitesRequest);
+
+  void addManySiteEntries(JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest);
 }

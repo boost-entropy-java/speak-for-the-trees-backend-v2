@@ -5,14 +5,14 @@ import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import com.codeforcommunity.api.IProtectedNeighborhoodsProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.neighborhoods.EditCanopyCoverageRequest;
-import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.dto.neighborhoods.SendEmailRequest;
 import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.requester.Emailer;
+
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.NeighborhoodsRecord;
@@ -37,8 +37,11 @@ public class ProtectedNeighborhoodsProcessorImpl extends AbstractProcessor
 
     String emailSubject = sendEmailRequest.getEmailSubject();
     String emailBody = sendEmailRequest.getEmailBody();
-    List<AttachmentResource> attachments = sendEmailRequest.getAttachments().stream()
-            .map(ea -> ea.getAttachmentResource()).collect(Collectors.toList());
+
+    List<AttachmentResource> attachments = new ArrayList<>();
+    if (sendEmailRequest.getAttachments() != null) {
+      sendEmailRequest.getAttachments().forEach(ea -> attachments.add(ea.getAttachmentResource()));
+    }
 
     emailer.sendArbitraryEmail(new HashSet<>(emails), emailSubject, emailBody, attachments);
   }

@@ -13,11 +13,12 @@ import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.ManyAddSiteEntriesRequest;
+import com.codeforcommunity.dto.site.ManyEditSitesRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
 import com.codeforcommunity.dto.site.RecordStewardshipRequest;
-import com.codeforcommunity.dto.site.RejectImageRequest;
 import com.codeforcommunity.dto.site.ReportSiteRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
@@ -75,6 +76,9 @@ public class ProtectedSiteRouter implements IRouter {
     registerApproveSiteImage(router);
     registerGetUnapprovedImages(router);
     registerReportSiteIssue(router);
+    registerDeleteSiteEntry(router);
+    registerEditManySites(router);
+    registerAddManySiteEntries(router);
     return router;
   }
 
@@ -366,9 +370,7 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getOptionalQueryParam(ctx, "lastActivityEnd", Date::valueOf);
     Optional<List<Integer>> neighborhoodIds =
         RestFunctions.getOptionalQueryParam(
-            ctx,
-            "neighborhoodIds",
-            this::parseOptionalQueryParamList);
+            ctx, "neighborhoodIds", this::parseOptionalQueryParamList);
     Optional<Integer> activityCountMax =
         RestFunctions.getOptionalQueryParam(ctx, "activityCountMax", Integer::parseInt);
 
@@ -450,19 +452,16 @@ public class ProtectedSiteRouter implements IRouter {
     JWTData userData = ctx.get("jwt_data");
 
     Optional<Timestamp> submittedStart =
-        RestFunctions.getOptionalQueryParam(ctx, "submittedStart", (date) -> new Timestamp(Date.valueOf(date).getTime()));
-    Optional<Timestamp> submittedEnd =
-        RestFunctions.getOptionalQueryParam(ctx, "submittedEnd", (date) -> new Timestamp(Date.valueOf(date).getTime()));
-    Optional<List<Integer>> siteIds =
         RestFunctions.getOptionalQueryParam(
-            ctx,
-            "siteIds",
-            this::parseOptionalQueryParamList);
+            ctx, "submittedStart", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<Timestamp> submittedEnd =
+        RestFunctions.getOptionalQueryParam(
+            ctx, "submittedEnd", (date) -> new Timestamp(Date.valueOf(date).getTime()));
+    Optional<List<Integer>> siteIds =
+        RestFunctions.getOptionalQueryParam(ctx, "siteIds", this::parseOptionalQueryParamList);
     Optional<List<Integer>> neighborhoodIds =
         RestFunctions.getOptionalQueryParam(
-            ctx,
-            "neighborhoodIds",
-            this::parseOptionalQueryParamList);
+            ctx, "neighborhoodIds", this::parseOptionalQueryParamList);
     FilterSiteImageRequest filterSiteImageRequest =
         new FilterSiteImageRequest(
             submittedStart.orElse(null),
@@ -502,6 +501,50 @@ public class ProtectedSiteRouter implements IRouter {
         RestFunctions.getJsonBodyAsClass(ctx, ReportSiteRequest.class);
 
     processor.reportSiteForIssues(userData, siteId, reportSiteRequest);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerDeleteSiteEntry(Router router) {
+    Route deleteSiteEntry = router.delete("/delete_entry/:entry_id");
+    deleteSiteEntry.handler(this::handleDeleteSiteEntry);
+  }
+
+  private void handleDeleteSiteEntry(RoutingContext ctx) {
+    int entryId = RestFunctions.getRequestParameterAsInt(ctx.request(), "entry_id");
+    JWTData userData = ctx.get("jwt_data");
+
+    processor.deleteSiteEntry(userData, entryId);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerEditManySites(Router router) {
+    Route editManySites = router.put("/edit_many");
+    editManySites.handler(this::handleEditManySites);
+  }
+
+  private void registerAddManySiteEntries(Router router) {
+    Route addManySiteEntries = router.post("/add_many");
+    addManySiteEntries.handler(this::handleAddManySiteEntries);
+  }
+
+  private void handleEditManySites(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    ManyEditSitesRequest req = RestFunctions.getJsonBodyAsClass(ctx, ManyEditSitesRequest.class);
+
+    processor.editManySites(userData, req);
+
+    end(ctx.response(), 200);
+  }
+
+  private void handleAddManySiteEntries(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    ManyAddSiteEntriesRequest req = RestFunctions.getJsonBodyAsClass(ctx, ManyAddSiteEntriesRequest.class);
+
+    processor.addManySiteEntries(userData, req);
 
     end(ctx.response(), 200);
   }

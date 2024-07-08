@@ -69,9 +69,6 @@ public class SendEmailRequest extends ApiDto {
     if (emailBody == null) {
       fields.add(fieldName + "emailBody");
     }
-    if (attachments == null) {
-      fields.add(fieldName + "emailAttachment");
-    }
 
     return fields;
   }

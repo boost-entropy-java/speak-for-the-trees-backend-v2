@@ -3,6 +3,7 @@ package com.codeforcommunity.processor;
 import static com.codeforcommunity.requester.S3Requester.loadS3Image;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;
+import static org.jooq.generated.Tables.ENTRY_USERNAMES;
 import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import static org.jooq.generated.Tables.PARENT_ACCOUNTS;
 import static org.jooq.generated.Tables.SITES;
@@ -16,14 +17,12 @@ import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.when;
-import static org.jooq.impl.DSL.withRecursive;
 
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dataaccess.AuthDatabaseOperations;
-import com.codeforcommunity.dto.site.*;
 import com.codeforcommunity.dto.site.AddSiteRequest;
 import com.codeforcommunity.dto.site.AddSitesRequest;
 import com.codeforcommunity.dto.site.AdoptedSitesResponse;
@@ -34,6 +33,8 @@ import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.ManyAddSiteEntriesRequest;
+import com.codeforcommunity.dto.site.ManyEditSitesRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -65,12 +66,15 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.Record11;
 import org.jooq.Result;
@@ -114,7 +118,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (!db.fetchExists(db.selectFrom(SITES).where(SITES.ID.eq(siteId)))) {
       throw new ResourceDoesNotExistException(siteId, "Site");
     }
-  } 
+  }
 
   /**
    * Check if an entry with the given entryId exists.
@@ -122,7 +126,9 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    * @param entryId to check
    */
   private void checkEntryExists(int entryId) {
-    if (!db.fetchExists(db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)))) {
+    if (!db.fetchExists(
+        db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)).and(SITE_ENTRIES.DELETED_AT.isNull())
+    )) {
       throw new ResourceDoesNotExistException(entryId, "Entry");
     }
   }
@@ -430,8 +436,12 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   @Override
   public AdoptedSitesResponse getAdoptedSites(JWTData userData) {
     List<Integer> favoriteSites =
-        db.selectFrom(ADOPTED_SITES)
+        db.select()
+            .from(ADOPTED_SITES)
+            .join(SITES)
+            .on(ADOPTED_SITES.SITE_ID.eq(SITES.ID))
             .where(ADOPTED_SITES.USER_ID.eq(userData.getUserId()))
+            .and(SITES.DELETED_AT.isNull())
             .fetch(ADOPTED_SITES.SITE_ID);
 
     return new AdoptedSitesResponse(favoriteSites);
@@ -696,6 +706,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   private SiteEntriesRecord latestSiteEntry(int siteId) {
     return db.selectFrom(SITE_ENTRIES)
         .where(SITE_ENTRIES.SITE_ID.eq(siteId))
+        .and(SITE_ENTRIES.DELETED_AT.isNull())
         .orderBy(SITE_ENTRIES.CREATED_AT.desc())
         .fetchInto(SiteEntriesRecord.class)
         .get(0);
@@ -802,7 +813,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     Condition filterCondition =
         activityCounts
             .field(ACTIVITY_COUNT_COLUMN, Integer.class)
-            .ge(filterSitesRequest.getActivityCountMin());
+            .ge(filterSitesRequest.getActivityCountMin())
+            .and(SITE_ENTRIES.DELETED_AT.isNull());
     if (filterSitesRequest.getTreeCommonNames() != null)
       filterCondition =
           filterCondition.and(SITE_ENTRIES.COMMON_NAME.in(filterSitesRequest.getTreeCommonNames()));
@@ -1063,6 +1075,77 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
+  public void editManySites(JWTData userData, ManyEditSitesRequest manyEditSitesRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+
+    List<Integer> siteIds = manyEditSitesRequest.getSites();
+    List<EditSiteRequest> editSiteRequests = manyEditSitesRequest.getEditSitesRequests();
+
+    Map<Integer, SitesRecord> siteRecords = db.selectFrom(SITES).where(SITES.ID.in(siteIds)).fetchMap(SITES.ID);
+
+    for (int i = 0; i < siteIds.size(); i++) {
+      Integer siteId = siteIds.get(i);
+      EditSiteRequest req = editSiteRequests.get(i);
+
+      SitesRecord siteRecord = siteRecords.get(siteId);
+
+      if (siteRecord == null) {
+        throw new RuntimeException(
+            String.format("Found site record with no ID but matched with id %d", siteId));
+      }
+
+      if (!Objects.equals(siteRecord.getId(), siteId)) {
+        throw new RuntimeException(
+            String.format("Found site record with id %d but matched with id %d", siteRecord.getId(), siteId));
+
+      }
+
+      siteRecord.setId(siteId);
+      siteRecord.setBlockId(req.getBlockId());
+      siteRecord.setAddress(req.getAddress());
+      siteRecord.setCity(req.getCity());
+      siteRecord.setZip(req.getZip());
+      siteRecord.setLat(req.getLat());
+      siteRecord.setLng(req.getLng());
+      siteRecord.setNeighborhoodId(req.getNeighborhoodId());
+      siteRecord.setOwner(req.getOwner().toString());
+    }
+
+    List<SitesRecord> records = new ArrayList<>();
+    for (Map.Entry<Integer, SitesRecord> entry : siteRecords.entrySet()) {
+      records.add(entry.getValue());
+    }
+
+    db.batchStore(records).execute();
+  }
+
+  @Override
+  public void addManySiteEntries(JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+
+    List<Integer> siteIds = manyAddSiteEntriesRequest.getSites();
+    List<UpdateSiteRequest> updateSiteRequests = manyAddSiteEntriesRequest.getUpdateSiteRequests();
+
+    int newId = db.select(max(SITE_ENTRIES.ID)).from(SITE_ENTRIES).fetchOne(0, Integer.class) + 1;
+
+    List<SiteEntriesRecord> records = new ArrayList<>();
+
+    for (int i = 0; i < siteIds.size(); i++) {
+      int siteId = siteIds.get(i);
+      UpdateSiteRequest req = updateSiteRequests.get(i);
+      SiteEntriesRecord record = db.newRecord(SITE_ENTRIES);
+
+      record.setId(newId + i);
+      record.setSiteId(siteId);
+      populateSiteEntry(record, req);
+
+      records.add(record);
+    }
+
+    db.batchStore(records).execute();
+  }
+
+  @Override
   public void rejectSiteImage(JWTData userData, int imageId, String rejectionReason) {
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
@@ -1112,5 +1195,21 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     record.setUserId(userData.getUserId());
     record.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
     record.store();
+  }
+
+  @Override
+  public void deleteSiteEntry(JWTData userData, int entryId) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+    checkEntryExists(entryId);
+
+    SiteEntriesRecord entry = db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)).fetchOne();
+    int count = db.selectCount().from(SITE_ENTRIES).where(SITE_ENTRIES.SITE_ID.eq(entry.getSiteId())).fetchOne(0, int.class);
+
+    if (count <= 1) {
+      throw new ForbiddenException("Must have at least one other site entry");
+    }
+
+    entry.setDeletedAt(new Timestamp(System.currentTimeMillis()));
+    entry.store();
   }
 }
