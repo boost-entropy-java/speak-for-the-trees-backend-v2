@@ -144,4 +144,8 @@ public interface IProtectedSiteProcessor {
 
   /** Deletes the given site entry and associated data */
   void deleteSiteEntry(JWTData userData, int entryId);
+
+  void editManySites(JWTData userData, ManyEditSitesRequest manyEditSitesRequest);
+
+  void addManySiteEntries(JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest);
 }

@@ -13,6 +13,8 @@ import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.ManyAddSiteEntriesRequest;
+import com.codeforcommunity.dto.site.ManyEditSitesRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -73,6 +75,8 @@ public class ProtectedSiteRouter implements IRouter {
     registerGetUnapprovedImages(router);
     registerReportSiteIssue(router);
     registerDeleteSiteEntry(router);
+    registerEditManySites(router);
+    registerAddManySiteEntries(router);
     return router;
   }
 
@@ -507,6 +511,36 @@ public class ProtectedSiteRouter implements IRouter {
     JWTData userData = ctx.get("jwt_data");
 
     processor.deleteSiteEntry(userData, entryId);
+
+    end(ctx.response(), 200);
+  }
+
+  private void registerEditManySites(Router router) {
+    Route editManySites = router.put("/edit_many");
+    editManySites.handler(this::handleEditManySites);
+  }
+
+  private void registerAddManySiteEntries(Router router) {
+    Route addManySiteEntries = router.post("/add_many");
+    addManySiteEntries.handler(this::handleAddManySiteEntries);
+  }
+
+  private void handleEditManySites(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    ManyEditSitesRequest req = RestFunctions.getJsonBodyAsClass(ctx, ManyEditSitesRequest.class);
+
+    processor.editManySites(userData, req);
+
+    end(ctx.response(), 200);
+  }
+
+  private void handleAddManySiteEntries(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    ManyAddSiteEntriesRequest req = RestFunctions.getJsonBodyAsClass(ctx, ManyAddSiteEntriesRequest.class);
+
+    processor.addManySiteEntries(userData, req);
 
     end(ctx.response(), 200);
   }

@@ -30,6 +30,8 @@ import com.codeforcommunity.dto.site.FilterSiteImageRequest;
 import com.codeforcommunity.dto.site.FilterSiteImageResponse;
 import com.codeforcommunity.dto.site.FilterSitesRequest;
 import com.codeforcommunity.dto.site.FilterSitesResponse;
+import com.codeforcommunity.dto.site.ManyAddSiteEntriesRequest;
+import com.codeforcommunity.dto.site.ManyEditSitesRequest;
 import com.codeforcommunity.dto.site.NameSiteEntryRequest;
 import com.codeforcommunity.dto.site.ParentAdoptSiteRequest;
 import com.codeforcommunity.dto.site.ParentRecordStewardshipRequest;
@@ -60,7 +62,11 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -104,7 +110,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     if (!db.fetchExists(db.selectFrom(SITES).where(SITES.ID.eq(siteId)))) {
       throw new ResourceDoesNotExistException(siteId, "Site");
     }
-  } 
+  }
 
   /**
    * Check if an entry with the given entryId exists.
@@ -1033,6 +1039,77 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
         db.selectFrom(SITE_IMAGES).where(SITE_IMAGES.ID.eq(imageID)).fetchOne();
     imageRecord.setApprovalStatus(ImageApprovalStatus.APPROVED.getApprovalStatus());
     imageRecord.store();
+  }
+
+  @Override
+  public void editManySites(JWTData userData, ManyEditSitesRequest manyEditSitesRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+
+    List<Integer> siteIds = manyEditSitesRequest.getSites();
+    List<EditSiteRequest> editSiteRequests = manyEditSitesRequest.getEditSitesRequests();
+
+    Map<Integer, SitesRecord> siteRecords = db.selectFrom(SITES).where(SITES.ID.in(siteIds)).fetchMap(SITES.ID);
+
+    for (int i = 0; i < siteIds.size(); i++) {
+      Integer siteId = siteIds.get(i);
+      EditSiteRequest req = editSiteRequests.get(i);
+
+      SitesRecord siteRecord = siteRecords.get(siteId);
+
+      if (siteRecord == null) {
+        throw new RuntimeException(
+            String.format("Found site record with no ID but matched with id %d", siteId));
+      }
+
+      if (!Objects.equals(siteRecord.getId(), siteId)) {
+        throw new RuntimeException(
+            String.format("Found site record with id %d but matched with id %d", siteRecord.getId(), siteId));
+
+      }
+
+      siteRecord.setId(siteId);
+      siteRecord.setBlockId(req.getBlockId());
+      siteRecord.setAddress(req.getAddress());
+      siteRecord.setCity(req.getCity());
+      siteRecord.setZip(req.getZip());
+      siteRecord.setLat(req.getLat());
+      siteRecord.setLng(req.getLng());
+      siteRecord.setNeighborhoodId(req.getNeighborhoodId());
+      siteRecord.setOwner(req.getOwner().toString());
+    }
+
+    List<SitesRecord> records = new ArrayList<>();
+    for (Map.Entry<Integer, SitesRecord> entry : siteRecords.entrySet()) {
+      records.add(entry.getValue());
+    }
+
+    db.batchStore(records).execute();
+  }
+
+  @Override
+  public void addManySiteEntries(JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest) {
+    assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
+
+    List<Integer> siteIds = manyAddSiteEntriesRequest.getSites();
+    List<UpdateSiteRequest> updateSiteRequests = manyAddSiteEntriesRequest.getUpdateSiteRequests();
+
+    int newId = db.select(max(SITE_ENTRIES.ID)).from(SITE_ENTRIES).fetchOne(0, Integer.class) + 1;
+
+    List<SiteEntriesRecord> records = new ArrayList<>();
+
+    for (int i = 0; i < siteIds.size(); i++) {
+      int siteId = siteIds.get(i);
+      UpdateSiteRequest req = updateSiteRequests.get(i);
+      SiteEntriesRecord record = db.newRecord(SITE_ENTRIES);
+
+      record.setId(newId + i);
+      record.setSiteId(siteId);
+      populateSiteEntry(record, req);
+
+      records.add(record);
+    }
+
+    db.batchStore(records).execute();
   }
 
   @Override
