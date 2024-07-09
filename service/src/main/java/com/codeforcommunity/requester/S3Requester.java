@@ -14,18 +14,21 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
+import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +39,12 @@ import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
 import org.jsoup.parser.Parser;
+import org.simplejavamail.api.email.AttachmentResource;
+
+import javax.activation.DataSource;
+import javax.mail.util.ByteArrayDataSource;
+
+import software.amazon.ion.IonException;
 
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
@@ -231,6 +240,26 @@ public class S3Requester {
       // The AWS S3 delete failed
       throw new S3FailedUploadException(e.getMessage());
     }
+  }
+
+  /**
+   * Load the existing site image with the given URL from the user uploads S3 bucket.
+   *
+   * @param imageUrl the URL of the image file in S3 to delete.
+   * @throws SdkClientException if the load from S3 failed.
+   */
+  public static S3Object loadS3Image(String imageUrl) {
+    String imagePath = imageUrl.split(externs.getBucketPublicUrl() + '/')[1];
+
+    if (!pathExists(imagePath)) {
+      throw new InvalidURLException();
+    }
+
+    // Create the request to get the HTML
+    GetObjectRequest awsRequest = new GetObjectRequest(externs.getBucketPublic(), imagePath);
+
+    S3Object image = externs.getS3Client().getObject(awsRequest);
+    return image;
   }
 
   /**

@@ -58,7 +58,7 @@ public class Emailer {
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
     emailBody.ifPresent(
-        s -> emailOperations.sendEmailToOneRecipient(sendToName, sendToEmail, subjectWelcome, s));
+        s -> emailOperations.sendEmailToOneRecipient(sendToName, sendToEmail, subjectWelcome, s, new ArrayList<>()));
   }
 
   public void sendEmailChangeConfirmationEmail(
@@ -72,7 +72,7 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                sendToName, sendToEmail, subjectEmailChange, s));
+                sendToName, sendToEmail, subjectEmailChange, s, new ArrayList<>()));
   }
 
   public void sendPasswordChangeRequestEmail(
@@ -86,7 +86,7 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                sendToName, sendToEmail, subjectPasswordResetRequest, s));
+                sendToName, sendToEmail, subjectPasswordResetRequest, s, new ArrayList<>()));
   }
 
   public void sendPasswordChangeConfirmationEmail(String sendToEmail, String sendToName) {
@@ -98,7 +98,7 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                sendToName, sendToEmail, subjectPasswordResetConfirm, s));
+                sendToName, sendToEmail, subjectPasswordResetConfirm, s, new ArrayList<>()));
   }
 
   public void sendAccountDeactivatedEmail(String sendToEmail, String sendToName) {
@@ -110,7 +110,7 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                sendToName, sendToEmail, subjectAccountDeleted, s));
+                sendToName, sendToEmail, subjectAccountDeleted, s, new ArrayList<>()));
   }
 
   public void sendInviteTeamEmail(String sendToEmail, String sendToName, String teamName) {
@@ -123,21 +123,21 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                sendToName, sendToEmail, subjectAccountDeleted, s));
+                sendToName, sendToEmail, subjectAccountDeleted, s, new ArrayList<>()));
     // TODO implement this
   }
 
-  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason) {
+  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason, AttachmentResource rejectedImage) {
     String filePath = "/emails/RejectImageEmail.html";
 
     Map<String, String> templateValues = new HashMap<>();
     templateValues.put("reason", reason);
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
-
+    List<AttachmentResource> attachments = Arrays.asList(rejectedImage);
     emailBody.ifPresent(
             s ->
                     emailOperations.sendEmailToOneRecipient(
-                            sendToName, sendToEmail, subjectImageRejected, s));
+                            sendToName, sendToEmail, subjectImageRejected, s, attachments));
   }
 
   public void sendIssueReportEmail(
@@ -164,7 +164,7 @@ public class Emailer {
     emailBody.ifPresent(
         s ->
             emailOperations.sendEmailToOneRecipient(
-                senderName, reportEmailDestination, subjectSiteReport, s));
+                senderName, reportEmailDestination, subjectSiteReport, s, new ArrayList<>()));
   }
 
   public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,

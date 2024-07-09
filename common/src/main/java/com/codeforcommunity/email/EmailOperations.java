@@ -4,6 +4,7 @@ import com.codeforcommunity.logger.SLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -150,47 +151,56 @@ public class EmailOperations {
     }
   }
 
+  private Email buildEmailSingleRecipient(
+          String sendToName, String sendToEmail, String subject, String emailBody, List<AttachmentResource> attachments) {
+    Email email =
+            EmailBuilder.startingBlank()
+                    .from(senderName, sendEmail)
+                    .to(sendToName, sendToEmail)
+                    .withSubject(subject)
+                    .withHTMLText(emailBody)
+                    .withAttachments(attachments)
+                    .buildEmail();
+
+    return email;
+  }
+
   /**
    * Send an email with the given subject and body to the user with the given name at the given
-   * email.
+   * email with attachments.
    */
   public void sendEmailToOneRecipient(
-      String sendToName, String sendToEmail, String subject, String emailBody) {
+          String sendToName, String sendToEmail, String subject, String emailBody, List<AttachmentResource> attachments) {
     if (!shouldSendEmails) {
       return;
     }
-
     logger.info(String.format("Sending email with subject `%s`", subject));
-
-    Email email =
-        EmailBuilder.startingBlank()
-            .from(senderName, sendEmail)
-            .to(sendToName, sendToEmail)
-            .withSubject(subject)
-            .withHTMLText(emailBody)
-            .buildEmail();
-
+    Email email = buildEmailSingleRecipient(sendToName, sendToEmail, subject, emailBody, attachments);
     this.sendEmail(email, subject);
   }
 
-  /** Send an email with the given subject and body to the users with the given email addresses. */
+  private Email buildEmailMultipleRecipient(
+          HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
+    Email email =
+            EmailBuilder.startingBlank()
+                    .from(senderName, sendEmail)
+                    .bccMultiple(sendToEmails.toArray(new String[0]))
+                    .withSubject(subject)
+                    .withHTMLText(emailBody)
+                    .withAttachments(attachments)
+                    .buildEmail();
+
+    return email;
+  }
+
+  /** Send an email with the given subject and body to the users with the given email addresses with attachments. */
   public void sendEmailToMultipleRecipients(
       HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
     if (!shouldSendEmails) {
       return;
     }
-
     logger.info(String.format("Sending emails with subject `%s`", subject));
-
-    Email email =
-        EmailBuilder.startingBlank()
-            .from(senderName, sendEmail)
-            .bccMultiple(sendToEmails.toArray(new String[0]))
-            .withSubject(subject)
-            .withHTMLText(emailBody)
-            .withAttachments(attachments)
-            .buildEmail();
-
+    Email email = buildEmailMultipleRecipient(sendToEmails, subject, emailBody, attachments);
     this.sendEmail(email, subject);
   }
 }

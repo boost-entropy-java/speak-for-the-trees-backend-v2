@@ -24,7 +24,7 @@ public class EmailAttachment extends ApiDto {
 
     private EmailAttachment() {}
 
-    private static String getFileMimeType(String base64File) {
+    public static String getFileMimeType(String base64File) {
         if (base64File == null || base64File.length() < 10) {
             return null;
         }

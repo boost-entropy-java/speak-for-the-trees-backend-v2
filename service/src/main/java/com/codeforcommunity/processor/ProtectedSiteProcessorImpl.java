@@ -1,5 +1,6 @@
 package com.codeforcommunity.processor;
 
+import static com.codeforcommunity.requester.S3Requester.loadS3Image;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;
 import static org.jooq.generated.Tables.ENTRY_USERNAMES;
@@ -17,6 +18,8 @@ import static org.jooq.impl.DSL.max;
 import static org.jooq.impl.DSL.noCondition;
 import static org.jooq.impl.DSL.when;
 
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.codeforcommunity.api.IProtectedSiteProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dataaccess.AuthDatabaseOperations;
@@ -47,6 +50,7 @@ import com.codeforcommunity.exceptions.ForbiddenException;
 import com.codeforcommunity.exceptions.HandledException;
 import com.codeforcommunity.exceptions.InvalidCSVException;
 import com.codeforcommunity.exceptions.LinkedResourceDoesNotExistException;
+import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.NoTreePresentException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.exceptions.WrongAdoptionStatusException;
@@ -84,6 +88,10 @@ import org.jooq.generated.tables.records.StewardshipRecord;
 import org.jooq.generated.tables.records.UserSiteReportsRecord;
 import org.jooq.generated.tables.records.UsersRecord;
 import org.jooq.generated.tables.pojos.Users;
+import org.simplejavamail.api.email.AttachmentResource;
+
+import javax.activation.DataSource;
+import javax.mail.util.ByteArrayDataSource;
 
 public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
@@ -756,6 +764,31 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
+  public AttachmentResource loadSiteImage(JWTData userData, int imageId) {
+    checkAdminOrImageUploader(userData, imageId);
+    checkImageExists(imageId);
+
+    String imageUrl =
+            db.select(SITE_IMAGES.IMAGE_URL)
+                    .from(SITE_IMAGES)
+                    .where(SITE_IMAGES.ID.eq(imageId))
+                    .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
+    S3Object image = loadS3Image(imageUrl);
+    S3ObjectInputStream is = image.getObjectContent();
+
+    String mimeType = "img/" + image.getObjectMetadata().getContentType();
+    DataSource datasource;
+    try {
+      datasource = new ByteArrayDataSource(is, mimeType);
+    } catch (IOException e) {
+      throw new MalformedParameterException("Image encoding is incompatible");
+    }
+
+    String name = image.getKey();
+    return new AttachmentResource(name, datasource);
+  }
+
+  @Override
   public List<FilterSitesResponse> filterSites(
       JWTData userData, FilterSitesRequest filterSitesRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
@@ -1117,8 +1150,6 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
-    String reason = rejectionReason == null ? "Your image upload was rejected by an admin" : rejectionReason;
-
     String approvalStatus = db.select(SITE_IMAGES.APPROVAL_STATUS)
             .from(SITE_IMAGES)
             .where(SITE_IMAGES.ID.eq(imageId)).fetchOne(0, String.class);
@@ -1132,7 +1163,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       String userEmail = user.getEmail();
       String userFullName =
               AuthDatabaseOperations.getFullName(user.into(Users.class));
-      emailer.sendRejectImageEmail(userEmail, userFullName, reason);
+      AttachmentResource image = loadSiteImage(userData, imageId);
+      emailer.sendRejectImageEmail(userEmail, userFullName, rejectionReason, image);
       deleteSiteImage(userData, imageId);
     } else {
       throw new IllegalStateException("Cannot reject an already approved image");
