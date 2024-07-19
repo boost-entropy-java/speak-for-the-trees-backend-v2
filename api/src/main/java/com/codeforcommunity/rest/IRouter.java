@@ -5,5 +5,5 @@ import io.vertx.ext.web.Router;
 
 public interface IRouter {
 
-  Router initializeRouter(Vertx vertx, IpThrottlingFilter filter);
+  Router initializeRouter(Vertx vertx);
 }

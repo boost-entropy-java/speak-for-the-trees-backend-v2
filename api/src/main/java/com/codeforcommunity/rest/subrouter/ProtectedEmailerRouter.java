@@ -7,7 +7,6 @@ import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.rest.IRouter;
-import com.codeforcommunity.rest.IpThrottlingFilter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -26,9 +25,8 @@ public class ProtectedEmailerRouter implements IRouter {
   }
 
   @Override
-  public Router initializeRouter(Vertx vertx, IpThrottlingFilter filter) {
+  public Router initializeRouter(Vertx vertx) {
     Router router = Router.router(vertx);
-    router.route().handler(filter);
 
     registerAddTemplate(router);
     registerLoadTemplate(router);
