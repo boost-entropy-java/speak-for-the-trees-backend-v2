@@ -45,6 +45,8 @@ import org.jooq.impl.DSL;
 
 public class ServiceMain {
   private DSLContext db;
+  public static final long CAPACITY = 20;
+  public static final Refill REFILL = Refill.greedy(10, Duration.ofMinutes(1));
 
   public static void main(String[] args) {
     try {
@@ -122,8 +124,6 @@ public class ServiceMain {
         new ProtectedNeighborhoodsProcessorImpl(this.db, emailer);
     IProtectedEmailerProcessor emailerProc = new ProtectedEmailerProcessorImpl(this.db);
 
-    long CAPACITY = 2;
-    Refill REFILL = Refill.greedy(1, Duration.ofMinutes(1));
     Bandwidth bandwidth = Bandwidth.classic(CAPACITY, REFILL);
     BucketConfiguration configuration = BucketConfiguration.builder().addLimit(bandwidth).build();
     IpThrottlingFilter filter = new IpThrottlingFilter(configuration);
