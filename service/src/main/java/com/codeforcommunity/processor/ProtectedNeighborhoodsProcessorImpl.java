@@ -9,11 +9,9 @@ import com.codeforcommunity.dto.neighborhoods.SendEmailRequest;
 import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.ResourceDoesNotExistException;
 import com.codeforcommunity.requester.Emailer;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.NeighborhoodsRecord;
 import org.simplejavamail.api.email.AttachmentResource;

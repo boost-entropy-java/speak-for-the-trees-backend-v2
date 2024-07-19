@@ -1,6 +1,5 @@
 package com.codeforcommunity.requester;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -14,18 +13,13 @@ import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.codeforcommunity.aws.EncodedImage;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.exceptions.BadRequestHTMLException;
 import com.codeforcommunity.exceptions.BadRequestImageException;
 import com.codeforcommunity.exceptions.InvalidURLException;
-import com.codeforcommunity.exceptions.MalformedParameterException;
 import com.codeforcommunity.exceptions.S3FailedUploadException;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,17 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import org.jsoup.Jsoup;
 import org.jsoup.parser.ParseError;
 import org.jsoup.parser.ParseErrorList;
 import org.jsoup.parser.Parser;
-import org.simplejavamail.api.email.AttachmentResource;
-
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
-
-import software.amazon.ion.IonException;
 
 public class S3Requester {
   // Contains information about S3 that is not part of this class's implementation
@@ -408,7 +395,6 @@ public class S3Requester {
   }
 
   /**
-   *
    * @param bucketName
    * @return
    */
@@ -416,7 +402,7 @@ public class S3Requester {
     ListObjectsV2Request req = new ListObjectsV2Request();
     req.setBucketName(bucketName);
     req.setDelimiter("/");
-    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic()+"/");
+    String path = String.join("/", TEMPLATE_S3_DIR, externs.getDirPublic() + "/");
     req.setPrefix(path);
     req.setStartAfter(path);
 
@@ -426,13 +412,13 @@ public class S3Requester {
       res = externs.getS3Client().listObjectsV2(req);
       String prefix = req.getPrefix();
       List<String> result;
-      result = res.getObjectSummaries().stream().map(s -> s.getKey().replace(prefix, "").replace("_template.html", "")).collect(Collectors.toList());
+      result =
+          res.getObjectSummaries().stream()
+              .map(s -> s.getKey().replace(prefix, "").replace("_template.html", ""))
+              .collect(Collectors.toList());
       return result;
     } catch (SdkClientException a) {
       throw new InvalidURLException();
     }
   }
-
-
-
 }

@@ -2,7 +2,6 @@ package com.codeforcommunity.dto.site;
 
 import com.codeforcommunity.dto.ApiDto;
 import com.codeforcommunity.exceptions.HandledException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,8 @@ public class ManyAddSiteEntriesRequest extends ApiDto {
 
   private List<Integer> sites;
 
-  public ManyAddSiteEntriesRequest(List<UpdateSiteRequest> updateSiteRequests, List<Integer> sites) {
+  public ManyAddSiteEntriesRequest(
+      List<UpdateSiteRequest> updateSiteRequests, List<Integer> sites) {
     this.updateSiteRequests = updateSiteRequests;
     this.sites = sites;
   }

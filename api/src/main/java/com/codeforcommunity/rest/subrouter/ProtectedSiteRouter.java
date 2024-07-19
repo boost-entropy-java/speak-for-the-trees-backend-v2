@@ -23,7 +23,6 @@ import com.codeforcommunity.dto.site.ReportSiteRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
-import com.codeforcommunity.exceptions.MissingParameterException;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
 import io.vertx.core.Vertx;
@@ -421,8 +420,8 @@ public class ProtectedSiteRouter implements IRouter {
     JWTData userData = ctx.get("jwt_data");
     int imageId = RestFunctions.getRequestParameterAsInt(ctx.request(), "image_id");
     String defaultRejectionReason = "Your image upload was rejected by an admin";
-    Optional<String> rejectionReason = RestFunctions.getOptionalQueryParam(
-            ctx, "reason", Function.identity());
+    Optional<String> rejectionReason =
+        RestFunctions.getOptionalQueryParam(ctx, "reason", Function.identity());
 
     processor.rejectSiteImage(userData, imageId, rejectionReason.orElse(defaultRejectionReason));
 
@@ -542,7 +541,8 @@ public class ProtectedSiteRouter implements IRouter {
   private void handleAddManySiteEntries(RoutingContext ctx) {
     JWTData userData = ctx.get("jwt_data");
 
-    ManyAddSiteEntriesRequest req = RestFunctions.getJsonBodyAsClass(ctx, ManyAddSiteEntriesRequest.class);
+    ManyAddSiteEntriesRequest req =
+        RestFunctions.getJsonBodyAsClass(ctx, ManyAddSiteEntriesRequest.class);
 
     processor.addManySiteEntries(userData, req);
 

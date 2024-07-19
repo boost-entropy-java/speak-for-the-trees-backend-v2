@@ -3,7 +3,6 @@ package com.codeforcommunity.processor;
 import static com.codeforcommunity.requester.S3Requester.loadS3Image;
 import static org.jooq.generated.Tables.ADOPTED_SITES;
 import static org.jooq.generated.Tables.BLOCKS;
-import static org.jooq.generated.Tables.ENTRY_USERNAMES;
 import static org.jooq.generated.Tables.NEIGHBORHOODS;
 import static org.jooq.generated.Tables.PARENT_ACCOUNTS;
 import static org.jooq.generated.Tables.SITES;
@@ -67,18 +66,19 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.activation.DataSource;
+import javax.mail.util.ByteArrayDataSource;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.Record2;
-import org.jooq.Record3;
 import org.jooq.Record11;
+import org.jooq.Record3;
 import org.jooq.Result;
 import org.jooq.Table;
+import org.jooq.generated.tables.pojos.Users;
 import org.jooq.generated.tables.records.AdoptedSitesRecord;
 import org.jooq.generated.tables.records.ParentAccountsRecord;
 import org.jooq.generated.tables.records.SiteEntriesRecord;
@@ -87,11 +87,7 @@ import org.jooq.generated.tables.records.SitesRecord;
 import org.jooq.generated.tables.records.StewardshipRecord;
 import org.jooq.generated.tables.records.UserSiteReportsRecord;
 import org.jooq.generated.tables.records.UsersRecord;
-import org.jooq.generated.tables.pojos.Users;
 import org.simplejavamail.api.email.AttachmentResource;
-
-import javax.activation.DataSource;
-import javax.mail.util.ByteArrayDataSource;
 
 public class ProtectedSiteProcessorImpl extends AbstractProcessor
     implements IProtectedSiteProcessor {
@@ -127,8 +123,9 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
    */
   private void checkEntryExists(int entryId) {
     if (!db.fetchExists(
-        db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)).and(SITE_ENTRIES.DELETED_AT.isNull())
-    )) {
+        db.selectFrom(SITE_ENTRIES)
+            .where(SITE_ENTRIES.ID.eq(entryId))
+            .and(SITE_ENTRIES.DELETED_AT.isNull()))) {
       throw new ResourceDoesNotExistException(entryId, "Entry");
     }
   }
@@ -263,14 +260,18 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
       return;
     }
 
-    int reportsToday = db.selectCount()
-        .from(USER_SITE_REPORTS)
-        .where(USER_SITE_REPORTS.USER_ID.eq(userData.getUserId()))
-        .and(USER_SITE_REPORTS.CREATED_AT.greaterOrEqual(Timestamp.valueOf(LocalDateTime.now().minusDays(1))))
-        .fetchOne(0, int.class);
+    int reportsToday =
+        db.selectCount()
+            .from(USER_SITE_REPORTS)
+            .where(USER_SITE_REPORTS.USER_ID.eq(userData.getUserId()))
+            .and(
+                USER_SITE_REPORTS.CREATED_AT.greaterOrEqual(
+                    Timestamp.valueOf(LocalDateTime.now().minusDays(1))))
+            .fetchOne(0, int.class);
 
     if (reportsToday >= MAX_DAILY_SITE_REPORTS) {
-      throw new ForbiddenException("Users can only make " + MAX_DAILY_SITE_REPORTS + " reports a day!");
+      throw new ForbiddenException(
+          "Users can only make " + MAX_DAILY_SITE_REPORTS + " reports a day!");
     }
   }
 
@@ -769,10 +770,10 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkImageExists(imageId);
 
     String imageUrl =
-            db.select(SITE_IMAGES.IMAGE_URL)
-                    .from(SITE_IMAGES)
-                    .where(SITE_IMAGES.ID.eq(imageId))
-                    .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
+        db.select(SITE_IMAGES.IMAGE_URL)
+            .from(SITE_IMAGES)
+            .where(SITE_IMAGES.ID.eq(imageId))
+            .fetchOne(SITE_IMAGES.IMAGE_URL, String.class);
     S3Object image = loadS3Image(imageUrl);
     S3ObjectInputStream is = image.getObjectContent();
 
@@ -945,7 +946,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
           filterCondition.and(NEIGHBORHOODS.ID.in(filterSiteImageRequest.getNeighborhoodIds()));
     if (filterSiteImageRequest.getSubmittedStart() != null)
       filterCondition =
-          filterCondition.and(SITE_IMAGES.UPLOADED_AT.ge(filterSiteImageRequest.getSubmittedStart()));
+          filterCondition.and(
+              SITE_IMAGES.UPLOADED_AT.ge(filterSiteImageRequest.getSubmittedStart()));
     if (filterSiteImageRequest.getSubmittedEnd() != null)
       filterCondition =
           filterCondition.and(SITE_IMAGES.UPLOADED_AT.le(filterSiteImageRequest.getSubmittedEnd()));
@@ -993,8 +995,7 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
             rec -> {
               String uploaderName = rec.get(USERS.FIRST_NAME) + ' ' + rec.get(USERS.LAST_NAME);
 
-              Timestamp dateSubmitted =
-                  rec.get(SITE_IMAGES.UPLOADED_AT);
+              Timestamp dateSubmitted = rec.get(SITE_IMAGES.UPLOADED_AT);
 
               return new FilterSiteImageResponse(
                   rec.get(SITE_IMAGES.ID),
@@ -1081,7 +1082,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     List<Integer> siteIds = manyEditSitesRequest.getSites();
     List<EditSiteRequest> editSiteRequests = manyEditSitesRequest.getEditSitesRequests();
 
-    Map<Integer, SitesRecord> siteRecords = db.selectFrom(SITES).where(SITES.ID.in(siteIds)).fetchMap(SITES.ID);
+    Map<Integer, SitesRecord> siteRecords =
+        db.selectFrom(SITES).where(SITES.ID.in(siteIds)).fetchMap(SITES.ID);
 
     for (int i = 0; i < siteIds.size(); i++) {
       Integer siteId = siteIds.get(i);
@@ -1096,8 +1098,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
 
       if (!Objects.equals(siteRecord.getId(), siteId)) {
         throw new RuntimeException(
-            String.format("Found site record with id %d but matched with id %d", siteRecord.getId(), siteId));
-
+            String.format(
+                "Found site record with id %d but matched with id %d", siteRecord.getId(), siteId));
       }
 
       siteRecord.setId(siteId);
@@ -1120,7 +1122,8 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
   }
 
   @Override
-  public void addManySiteEntries(JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest) {
+  public void addManySiteEntries(
+      JWTData userData, ManyAddSiteEntriesRequest manyAddSiteEntriesRequest) {
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
     List<Integer> siteIds = manyAddSiteEntriesRequest.getSites();
@@ -1150,26 +1153,27 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     checkImageExists(imageId);
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
 
-    String approvalStatus = db.select(SITE_IMAGES.APPROVAL_STATUS)
+    String approvalStatus =
+        db.select(SITE_IMAGES.APPROVAL_STATUS)
             .from(SITE_IMAGES)
-            .where(SITE_IMAGES.ID.eq(imageId)).fetchOne(0, String.class);
+            .where(SITE_IMAGES.ID.eq(imageId))
+            .fetchOne(0, String.class);
     if (approvalStatus.equals(ImageApprovalStatus.SUBMITTED.getApprovalStatus())) {
-      int uploaderId  = db.select(SITE_IMAGES.UPLOADER_ID)
+      int uploaderId =
+          db.select(SITE_IMAGES.UPLOADER_ID)
               .from(SITE_IMAGES)
               .where(SITE_IMAGES.ID.eq(imageId))
               .fetchOne(0, int.class);
 
       UsersRecord user = db.selectFrom(USERS).where(USERS.ID.eq(uploaderId)).fetchOne();
       String userEmail = user.getEmail();
-      String userFullName =
-              AuthDatabaseOperations.getFullName(user.into(Users.class));
+      String userFullName = AuthDatabaseOperations.getFullName(user.into(Users.class));
       AttachmentResource image = loadSiteImage(userData, imageId);
       emailer.sendRejectImageEmail(userEmail, userFullName, rejectionReason, image);
       deleteSiteImage(userData, imageId);
     } else {
       throw new IllegalStateException("Cannot reject an already approved image");
     }
-
   }
 
   @Override
@@ -1202,8 +1206,13 @@ public class ProtectedSiteProcessorImpl extends AbstractProcessor
     assertAdminOrSuperAdmin(userData.getPrivilegeLevel());
     checkEntryExists(entryId);
 
-    SiteEntriesRecord entry = db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)).fetchOne();
-    int count = db.selectCount().from(SITE_ENTRIES).where(SITE_ENTRIES.SITE_ID.eq(entry.getSiteId())).fetchOne(0, int.class);
+    SiteEntriesRecord entry =
+        db.selectFrom(SITE_ENTRIES).where(SITE_ENTRIES.ID.eq(entryId)).fetchOne();
+    int count =
+        db.selectCount()
+            .from(SITE_ENTRIES)
+            .where(SITE_ENTRIES.SITE_ID.eq(entry.getSiteId()))
+            .fetchOne(0, int.class);
 
     if (count <= 1) {
       throw new ForbiddenException("Must have at least one other site entry");
