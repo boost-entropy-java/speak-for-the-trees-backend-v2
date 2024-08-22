@@ -45,8 +45,8 @@ import org.jooq.impl.DSL;
 
 public class ServiceMain {
   private DSLContext db;
-  public static final long CAPACITY = 20;
-  public static final Refill REFILL = Refill.greedy(10, Duration.ofMinutes(1));
+  public static final long CAPACITY = 50;
+  public static final Refill REFILL = Refill.greedy(20, Duration.ofMinutes(1));
 
   public static void main(String[] args) {
     try {
