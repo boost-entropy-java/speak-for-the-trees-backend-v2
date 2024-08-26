@@ -1,11 +1,9 @@
 package com.codeforcommunity.requester;
 
-import com.codeforcommunity.dto.emailer.EmailAttachment;
 import com.codeforcommunity.email.EmailOperations;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
-import org.simplejavamail.api.email.AttachmentResource;
-
 import java.util.*;
+import org.simplejavamail.api.email.AttachmentResource;
 
 public class Emailer {
   private final EmailOperations emailOperations;
@@ -46,7 +44,7 @@ public class Emailer {
     this.frontendUrl = PropertiesLoader.loadProperty("frontend_base_url");
     this.passwordResetTemplate =
         this.frontendUrl + PropertiesLoader.loadProperty("frontend_password_reset_route");
-  } 
+  }
 
   public void sendWelcomeEmail(String sendToEmail, String sendToName) {
     String filePath = "/emails/WelcomeEmail.html";
@@ -58,7 +56,9 @@ public class Emailer {
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
     emailBody.ifPresent(
-        s -> emailOperations.sendEmailToOneRecipient(sendToName, sendToEmail, subjectWelcome, s, new ArrayList<>()));
+        s ->
+            emailOperations.sendEmailToOneRecipient(
+                sendToName, sendToEmail, subjectWelcome, s, new ArrayList<>()));
   }
 
   public void sendEmailChangeConfirmationEmail(
@@ -127,7 +127,8 @@ public class Emailer {
     // TODO implement this
   }
 
-  public void sendRejectImageEmail(String sendToEmail, String sendToName, String reason, AttachmentResource rejectedImage) {
+  public void sendRejectImageEmail(
+      String sendToEmail, String sendToName, String reason, AttachmentResource rejectedImage) {
     String filePath = "/emails/RejectImageEmail.html";
 
     Map<String, String> templateValues = new HashMap<>();
@@ -135,9 +136,9 @@ public class Emailer {
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
     List<AttachmentResource> attachments = Arrays.asList(rejectedImage);
     emailBody.ifPresent(
-            s ->
-                    emailOperations.sendEmailToOneRecipient(
-                            sendToName, sendToEmail, subjectImageRejected, s, attachments));
+        s ->
+            emailOperations.sendEmailToOneRecipient(
+                sendToName, sendToEmail, subjectImageRejected, s, attachments));
   }
 
   public void sendIssueReportEmail(
@@ -167,8 +168,11 @@ public class Emailer {
                 senderName, reportEmailDestination, subjectSiteReport, s, new ArrayList<>()));
   }
 
-  public void sendArbitraryEmail(HashSet<String> sendToEmails, String subject, String body,
-                                 List<AttachmentResource> attachments) {
+  public void sendArbitraryEmail(
+      HashSet<String> sendToEmails,
+      String subject,
+      String body,
+      List<AttachmentResource> attachments) {
     String filePath = "/emails/Email.html";
 
     Map<String, String> templateValues = new HashMap<>();
@@ -176,6 +180,8 @@ public class Emailer {
     Optional<String> emailBody = emailOperations.getTemplateString(filePath, templateValues);
 
     emailBody.ifPresent(
-        email -> emailOperations.sendEmailToMultipleRecipients(sendToEmails, subject, email, attachments));
+        email ->
+            emailOperations.sendEmailToMultipleRecipients(
+                sendToEmails, subject, email, attachments));
   }
 }

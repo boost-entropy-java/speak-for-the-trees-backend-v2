@@ -33,13 +33,20 @@ import com.codeforcommunity.processor.TeamsProcessorImpl;
 import com.codeforcommunity.propertiesLoader.PropertiesLoader;
 import com.codeforcommunity.requester.Emailer;
 import com.codeforcommunity.rest.ApiRouter;
+import com.codeforcommunity.rest.IpThrottlingFilter;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.Refill;
 import io.vertx.core.Vertx;
+import java.time.Duration;
 import java.util.Properties;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 
 public class ServiceMain {
   private DSLContext db;
+  public static final long CAPACITY = 50;
+  public static final Refill REFILL = Refill.greedy(20, Duration.ofMinutes(1));
 
   public static void main(String[] args) {
     try {
@@ -117,6 +124,10 @@ public class ServiceMain {
         new ProtectedNeighborhoodsProcessorImpl(this.db, emailer);
     IProtectedEmailerProcessor emailerProc = new ProtectedEmailerProcessorImpl(this.db);
 
+    Bandwidth bandwidth = Bandwidth.classic(CAPACITY, REFILL);
+    BucketConfiguration configuration = BucketConfiguration.builder().addLimit(bandwidth).build();
+    IpThrottlingFilter filter = new IpThrottlingFilter(configuration);
+
     // Create the API router and start the HTTP server
     ApiRouter router =
         new ApiRouter(
@@ -133,7 +144,8 @@ public class ServiceMain {
             reportProc,
             protectedNeighborhoodsProc,
             emailerProc,
-            jwtAuthorizer);
+            jwtAuthorizer,
+            filter);
 
     startApiServer(router, vertx);
   }

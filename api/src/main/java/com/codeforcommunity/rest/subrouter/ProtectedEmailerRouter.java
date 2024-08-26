@@ -8,15 +8,13 @@ import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
-
-import java.util.Collections;
-import java.util.List;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import java.util.Collections;
+import java.util.List;
 
 public class ProtectedEmailerRouter implements IRouter {
 
@@ -91,8 +89,8 @@ public class ProtectedEmailerRouter implements IRouter {
 
     List<String> names = processor.loadTemplateNames(userData);
     end(
-            ctx.response(),
-            200,
-            JsonObject.mapFrom(Collections.singletonMap("templates", names)).toString());
+        ctx.response(),
+        200,
+        JsonObject.mapFrom(Collections.singletonMap("templates", names)).toString());
   }
 }

@@ -255,8 +255,8 @@ public class SiteProcessorImpl implements ISiteProcessor {
 
   @Override
   public GetSiteResponse getSite(int siteId) {
-    SitesRecord sitesRecord = db.selectFrom(SITES).where(SITES.ID.eq(siteId))
-            .and(SITES.DELETED_AT.isNull()).fetchOne();
+    SitesRecord sitesRecord =
+        db.selectFrom(SITES).where(SITES.ID.eq(siteId)).and(SITES.DELETED_AT.isNull()).fetchOne();
 
     if (sitesRecord == null) {
       throw new ResourceDoesNotExistException(siteId, "site");

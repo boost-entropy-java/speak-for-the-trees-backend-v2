@@ -47,6 +47,7 @@ public class ApiRouter implements IRouter {
   private final ReportRouter reportRouter;
   private final ProtectedNeighborhoodsRouter protectedNeighborhoodsRouter;
   private final ProtectedEmailerRouter protectedEmailerRouter;
+  private final IpThrottlingFilter filter;
 
   public ApiRouter(
       IAuthProcessor authProcessor,
@@ -62,7 +63,8 @@ public class ApiRouter implements IRouter {
       IReportProcessor reportProcessor,
       IProtectedNeighborhoodsProcessor protectedNeighborhoodsProcessor,
       IProtectedEmailerProcessor emailerProcessor,
-      JWTAuthorizer jwtAuthorizer) {
+      JWTAuthorizer jwtAuthorizer,
+      IpThrottlingFilter filter) {
     this.commonRouter = new CommonRouter(jwtAuthorizer);
     this.authRouter = new AuthRouter(authProcessor);
     this.protectedUserRouter = new ProtectedUserRouter(protectedUserProcessor);
@@ -78,11 +80,13 @@ public class ApiRouter implements IRouter {
     this.protectedNeighborhoodsRouter =
         new ProtectedNeighborhoodsRouter(protectedNeighborhoodsProcessor);
     this.protectedEmailerRouter = new ProtectedEmailerRouter(emailerProcessor);
+    this.filter = filter;
   }
 
   /** Initialize a router and register all route handlers on it. */
   public Router initializeRouter(Vertx vertx) {
     Router router = commonRouter.initializeRouter(vertx);
+    router.route().handler(this.filter);
 
     router.mountSubRouter("/user", authRouter.initializeRouter(vertx));
     router.mountSubRouter("/protected", defineProtectedRoutes(vertx));
@@ -100,6 +104,7 @@ public class ApiRouter implements IRouter {
    */
   private Router defineProtectedRoutes(Vertx vertx) {
     Router router = Router.router(vertx);
+    router.route().handler(this.filter);
 
     router.mountSubRouter("/user", protectedUserRouter.initializeRouter(vertx));
     router.mountSubRouter("/import", importRouter.initializeRouter(vertx));

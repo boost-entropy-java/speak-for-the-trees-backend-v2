@@ -19,11 +19,9 @@ import com.codeforcommunity.dto.site.ReportSiteRequest;
 import com.codeforcommunity.dto.site.SiteEntryImage;
 import com.codeforcommunity.dto.site.UpdateSiteRequest;
 import com.codeforcommunity.dto.site.UploadSiteImageRequest;
-
-import org.simplejavamail.api.email.AttachmentResource;
-
 import java.sql.Date;
 import java.util.List;
+import org.simplejavamail.api.email.AttachmentResource;
 
 public interface IProtectedSiteProcessor {
 
@@ -131,8 +129,10 @@ public interface IProtectedSiteProcessor {
   /** Edits the site entry with the given entryId */
   void editSiteEntry(JWTData userData, int entryId, UpdateSiteRequest editSiteEntryRequest);
 
-  /** Rejects the site image (deletes and sends an email with a rejection reason and the
-   * rejected image to the uploader's email) with the given imageId */
+  /**
+   * Rejects the site image (deletes and sends an email with a rejection reason and the rejected
+   * image to the uploader's email) with the given imageId
+   */
   void rejectSiteImage(JWTData userData, int imageId, String rejectionReason);
 
   List<SiteEntryImage> getUnapprovedImages(JWTData userData);
@@ -143,7 +143,7 @@ public interface IProtectedSiteProcessor {
   /** Reports the site for an issue by sending an email to SFTT */
   void reportSiteForIssues(JWTData userData, int siteId, ReportSiteRequest reportSiteRequest);
 
-  /** Loads a site image with the given ID as an attachment resource*/
+  /** Loads a site image with the given ID as an attachment resource */
   AttachmentResource loadSiteImage(JWTData userData, int imageId);
 
   /** Deletes the given site entry and associated data */

@@ -10,8 +10,10 @@ public class FilterSiteImageResponse {
   private int siteId;
   private String uploaderName;
   private String uploaderEmail;
+
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
   private Timestamp dateSubmitted;
+
   private String commonName;
   private int neighborhoodId;
   private String address;
