@@ -4,7 +4,6 @@ import com.codeforcommunity.logger.SLogger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import org.simplejavamail.api.mailer.Mailer;
 import org.simplejavamail.api.mailer.config.TransportStrategy;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.MailerBuilder;
-
 
 public class EmailOperations {
   private final SLogger logger = new SLogger(EmailOperations.class);
@@ -152,15 +150,19 @@ public class EmailOperations {
   }
 
   private Email buildEmailSingleRecipient(
-          String sendToName, String sendToEmail, String subject, String emailBody, List<AttachmentResource> attachments) {
+      String sendToName,
+      String sendToEmail,
+      String subject,
+      String emailBody,
+      List<AttachmentResource> attachments) {
     Email email =
-            EmailBuilder.startingBlank()
-                    .from(senderName, sendEmail)
-                    .to(sendToName, sendToEmail)
-                    .withSubject(subject)
-                    .withHTMLText(emailBody)
-                    .withAttachments(attachments)
-                    .buildEmail();
+        EmailBuilder.startingBlank()
+            .from(senderName, sendEmail)
+            .to(sendToName, sendToEmail)
+            .withSubject(subject)
+            .withHTMLText(emailBody)
+            .withAttachments(attachments)
+            .buildEmail();
 
     return email;
   }
@@ -170,32 +172,46 @@ public class EmailOperations {
    * email with attachments.
    */
   public void sendEmailToOneRecipient(
-          String sendToName, String sendToEmail, String subject, String emailBody, List<AttachmentResource> attachments) {
+      String sendToName,
+      String sendToEmail,
+      String subject,
+      String emailBody,
+      List<AttachmentResource> attachments) {
     if (!shouldSendEmails) {
       return;
     }
     logger.info(String.format("Sending email with subject `%s`", subject));
-    Email email = buildEmailSingleRecipient(sendToName, sendToEmail, subject, emailBody, attachments);
+    Email email =
+        buildEmailSingleRecipient(sendToName, sendToEmail, subject, emailBody, attachments);
     this.sendEmail(email, subject);
   }
 
   private Email buildEmailMultipleRecipient(
-          HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
+      HashSet<String> sendToEmails,
+      String subject,
+      String emailBody,
+      List<AttachmentResource> attachments) {
     Email email =
-            EmailBuilder.startingBlank()
-                    .from(senderName, sendEmail)
-                    .bccMultiple(sendToEmails.toArray(new String[0]))
-                    .withSubject(subject)
-                    .withHTMLText(emailBody)
-                    .withAttachments(attachments)
-                    .buildEmail();
+        EmailBuilder.startingBlank()
+            .from(senderName, sendEmail)
+            .bccMultiple(sendToEmails.toArray(new String[0]))
+            .withSubject(subject)
+            .withHTMLText(emailBody)
+            .withAttachments(attachments)
+            .buildEmail();
 
     return email;
   }
 
-  /** Send an email with the given subject and body to the users with the given email addresses with attachments. */
+  /**
+   * Send an email with the given subject and body to the users with the given email addresses with
+   * attachments.
+   */
   public void sendEmailToMultipleRecipients(
-      HashSet<String> sendToEmails, String subject, String emailBody, List<AttachmentResource> attachments) {
+      HashSet<String> sendToEmails,
+      String subject,
+      String emailBody,
+      List<AttachmentResource> attachments) {
     if (!shouldSendEmails) {
       return;
     }

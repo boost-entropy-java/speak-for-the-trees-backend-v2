@@ -3,7 +3,6 @@ package com.codeforcommunity.api;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.emailer.AddTemplateRequest;
 import com.codeforcommunity.dto.emailer.LoadTemplateResponse;
-
 import java.util.List;
 
 public interface IProtectedEmailerProcessor {
