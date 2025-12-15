@@ -1,5 +1,5 @@
 # Base the container image off of JDK 8
-FROM openjdk:11
+FROM eclipse-temurin:11-jdk
 
 # The port that YOU should expose when you run this in a container
 # see https://docs.docker.com/engine/reference/builder/#expose
