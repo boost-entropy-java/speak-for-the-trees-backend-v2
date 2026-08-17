@@ -6,6 +6,7 @@ import com.codeforcommunity.api.IProtectedReportProcessor;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.report.GetAdoptionReportResponse;
 import com.codeforcommunity.dto.report.GetReportCSVRequest;
+import com.codeforcommunity.dto.report.GetSiteActivityReportCSVRequest;
 import com.codeforcommunity.dto.report.GetStewardshipReportResponse;
 import com.codeforcommunity.rest.IRouter;
 import com.codeforcommunity.rest.RestFunctions;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 public class ProtectedReportRouter implements IRouter {
   private static final String PREVIOUS_DAYS_QUERY_PARAM_NAME = "previousDays";
+  private static final String SITE_ID_QUERY_PARAM_NAME = "siteId";
 
   private final IProtectedReportProcessor processor;
 
@@ -34,6 +36,7 @@ public class ProtectedReportRouter implements IRouter {
     registerGetAdoptionReportCSV(router);
     registerGetStewardshipReport(router);
     registerGetStewardshipReportCSV(router);
+    registerGetSiteActivityReportCSV(router);
 
     return router;
   }
@@ -103,5 +106,27 @@ public class ProtectedReportRouter implements IRouter {
         processor.getStewardshipReportCSV(userData, getStewardshipReportCSVRequest);
 
     end(ctx.response(), 200, stewardshipReportCSVResponse);
+  }
+
+  private void registerGetSiteActivityReportCSV(Router router) {
+    Route getSiteActivityReportCSVRoute = router.get("/csv/site-activity");
+    getSiteActivityReportCSVRoute.handler(this::handleGetSiteActivityReportCSVRoute);
+  }
+
+  private void handleGetSiteActivityReportCSVRoute(RoutingContext ctx) {
+    JWTData userData = ctx.get("jwt_data");
+
+    Optional<Long> maybePreviousDays =
+        RestFunctions.getOptionalQueryParam(ctx, PREVIOUS_DAYS_QUERY_PARAM_NAME, Long::parseLong);
+    Optional<Integer> maybeSiteId =
+        RestFunctions.getOptionalQueryParam(ctx, SITE_ID_QUERY_PARAM_NAME, Integer::parseInt);
+
+    GetSiteActivityReportCSVRequest request =
+        new GetSiteActivityReportCSVRequest(
+            maybePreviousDays.orElse(null), maybeSiteId.orElse(null));
+
+    String csv = processor.getSiteActivityReportCSV(userData, request);
+
+    end(ctx.response(), 200, csv);
   }
 }
