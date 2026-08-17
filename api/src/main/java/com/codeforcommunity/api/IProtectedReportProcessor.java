@@ -3,6 +3,7 @@ package com.codeforcommunity.api;
 import com.codeforcommunity.auth.JWTData;
 import com.codeforcommunity.dto.report.GetAdoptionReportResponse;
 import com.codeforcommunity.dto.report.GetReportCSVRequest;
+import com.codeforcommunity.dto.report.GetSiteActivityReportCSVRequest;
 import com.codeforcommunity.dto.report.GetStewardshipReportResponse;
 
 public interface IProtectedReportProcessor {
@@ -33,4 +34,11 @@ public interface IProtectedReportProcessor {
    */
   String getStewardshipReportCSV(
       JWTData userData, GetReportCSVRequest getStewardshipReportCSVRequest);
+
+  /**
+   * Returns stewardship activities for all adopted sites (or a specific site if siteId is provided)
+   * as a CSV-formatted string. Each row represents a single activity type performed on a given
+   * date. Columns: Site ID, Latitude, Longitude, Address, Date, Activity Type.
+   */
+  String getSiteActivityReportCSV(JWTData userData, GetSiteActivityReportCSVRequest request);
 }
