@@ -58,6 +58,7 @@ public class CSVSiteUpload {
   private Boolean stump;
   private String treeNotes;
   private String siteNotes;
+  private String treeName;
   private Integer bostonId;
 
   @JsonFormat(
@@ -105,6 +106,7 @@ public class CSVSiteUpload {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      String treeName,
       Integer bostonId,
       Date plantingDate,
       Integer blockId,
@@ -162,6 +164,7 @@ public class CSVSiteUpload {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.treeName = treeName;
     this.bostonId = bostonId;
     this.plantingDate = plantingDate;
   }
@@ -213,6 +216,7 @@ public class CSVSiteUpload {
         stump,
         treeNotes,
         siteNotes,
+        treeName,
         bostonId,
         plantingDate,
         blockId,
@@ -407,6 +411,10 @@ public class CSVSiteUpload {
 
   public String getSiteNotes() {
     return siteNotes;
+  }
+
+  public String getTreeName() {
+    return treeName;
   }
 
   public Integer getBostonId() {

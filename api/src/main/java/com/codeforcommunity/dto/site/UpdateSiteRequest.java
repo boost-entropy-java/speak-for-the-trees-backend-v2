@@ -47,6 +47,7 @@ public class UpdateSiteRequest extends ApiDto {
   private Boolean stump;
   private String treeNotes;
   private String siteNotes;
+  private String treeName;
 
   private Integer bostonId;
 
@@ -95,6 +96,7 @@ public class UpdateSiteRequest extends ApiDto {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      String treeName,
       Integer bostonId,
       Date plantingDate) {
     this.treePresent = treePresent;
@@ -135,6 +137,7 @@ public class UpdateSiteRequest extends ApiDto {
     this.stump = stump;
     this.treeNotes = treeNotes;
     this.siteNotes = siteNotes;
+    this.treeName = treeName;
     this.bostonId = bostonId;
     this.plantingDate = plantingDate;
   }
@@ -443,6 +446,14 @@ public class UpdateSiteRequest extends ApiDto {
 
   public void setSiteNotes(String siteNotes) {
     this.siteNotes = siteNotes;
+  }
+
+  public String getTreeName() {
+    return treeName;
+  }
+
+  public void setTreeName(String treeName) {
+    this.treeName = treeName;
   }
 
   public Integer getBostonId() {

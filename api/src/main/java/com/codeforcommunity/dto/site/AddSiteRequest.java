@@ -55,6 +55,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
       Boolean stump,
       String treeNotes,
       String siteNotes,
+      String treeName,
       Integer bostonId,
       Date plantingDate,
       Integer blockId,
@@ -104,6 +105,7 @@ public class AddSiteRequest extends UpdateSiteRequest {
         stump,
         treeNotes,
         siteNotes,
+        treeName,
         bostonId,
         plantingDate);
     this.blockId = blockId;
